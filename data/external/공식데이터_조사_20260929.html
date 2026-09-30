@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>외국인 환자 공식 데이터</title>
+<style>
+:root{--bg:#f7f6f3;--card:#fff;--ink:#1f2328;--muted:#5b6470;--line:#e3e1dc;--accent:#1f6f5c;--accent-soft:#e3f1ec;--red:#a23a2a;--red-soft:#f8e4df;--warn:#9a5b00;--warn-soft:#fbf0dd;--blue:#2c5d9a;--blue-soft:#e4edf8}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15181b;--card:#1d2125;--ink:#e7e9ec;--muted:#9aa3ad;--line:#30363d;--accent:#5cc3a6;--accent-soft:#1d3530;--red:#ee8b79;--red-soft:#3a221d;--warn:#e2a64a;--warn-soft:#382c17;--blue:#86b4ee;--blue-soft:#1d2a3a}}
+:root[data-theme="dark"]{--bg:#15181b;--card:#1d2125;--ink:#e7e9ec;--muted:#9aa3ad;--line:#30363d;--accent:#5cc3a6;--accent-soft:#1d3530;--red:#ee8b79;--red-soft:#3a221d;--warn:#e2a64a;--warn-soft:#382c17;--blue:#86b4ee;--blue-soft:#1d2a3a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 -apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif}
+.wrap{max-width:1000px;margin:0 auto;padding:24px 16px 80px}
+h1{font-size:27px;margin:6px 0}h2{font-size:21px;margin:40px 0 6px}.sub{color:var(--muted);margin:0 0 14px}
+nav{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line);margin:18px -16px 0;padding:10px 16px;display:flex;gap:6px;overflow-x:auto;white-space:nowrap}
+nav a{color:var(--ink);text-decoration:none;font-size:14px;padding:6px 10px;border-radius:999px;border:1px solid var(--line);background:var(--card)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:12px 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}.stat b{display:block;font-size:22px;color:var(--accent)}.stat span{color:var(--muted);font-size:14px}
+.tbl{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:12px;margin:10px 0}
+table{width:100%;border-collapse:collapse;font-size:14.5px;min-width:720px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--muted);font-size:13px;font-weight:600;background:var(--bg)}
+.ok{color:var(--accent);font-weight:600}.no{color:var(--red);font-weight:600}.mid{color:var(--warn);font-weight:600}
+.pill{display:inline-block;font-size:12px;padding:1px 8px;border-radius:999px;background:var(--blue-soft);color:var(--blue);margin:1px 2px 1px 0;white-space:nowrap}
+.note{border-left:4px solid var(--accent);background:var(--accent-soft);padding:10px 14px;border-radius:0 8px 8px 0;margin:12px 0}
+.caution{border-left:4px solid var(--red);background:var(--red-soft);padding:10px 14px;border-radius:0 8px 8px 0;margin:12px 0}
+.top{border:2px solid var(--accent)}
+.top h3{margin:0 0 4px;font-size:17px}.top .rank{color:var(--accent);font-weight:700;margin-right:6px}
+a{color:var(--blue);word-break:break-all}
+ol.todo li{margin:6px 0}
+code{font-family:ui-monospace,Menlo,monospace;font-size:.88em;background:var(--bg);border:1px solid var(--line);padding:1px 5px;border-radius:5px}
+.themebtn{float:right;font-size:13px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:4px 10px;cursor:pointer}
+</style>
+</head>
+<body><div class="wrap">
+<button class="themebtn" id="t" type="button">밝게/어둡게</button>
+<p class="sub" style="margin:0">GlowPass 4팀 · 2026-09-29 조사 (국내 28곳 + 해외 27곳 확인)</p>
+<h1>외국인 환자용 공식 데이터 — HF·GitHub·공공데이터포털 말고</h1>
+<p class="sub">외국인 대상 데이터는 공공데이터포털보다 <b>메디컬코리아(한국보건산업진흥원)</b>, <b>서울시·강남구</b>, 해외 규제기관(<b>FDA·NHS·EMA</b>)에 모여 있습니다. 이 페이지는 "무엇을 어디서 받고, RAG에 넣어도 되는지"를 한 번에 봅니다.</p>
+
+<nav><a href="#top5">TOP 5</a><a href="#kr">국내 공식</a><a href="#intl">해외 공식</a><a href="#term">용어·다국어</a><a href="#aihub">AI Hub</a><a href="#license">넣어도 되나</a><a href="#todo">다음 할 일</a></nav>
+
+<div class="grid" style="margin-top:18px">
+  <div class="stat"><b>피부과 1위</b><span>2023년 외국인환자 진료과별: 피부과 239,060명 · 성형외과 114,074 · 내과 90,955 (메디컬코리아 통계, 직접 확인)</span></div>
+  <div class="stat"><b>~4,160곳</b><span>메디컬코리아 등록 외국인환자 유치기관 (영문명·연락처)</span></div>
+  <div class="stat"><b>11개 언어</b><span>국립국어원 한국어기초사전 API — 아랍·몽골·베트남·태국어까지</span></div>
+  <div class="stat"><b>0개</b><span>러·아랍·베트남·태국·몽골어로 된, 재사용이 허용된 공식 환자 설명서</span></div>
+</div>
+
+<h2 id="top5">바로 쓸 TOP 5</h2>
+<p class="sub">공식 자료 + 조건이 분명함 + 우리 기능에 바로 연결되는 것</p>
+
+<div class="card top"><h3><span class="rank">1</span>메디컬코리아 외국인환자 유치 통계 + 병원 목록</h3>
+<p><a href="https://www.medicalkorea.or.kr/korp/intro/mainStat.do" target="_blank" rel="noopener">medicalkorea.or.kr/korp/intro/mainStat.do</a> · <a href="https://www.medicalkorea.or.kr/en/registeredhospitals" target="_blank" rel="noopener">등록기관 목록(영문)</a> · <a href="https://www.medicalkorea.or.kr/en/mostvisitedmedicalinstitutions" target="_blank" rel="noopener">다빈도 기관(통역 언어 15개 필터)</a></p>
+<p>국적·지역·진료과·의료기관별 통계를 2009~2023년 제공하고 "자료 전체 다운로드" 버튼이 있습니다. <b>피부과가 외국인 진료과 1위</b>라서 기획서 "문제 정의"의 근거로 씁니다. 국적 순위로 지원 언어 우선순위를 정합니다(일본·중국·미국·대만·베트남·몽골·러시아…).</p>
+<p><span class="pill">기획 근거</span><span class="pill">FR-04 언어 선택</span><span class="pill">FR-07 병원 연계</span></p></div>
+
+<div class="card top"><h3><span class="rank">2</span>서울시 외국어 가능 약국 정보 (서울 열린데이터광장)</h3>
+<p><a href="https://data.seoul.go.kr/dataList/datasetList.do?searchValue=%EC%99%B8%EA%B5%AD%EC%96%B4%20%EA%B0%80%EB%8A%A5%20%EC%95%BD%EA%B5%AD" target="_blank" rel="noopener">data.seoul.go.kr 검색 "외국어 가능 약국"</a></p>
+<p>25개 자치구 약국의 이름·주소·전화·<b>가능 언어</b>를 SHEET/OpenAPI로 제공합니다(2026-02 갱신). 처방을 받은 뒤 "가까운 외국어 약국"을 안내할 수 있습니다. 같은 사이트에 <b>서울시 외국인환자 국적별 통계</b>, <b>의료관광 허가 의료기관(영·중)</b>도 있습니다.</p>
+<p><span class="pill">FR-07 병원·약국 연계</span><span class="pill">FR-03 복약 가이드 뒤 안내</span> · 공공누리 유형은 데이터셋마다 확인</p></div>
+
+<div class="card top"><h3><span class="rank">3</span>FDA 필러 경고 + openFDA + DailyMed</h3>
+<p><a href="https://www.fda.gov/medical-devices/aesthetic-cosmetic-devices/dermal-fillers-soft-tissue-fillers" target="_blank" rel="noopener">FDA Dermal Fillers</a> · <a href="https://open.fda.gov/" target="_blank" rel="noopener">open.fda.gov</a> · <a href="https://dailymed.nlm.nih.gov/dailymed/app-support-web-services.cfm" target="_blank" rel="noopener">DailyMed API</a></p>
+<p>FDA 본문은 <b>퍼블릭 도메인</b>이고 openFDA는 <b>CC0</b>입니다. 필러 혈관 폐색 경고 증상(심한 통증, 시야 변화, 피부가 희거나 파래짐, 뇌졸중 증상)이 정리돼 있어 <b>세이프가드 응급 키워드의 근거</b>로 가장 좋습니다. 약 라벨은 영어 설명 원문으로 씁니다.</p>
+<p><span class="pill">FR-06 세이프가드</span><span class="pill">FR-02 RAG</span></p></div>
+
+<div class="card top"><h3><span class="rank">4</span>NHS 약·시술 안내 (영국, OGL v3.0)</h3>
+<p><a href="https://www.nhs.uk/medicines/" target="_blank" rel="noopener">nhs.uk/medicines</a> (예: <a href="https://www.nhs.uk/medicines/isotretinoin-capsules/" target="_blank" rel="noopener">isotretinoin</a>) · <a href="https://www.nhs.uk/tests-and-treatments/cosmetic-procedures/" target="_blank" rel="noopener">cosmetic procedures</a> · <a href="https://digital.nhs.uk/developer/api-catalogue/nhs-website-content" target="_blank" rel="noopener">Content API</a></p>
+<p>환자용 쉬운 영어로, 부작용과 "이럴 땐 바로 병원에"가 약마다 정리돼 있습니다. OGL은 <b>수정·재사용이 허용</b>됩니다. 대신 출처 문구를 붙여야 하고, 수정했으면 NHS 이름을 내세우면 안 됩니다. <b>"해외 시술(Cosmetic surgery abroad)" 페이지</b>는 외국인 환자 관점 그대로입니다.</p>
+<p><span class="pill">FR-02 RAG</span><span class="pill">FR-03 가이드</span><span class="pill">FR-06</span></p></div>
+
+<div class="card top"><h3><span class="rank">5</span>국립국어원 한국어기초사전 오픈API</h3>
+<p><a href="https://krdict.korean.go.kr/openApi/openApiInfo" target="_blank" rel="noopener">krdict.korean.go.kr/openApi</a></p>
+<p>기초 어휘를 <b>영·일·중·러·아랍·몽골·베트남·태국·인니·프·스페인어</b>로 번역해 줍니다. 우리 타깃 언어를 거의 다 덮는 유일한 공공 다국어 API입니다. 무료이고 인증키가 필요하며 하루 5만 건까지 쓸 수 있습니다. 전문 의학용어는 약하니 "세안, 자외선, 붓기, 연고" 같은 <b>생활관리 단어</b>에 씁니다.</p>
+<p><span class="pill">FR-04 다국어 챗봇</span><span class="pill">번역 용어 고정</span></p></div>
+
+<h2 id="kr">국내 공식 자료 (공공데이터포털 밖)</h2>
+<p class="sub">✅ 직접 열어 확인 · ◐ 일부 확인 · ⛔ 제 쪽에서 막힘(직접 확인 필요)</p>
+<div class="tbl"><table>
+<thead><tr><th>자료</th><th>기관</th><th>내용 · 형식 · 언어</th><th>조건</th><th>쓰는 곳</th><th>확인</th></tr></thead><tbody>
+<tr><td><a href="https://www.medicalkorea.or.kr/korp/intro/mainStat.do" target="_blank" rel="noopener">외국인환자 유치실적 통계</a></td><td>KHIDI 메디컬코리아</td><td>국적 21 × 진료과 24 × 시도 17, 2009~2023 · 다운로드 · 한국어</td><td class="ok">공개</td><td>기획 근거·언어 순위</td><td>✅</td></tr>
+<tr><td><a href="https://www.medicalkorea.or.kr/en/registeredhospitals" target="_blank" rel="noopener">등록 유치의료기관 목록</a></td><td>KHIDI</td><td>약 4,160곳 영문명·주소·연락처·웹 · 웹 목록 · 영어</td><td class="mid">공개(수집은 이용 허락 확인)</td><td>FR-07 영문 병원명</td><td>✅</td></tr>
+<tr><td><a href="https://www.medicalkorea.or.kr/en/kahfAccreditedHospitals" target="_blank" rel="noopener">KAHF 평가인증 기관</a></td><td>KHIDI</td><td>인증기관 24곳, 통역 언어 · 인증기준(환자권리·투약·감염관리)</td><td class="ok">공개</td><td>FR-07 인증 배지 · FR-06 기준</td><td>✅</td></tr>
+<tr><td><a href="https://www.medicalkorea.or.kr/en/mostvisitedmedicalinstitutions" target="_blank" rel="noopener">외국인 다빈도 방문 기관</a></td><td>KHIDI</td><td>144곳 · 진료분야 20 · <b>통역 언어 15개 필터</b>(아랍·몽골·베트남 포함)</td><td class="ok">공개</td><td>FR-07 언어별 병원</td><td>✅</td></tr>
+<tr><td><a href="https://www.medicalkorea.or.kr/en/brochure" target="_blank" rel="noopener">외국인환자 의료분쟁 해결 가이드 외 브로셔</a></td><td>KHIDI</td><td>PDF 약 20종 · 영어</td><td class="mid">공개(재배포 조건 확인)</td><td>FR-06 분쟁 안내 · FR-02</td><td>◐</td></tr>
+<tr><td>메디컬코리아 다국어 포털 (<a href="https://www.medicalkorea.or.kr/en" target="_blank" rel="noopener">en</a>·cn·jp·ru)</td><td>KHIDI</td><td>의료비자(C-3-3), 이용 안내, Q&A · 4개 언어</td><td class="ok">공개</td><td>FR-04 FAQ · 용어 대역</td><td>✅</td></tr>
+<tr><td>메디컬코리아 콜센터</td><td>KHIDI</td><td>+82-2-1577-7129 · 공항 +82-32-743-3506</td><td class="ok">공개</td><td>FR-06 에스컬레이션 연락처</td><td>✅</td></tr>
+<tr><td><a href="https://www.k-medi.or.kr" target="_blank" rel="noopener">한국의료분쟁조정중재원</a></td><td>공공기관</td><td>상담 1670-2545, 조정·중재 · 영·중 지원 언급</td><td class="ok">공개</td><td>FR-06 "부작용·분쟁 공식 창구"</td><td>◐</td></tr>
+<tr><td><a href="https://datalab.visitkorea.or.kr/datalab/portal/theme/getMedicalTourSearch.do" target="_blank" rel="noopener">한국관광데이터랩 의료관광 현황</a></td><td>한국관광공사</td><td>국가별 유입, <b>카드 기반 진료과별 소비액</b>, 구글 검색 관심도 · Excel/CSV</td><td class="mid">다운로드 전 이용목적 설문</td><td>기획·발표 근거</td><td>✅</td></tr>
+<tr><td><a href="https://data.seoul.go.kr" target="_blank" rel="noopener">서울시 외국어 가능 약국</a></td><td>서울시</td><td>25개 구 · 가능 언어 · OpenAPI/SHEET</td><td class="ok">공공누리</td><td><b>FR-07</b></td><td>✅</td></tr>
+<tr><td>서울시 외국인환자 국적별 통계</td><td>서울시</td><td>2026-09 갱신 통계표</td><td class="ok">공개</td><td>기획 근거(서울)</td><td>✅</td></tr>
+<tr><td>서울시 의료관광허가 의료기관(영·중·한)</td><td>서울시</td><td>기관명·주소·대상국가 · 2015 기준(오래됨)</td><td class="ok">공개</td><td>FR-07 다국어 기관명 참고</td><td>✅</td></tr>
+<tr><td><a href="https://medical.visitseoul.net/en" target="_blank" rel="noopener">서울 의료관광 포털</a></td><td>서울관광재단</td><td>협력 병원·통역·픽업 · 영·일·중·러</td><td class="ok">공개</td><td>FR-07 · FR-04 안내 링크</td><td>✅</td></tr>
+<tr><td><a href="https://medicaltour.gangnam.go.kr" target="_blank" rel="noopener">강남메디컬투어센터</a></td><td>강남구</td><td>현장점검 거친 협력기관 진료과별, 통역, 1661-2230 · 영·중·일·러</td><td class="ok">공개</td><td><b>FR-07</b> 기존 강남 DB와 교차 검증</td><td>✅</td></tr>
+<tr><td><a href="https://data.mfds.go.kr" target="_blank" rel="noopener">식의약 데이터포털</a></td><td>식약처</td><td>허가정보·낱알식별·의료기기 · XML/JSON API</td><td class="mid">API 키</td><td>FR-02 · FR-05 약명 매칭</td><td>✅</td></tr>
+<tr><td>의약품 제품 허가정보 API (<b>영문 제품명</b> 필드)</td><td>식약처</td><td>ITEM_ENG_NAME 등 영문 필드가 있는 것으로 알려짐</td><td class="mid">활용신청</td><td><b>FR-03·04 약 이름 영문 병기</b></td><td>⛔</td></tr>
+<tr><td>의료기기 UDI 포털 (필러·레이저 허가)</td><td>식약처</td><td>시술 제품 허가 여부</td><td>—</td><td>FR-01 시술명 ↔ 허가제품</td><td>⛔</td></tr>
+<tr><td><a href="https://opendata.hira.or.kr" target="_blank" rel="noopener">보건의료빅데이터개방시스템</a></td><td>심평원</td><td>질병 소분류(피부 L코드) 통계, 약 사용 통계</td><td class="mid">일부 승인</td><td>기획 · FR-02</td><td>⛔</td></tr>
+<tr><td><a href="https://www.koicd.kr" target="_blank" rel="noopener">KCD 한국표준질병사인분류</a></td><td>통계청</td><td>질병코드, 엑셀 · 한영 병기로 알려짐</td><td class="ok">공개</td><td>FR-01 진단명 코드 → 영문명</td><td>◐</td></tr>
+<tr><td>대한의사협회 의학용어집</td><td>의협</td><td>한영 의학용어</td><td class="ok">공개(민간)</td><td>FR-04 용어</td><td>⛔</td></tr>
+<tr><td>국가법령정보센터 영문 법령</td><td>법제처</td><td>의료법·의료해외진출법 영문</td><td class="ok">공개</td><td>면책 고지 근거</td><td>⛔</td></tr>
+</tbody></table></div>
+
+<h2 id="intl">해외 공식 자료 (규제기관·정부·학회)</h2>
+<div class="tbl"><table>
+<thead><tr><th>자료</th><th>언어</th><th>내용</th><th>RAG에 넣어도 되나</th><th>쓰는 곳</th></tr></thead><tbody>
+<tr><td><a href="https://www.ema.europa.eu/en/medicines" target="_blank" rel="noopener">EMA EPAR 환자용 설명서</a></td><td>EU 25개 (스페인어 포함, 러·아랍·중 없음)</td><td>약별 SmPC + 환자 설명서 PDF, 목록 xlsx 다운로드</td><td class="ok">✅ 출처 표기 시 상업 이용도 허용</td><td>FR-02 · FR-04(ES)</td></tr>
+<tr><td><a href="https://open.fda.gov/terms/" target="_blank" rel="noopener">openFDA</a></td><td>EN</td><td>라벨·이상사례 API</td><td class="ok">✅ CC0</td><td>FR-02 · FR-06</td></tr>
+<tr><td><a href="https://www.fda.gov/medical-devices/aesthetic-cosmetic-devices/dermal-fillers-soft-tissue-fillers" target="_blank" rel="noopener">FDA 필러 페이지</a></td><td>EN</td><td>혈관 폐색 경고 증상 · 신고 방법</td><td class="ok">✅ 퍼블릭 도메인</td><td><b>FR-06 레드플래그</b></td></tr>
+<tr><td><a href="https://dailymed.nlm.nih.gov" target="_blank" rel="noopener">DailyMed</a></td><td>EN</td><td>미국 라벨 전체 REST/ZIP</td><td class="mid">◐ 공공 라벨, NLM 정책 확인</td><td>FR-02</td></tr>
+<tr><td><a href="https://www.nhs.uk/medicines/" target="_blank" rel="noopener">NHS Medicines A–Z · 시술 안내</a></td><td>EN</td><td>부작용·연락 시점·해외 시술</td><td class="ok">✅ OGL v3.0 (출처 문구)</td><td>FR-02 · 03 · 06</td></tr>
+<tr><td><a href="https://www.cdc.gov/other/agencymaterials.html" target="_blank" rel="noopener">CDC</a></td><td>EN(+일부 다국어)</td><td>감염·상처관리</td><td class="ok">✅ 퍼블릭 도메인, <b>내용 수정 금지</b></td><td>FR-03 감염 주의</td></tr>
+<tr><td><a href="https://medlineplus.gov/about/using/usingcontent/" target="_blank" rel="noopener">MedlinePlus 건강주제</a></td><td>EN · ES</td><td>건강주제 요약</td><td class="mid">◐ 주제 요약만 OK. <b>약품정보·A.D.A.M.은 금지</b></td><td>FR-02 일부</td></tr>
+<tr><td><a href="https://www.sfda.gov.sa/en/drugs-list" target="_blank" rel="noopener">사우디 SFDA 의약품 목록</a></td><td>EN · AR</td><td>허가 의약품 목록</td><td class="mid">⚠ 약관 미확인</td><td>아랍어 약 이름</td></tr>
+<tr><td><a href="https://dichvucong.dav.gov.vn/congbothuoc/index" target="_blank" rel="noopener">베트남 DAV 허가 공시</a></td><td>VI</td><td>등록번호·성분·제형</td><td class="mid">⚠ 미명시</td><td>베트남어 약 이름</td></tr>
+<tr><td>대만 TFDA · 중국 NMPA · 러시아 GRLS · 태국 FDA</td><td>ZH · RU · TH</td><td>각국 허가 DB</td><td class="mid">⛔ 차단·미확인</td><td>현지 약 이름 매핑</td></tr>
+<tr><td>AAD · ASDS · DermNet · 일본 PMDA 환자가이드</td><td>EN · JA</td><td>시술 후 관리(냉찜질, 운동 금지, 7~14일 부기 등)</td><td class="no">✗ AI·DB 수록 금지 또는 허가 필요</td><td><b>링크만</b></td></tr>
+<tr><td>영국피부과학회 BAD 환자 설명서</td><td>EN</td><td>레이저·이소트레티노인 등</td><td class="mid">⛔ 직접 확인</td><td>FR-03 후보</td></tr>
+<tr><td><a href="https://www.healthtranslations.vic.gov.au" target="_blank" rel="noopener">Health Translations (호주 빅토리아)</a> · HealthInfoTranslations · EthnoMed · NSW MHCS</td><td>AR·ZH·RU·VI 등 다수</td><td>다국어 환자 설명서 모음</td><td class="mid">⚠ 자료마다 다름, NSW는 비상업·무수정만</td><td>번역 표현 참고</td></tr>
+</tbody></table></div>
+
+<h2 id="term">용어·다국어 표준</h2>
+<div class="tbl"><table>
+<thead><tr><th>표준</th><th>언어</th><th>무엇에</th><th>조건</th></tr></thead><tbody>
+<tr><td><a href="https://standardterms.edqm.eu" target="_blank" rel="noopener">EDQM Standard Terms</a></td><td>35개 (ZH·RU·ES 포함)</td><td><b>제형·투여경로</b> 번역 고정 (크림, 연고, 경구, 외용…)</td><td class="mid">무료, 계정 등록, 약관 세부 확인</td></tr>
+<tr><td><a href="https://icd.who.int/docs/icd-api/license/" target="_blank" rel="noopener">WHO ICD-11</a></td><td>14개 (AR·ZH·RU·ES)</td><td>피부 질환명 정규화</td><td class="ok">CC BY-ND — 라벨은 원문 그대로</td></tr>
+<tr><td><a href="https://www.who.int/teams/health-product-and-policy-standards/inn" target="_blank" rel="noopener">WHO INN</a></td><td>EN·FR·ES·AR·ZH·RU</td><td>성분명 국제 표기</td><td class="mid">비상업 OK, 상업은 허가</td></tr>
+<tr><td>SNOMED CT</td><td>—</td><td>진료기록 코드</td><td class="ok">대한민국 회원국 → 국내 무료로 보임(창구 확인)</td></tr>
+<tr><td>MeSH / UMLS</td><td>EN(+번역판)</td><td>의학 용어 축</td><td class="mid">MeSH 공공, UMLS 무료 라이선스(소스별 제한)</td></tr>
+<tr><td>WHO ATC/DDD</td><td>EN</td><td>약효 분류</td><td class="no">상업 배포 금지</td></tr>
+</tbody></table></div>
+
+<h2 id="aihub">AI Hub — 있지만 쓰기 까다로움</h2>
+<div class="card">
+<p><b>공통 조건</b>: 내국인만 신청 · 비상업 R&D · 출처 표기 · 제3자 제공 금지 · <b>국외 반출은 별도 합의</b> · 헬스케어 분류는 <b>IRB + 안심존</b>.</p>
+<div class="tbl" style="border:none"><table>
+<thead><tr><th>데이터 (번호)</th><th>내용</th><th>쓰는 곳</th><th>현실성</th></tr></thead><tbody>
+<tr><td>전문분야 한영 말뭉치 (111)</td><td>150만 문장 중 <b>의료·보건 25만</b></td><td>FR-04 영어 번역 평가·용어집</td><td class="ok">신청하면 가능성 높음</td></tr>
+<tr><td>생성형AI 다국어 일상대화 통번역 (71686)</td><td>한↔스페인·프랑스·러시아, <b>병원 상황 포함</b></td><td>FR-04 러시아어</td><td class="ok">가능성 있음</td></tr>
+<tr><td>초거대 AI 헬스케어 질의응답 (71762)</td><td>질문 143만, 피부과 포함</td><td>FR-02 평가셋</td><td class="no">IRB·안심존</td></tr>
+<tr><td>스킨케어 성분-효능 (71886)</td><td>Q-CoT-A 1만</td><td>FR-03</td><td class="no">IRB·안심존</td></tr>
+<tr><td>방송 한-아시아어 (71591) · 농산어촌 한-외국어 (71865)</td><td>몽골어 / 베트남·태국어 (의료 아님)</td><td>FR-04 일반 번역</td><td class="mid">가능, 도메인 약함</td></tr>
+</tbody></table></div>
+<div class="caution">해외 LLM API로 AI Hub 데이터를 보내는 것이 "국외 반출"인지는 NIA에 확인하세요. 평가·용어 추출만 로컬에서 하는 편이 안전합니다.</div>
+</div>
+
+<h2 id="license">RAG에 넣어도 되나 — 한 장 요약</h2>
+<div class="grid">
+<div class="card"><p class="ok">넣어도 됨 (출처 표기)</p><p>FDA · openFDA · EMA · NHS(OGL) · CDC(수정 금지) · MedlinePlus 건강주제 · 식약처 공공데이터 · 서울시 공공누리</p></div>
+<div class="card"><p class="mid">조건 확인 후</p><p>DailyMed · EDQM · ICD-11(원문 그대로) · WHO INN · 메디컬코리아 웹 목록 · SFDA · 베트남 DAV · AI Hub</p></div>
+<div class="card"><p class="no">링크만 (넣지 말 것)</p><p>AAD · ASDS · DermNet · PMDA 환자가이드 · MedlinePlus 약품정보 · NSW MHCS · ATC/DDD(상업)</p></div>
+</div>
+<div class="note"><b>언어 공백을 메우는 현실적인 방법</b> — 러·아랍·베트남·태국·몽골어로 된 <b>공식이면서 재사용 가능한</b> 환자 설명서는 찾지 못했습니다. 그래서 ① 영어 공식 원문(FDA·NHS·EMA)을 근거로 두고 ② LLM이 사용자 언어로 번역합니다. ③ 약 이름·제형·질환명은 INN·EDQM·ICD-11·국립국어원 사전으로 <b>고정</b>하고 ④ 답에 원문 출처 링크를 붙입니다. NFR-02 "출처 표시율 100%"와도 맞습니다. 청크마다 <code>출처 기관 · URL · 수집일 · 라이선스</code>를 메타데이터로 저장하세요.</div>
+
+<h2 id="todo">다음 할 일 (한스 · 팀)</h2>
+<div class="card"><ol class="todo">
+<li><b>메디컬코리아 통계 "자료 전체 다운로드"</b> → 진료과별·국적별 엑셀을 <code>data/external/medicalkorea/</code>에 넣기 (기획서 근거)</li>
+<li><b>서울 열린데이터광장 "외국어 가능 약국"</b> OpenAPI 신청 → FR-07 약국 안내</li>
+<li><b>식약처 허가정보 API에 영문 제품명 필드가 있는지</b> 명세서 확인 → 약 이름 영문 병기의 핵심</li>
+<li><b>FDA 필러 경고 + NHS 약 페이지</b>에서 피부과 약 10개(이소트레티노인·독시사이클린·트레티노인·하이드로퀴논·스테로이드 연고 등)를 골라 RAG 시범 색인 — 조태희님(FR-02)과 공유</li>
+<li>세이프가드 응급 키워드 표를 FDA 근거로 만들기 — 안애영님(FR-06)과 공유</li>
+<li>국립국어원 기초사전 API 키 신청 → 생활관리 단어 11개 언어 대역표</li>
+<li>AI Hub 111번(한영 의료 25만 문장) 신청 검토 — 국외 반출 여부 먼저 확인</li>
+</ol></div>
+
+<p style="color:var(--muted);font-size:13px;margin-top:36px">조사 2026-09-29. 메디컬코리아 통계 수치는 직접 확인했습니다. 다른 항목의 라이선스는 각 사이트의 약관 페이지 기준입니다. ⛔ 표시는 제 작업 환경에서 접속이 막혀 확인하지 못한 곳이니 브라우저로 직접 열어 보세요. 법적 판단이 필요하면 멘토·학원에 확인하세요.</p>
+</div>
+<script>
+(function(){var K='glowpass-data-theme',s=null;try{s=localStorage.getItem(K)}catch(e){}if(s)document.documentElement.setAttribute('data-theme',s);
+document.getElementById('t').addEventListener('click',function(){var c=document.documentElement.getAttribute('data-theme');var d=c?c==='dark':matchMedia('(prefers-color-scheme: dark)').matches;var n=d?'light':'dark';document.documentElement.setAttribute('data-theme',n);try{localStorage.setItem(K,n)}catch(e){}});})();
+</script>
+</body></html>

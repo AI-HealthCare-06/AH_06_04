@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>피부과 데이터 점검</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: 한 줄 결론 → 질문별 답(판정 칩) → 표 → 다음 할 일. 좁은 단일 칼럼, 표만 가로 스크롤 */
+:root{
+  --bg:#f5f6f7; --surface:#ffffff; --ink:#1b2530; --muted:#5a6673; --line:#dde2e7;
+  --accent:#2f5d7c; --accent-soft:#e3edf4;
+  --good:#2d7a4b; --good-soft:#e2f2e8; --warn:#9a6300; --warn-soft:#fbf0db; --bad:#a3392b; --bad-soft:#f8e3df;
+  --f-body:"IBM Plex Sans KR","Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141a20; --surface:#1b232b; --ink:#e6ebef; --muted:#9aa7b3; --line:#2d3842;
+  --accent:#8fbbdb; --accent-soft:#1f3140;
+  --good:#7fcf9d; --good-soft:#1c3226; --warn:#e7b35c; --warn-soft:#352a16; --bad:#f09a8c; --bad-soft:#3a2320; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141a20; --surface:#1b232b; --ink:#e6ebef; --muted:#9aa7b3; --line:#2d3842;
+  --accent:#8fbbdb; --accent-soft:#1f3140;
+  --good:#7fcf9d; --good-soft:#1c3226; --warn:#e7b35c; --warn-soft:#352a16; --bad:#f09a8c; --bad-soft:#3a2320; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:16px/1.7 var(--f-body)}
+.wrap{max-width:900px;margin:0 auto;padding-inline:16px;padding-block:28px 72px}
+header .eyebrow{font:500 12px/1 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font-size:28px;line-height:1.3;margin:10px 0 8px;text-wrap:balance}
+.lede{color:var(--muted);max-width:62ch;margin:0}
+.verdict{margin-top:20px;background:var(--accent-soft);border-radius:10px;padding:16px 18px}
+.verdict p{margin:0}
+nav{position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);border-bottom:1px solid var(--line);margin:24px -16px 0;padding:10px 16px;display:flex;gap:6px;overflow-x:auto;white-space:nowrap;z-index:3}
+nav a{font-size:13.5px;color:var(--ink);text-decoration:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 11px}
+nav a:hover,nav a:focus-visible{border-color:var(--accent);outline:none}
+section{margin-top:44px}
+h2{font-size:21px;margin:0 0 4px;text-wrap:balance}
+.q{font:500 12px/1.4 var(--f-mono);color:var(--accent);letter-spacing:.04em;margin:0 0 6px}
+.sub{color:var(--muted);margin:0 0 14px}
+.answer{display:flex;gap:12px;align-items:flex-start;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin:12px 0}
+.answer > div{min-width:0}
+.chip{flex:none;font:500 12px/1 var(--f-mono);padding:6px 9px;border-radius:6px;margin-top:3px}
+.c-good{background:var(--good-soft);color:var(--good)}.c-warn{background:var(--warn-soft);color:var(--warn)}.c-bad{background:var(--bad-soft);color:var(--bad)}
+.answer p{margin:0 0 6px}.answer p:last-child{margin:0}
+.tbl{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:10px;margin:12px 0}
+table{border-collapse:collapse;width:100%;min-width:680px;font-size:14.5px}
+th,td{text-align:left;vertical-align:top;padding:9px 11px;border-bottom:1px solid var(--line)}
+tr:last-child td{border-bottom:none}
+th{font:500 12px/1.3 var(--f-mono);letter-spacing:.03em;color:var(--muted);background:var(--bg)}
+td.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.g{color:var(--good);font-weight:500}.w{color:var(--warn);font-weight:500}.b{color:var(--bad);font-weight:500}
+code{font:13px var(--f-mono);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:1px 5px;word-break:break-all}
+pre{font:13px/1.55 var(--f-mono);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow-x:auto;margin:12px 0}
+ul,ol{padding-left:22px;margin:8px 0}li{margin:4px 0}
+a{color:var(--accent)}
+.flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:12px 0}
+.flow div{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:14.5px;min-width:0}
+.flow b{display:block;font:500 12px/1.4 var(--f-mono);color:var(--accent);margin-bottom:4px}
+footer{margin-top:48px;color:var(--muted);font-size:13px}
+</style>
+
+</head><body>
+<div class="wrap">
+<header>
+  <div class="eyebrow">GlowPass 4팀 · 2026-09-29 실측</div>
+  <h1>우리가 가진 데이터로 피부과 진료를 설명할 수 있나</h1>
+  <p class="lede">질문하신 여섯 가지를 폴더의 CSV를 직접 열어 세고, 사이트를 직접 열어 확인했습니다.</p>
+  <div class="verdict"><p><b>결론</b>: "외국인이 어느 피부과에서 무슨 시술을 받았는지"를 담은 공식 데이터는 <b>어디에도 없습니다.</b> 공식 데이터는 <b>병원 찾기</b>(어디, 무슨 언어)와 <b>약 안전</b>(금기, 영문 성분명)까지만 줍니다. 진료기록과 시술 내용은 가짜 데이터로 만들고, 시술 후 관리 문서는 팀이 직접 써서 채워야 합니다.</p></div>
+</header>
+
+<nav>
+  <a href="#where">데이터 위치</a><a href="#mk">메디컬코리아</a><a href="#gangnam">강남 DB</a><a href="#ours">우리 데이터 쓸모</a><a href="#krdict">국립국어원 API</a><a href="#aihub">AI Hub 25만</a><a href="#training">트레이닝 점검</a><a href="#file">파일 안 열림</a><a href="#next">다음 할 일</a>
+</nav>
+
+<section id="where">
+  <p class="q">질문 · 데이터를 어디에 두었나</p>
+  <h2>폴더 지도</h2>
+  <p class="sub">전부 <code>05_최종 결과물 프로젝트/</code> 안에 있습니다.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>폴더</th><th>안에 든 것</th><th>크기</th></tr></thead>
+    <tbody>
+      <tr><td><code>공공데이터포털_CSV/1_강남구_의료관광DB</code></td><td>강남구 의료관광 DB 6개 언어 (한·영·중·일·러·아랍)</td><td class="num">364 KB</td></tr>
+      <tr><td><code>공공데이터포털_CSV/2_식약처_e약은요</code></td><td>일반의약품 설명 4,774건</td><td class="num">11 MB</td></tr>
+      <tr><td><code>공공데이터포털_CSV/3_식약처_DUR</code></td><td>DUR 8종 + 품목정보 (병용금기 796,182행)</td><td class="num">631 MB</td></tr>
+      <tr><td><code>공공데이터포털_CSV/4_심평원_병원정보</code></td><td>전국·서울 피부과, 강남구 전체 병원</td><td class="num">8 MB</td></tr>
+      <tr><td><code>공공데이터포털_CSV/5_외국어진료_의료기관</code></td><td>외국인환자 유치기관 6,921 · 메디컬코리아 자주 찾는 병원 · 강남·강동·용산 외국어 가능 기관</td><td class="num">796 KB</td></tr>
+      <tr><td><code>공공데이터포털_CSV/6_식약처_낱알식별</code></td><td>알약 모양·사진 25,449건</td><td class="num">11 MB</td></tr>
+      <tr><td><code>data/external/MedicationQA</code></td><td>영어 약 질문 690개 (9/29 받음)</td><td class="num">164 KB</td></tr>
+      <tr><td><code>data/external/MedQuAD</code></td><td>NIH 의료 QA 11,274 파일 (9/29 받음)</td><td class="num">61 MB</td></tr>
+      <tr><td><code>트레이닝/결과/v08~v14/code/out/</code></td><td>트레이닝 중 만든 적재·검색 결과 (원본 아님)</td><td class="num">—</td></tr>
+    </tbody>
+  </table></div>
+  <p class="sub">드라이브 "4조 자료폴더"에도 같은 이름의 폴더(공공데이터포털_CSV)가 있습니다. 안에 든 파일은 이번에 확인하지 않았습니다.</p>
+</section>
+
+<section id="mk">
+  <p class="q">질문 · 메디컬코리아 통계가 피부과를 잘 정리했나</p>
+  <h2>메디컬코리아(한국보건산업진흥원)</h2>
+  <div class="answer"><span class="chip c-warn">부분적</span><div>
+    <p><b>인원수만 있습니다.</b> 통계 페이지를 직접 열어 보니 표가 국적별, 지역별, 진료과별, 의료기관 종류별로 <b>따로따로</b> 있습니다. "일본인 중 피부과 몇 명"처럼 두 기준을 교차한 표는 화면에 없고, 시술 종류·처방·재방문 같은 내용도 없습니다.</p>
+    <p>쓸모는 분명합니다. 2023년 외국인환자 진료과별 순위가 <b>피부과 239,060명</b>으로 1위이고, 성형외과 114,074명, 내과 90,955명이 뒤를 잇습니다. 기획서 "왜 피부과인가"의 근거로 씁니다. 국적 순위로 지원할 언어의 우선순위도 정합니다.</p>
+  </div></div>
+  <div class="answer"><span class="chip c-good">쓸 만함</span><div>
+    <p><b>이미 받아 둔 "외국인 자주 찾는 병원" 파일</b>(<code>5_외국어진료_의료기관/메디컬코리아_…주요진료과목.csv</code>): 2,102행이고 영어·일본어·중국어·러시아어 4개 언어입니다. 피부 관련 진료과목(Dermatology, Skin care 등)이 적힌 행이 <b>83행</b>, 병원으로는 <b>42곳</b>입니다. 병원마다 진료과목 이름이 4개 언어로 있어서 FR-07 병원 안내와 번역 용어로 씁니다.</p>
+  </div></div>
+</section>
+
+<section id="gangnam">
+  <p class="q">질문 · 강남구 DB는 외국어 되는 병원 목록뿐인가</p>
+  <h2>강남구 의료관광 DB</h2>
+  <div class="answer"><span class="chip c-bad">맞습니다</span><div>
+    <p>한국어·영어·러시아어판은 <b>기관명과 분류 2칸</b>, 중국어·일본어판은 <b>기관명 1칸</b>뿐입니다. 한국어판 분류는 성형외과 148, 치과 63, <b>피부미용 45</b>, 한방 23 순이고, 무슨 시술을 하는지는 없습니다.</p>
+    <p>아랍어판만 35칸(전문분야, 의료장비, 의료진, 상담가능언어 등)입니다. 그런데 <b>전문분야 228건 중 166건, 의료장비 127건 중 73건이 <code>?</code>로 깨져 있습니다.</b> 멀쩡한 칸은 <b>상담가능언어</b>(293건 모두 정상, 예: <code>ko,en,ch,ja</code>)와 일부 영어로 쓴 전문분야뿐입니다.</p>
+    <p>그래서 강남 DB의 쓸모는 "이 병원이 어느 언어로 상담되나"까지입니다. 심평원 데이터와 이름·전화로 매칭(트레이닝 v06에서 91.9%)하면 주소·좌표·의사 수를 붙일 수 있습니다.</p>
+  </div></div>
+</section>
+
+<section id="ours">
+  <p class="q">질문 · 우리가 모은 데이터가 도움이 되나</p>
+  <h2>피부과 관점으로 본 우리 데이터</h2>
+  <p class="sub">CSV를 파서로 직접 세었습니다. 판정은 GlowPass 기능 기준입니다.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>데이터</th><th>피부과에 대해 알려 주는 것</th><th>외국인에게 쓸 부분</th><th>판정</th></tr></thead>
+    <tbody>
+      <tr><td>DUR 금기 8종</td><td>피부과 약 금기가 들어 있음. 임부금기에 <b>이소트레티노인 43품목</b>, 트레티노인 45, 피나스테리드 201, 독시사이클린 19</td><td><b>영문 성분명 칸</b>(<code>INGR_ENG_NAME</code>)이 있어 외국인이 아는 이름으로 보여 줄 수 있음</td><td class="g">핵심 · FR-06</td></tr>
+      <tr><td>낱알식별</td><td>알약 사진·모양</td><td><b>영문 제품명</b>(<code>ITEM_ENG_NAME</code>) 21,860 / 25,449건(86%) 채워짐</td><td class="g">약 이름 영문 병기</td></tr>
+      <tr><td>e약은요</td><td>일반의약품 설명. 효능에 습진 619, 피부염 585, 두드러기 134, 기미 79, 여드름 56건 언급</td><td>한국어만. <b>피부과 전문의약품(먹는 여드름약, 항생제, 스테로이드) 설명은 없음</b></td><td class="w">연고·일반약만</td></tr>
+      <tr><td>심평원 피부과</td><td>병원 주소·좌표·전화·전문의 수 (전국 17,844 · 서울 4,997)</td><td>외국어 정보 없음 → 강남 DB·메디컬코리아와 매칭해야 함</td><td class="g">FR-07 뼈대</td></tr>
+      <tr><td>강남 외국어 가능 기관</td><td>상호에 "피부"가 들어간 곳 86곳</td><td><b>유치대상국가</b>(미국/일본/중국/러시아/중동/몽골/베트남 조합). 150곳은 빈칸</td><td class="g">FR-07 언어 필터</td></tr>
+      <tr><td>강동·용산 외국어 기관</td><td>진료과목 칸에 피부과 여부</td><td>외국어 종류 (영어·스페인어 등)</td><td class="w">지역이 좁음</td></tr>
+      <tr><td>강남 의료관광 DB</td><td>분류만 (피부미용 45)</td><td>상담가능언어 (아랍어판)</td><td class="w">언어 확인용</td></tr>
+      <tr><td>MedicationQA · MedQuAD</td><td>피부과 약 질문 약 32개, 피부 질환 문서 약 145개</td><td>영어 질문 표현 = 외국인이 실제로 묻는 방식</td><td class="g">FR-04 평가 문제</td></tr>
+    </tbody>
+  </table></div>
+  <div class="answer"><span class="chip c-bad">없음</span><div>
+    <p><b>우리 데이터에도, 공식 데이터에도 없는 것</b>: 피부과 진료기록(진단·시술·처방이 한 사람에게 묶인 형태), 시술 종류별 사후관리 안내문, 외국어 복약 설명. 요구사항 정의서 4.보완사항에 이미 "병원 제공 시술 후 관리 안내문(의료진 감수)"을 보조 출처로 적어 두었습니다. 그 방향이 맞습니다.</p>
+    <p>현실적인 방법은 세 가지입니다. ① 진료기록은 FHIR 형식을 본뜬 <b>가짜 데이터</b>로 만듭니다(CLAUDE.md §2). ② 시술 후 관리는 FDA·NHS 공식 영문 자료를 근거로 팀이 <b>시술 10개 안팎의 안내문</b>을 직접 씁니다. ③ 약 이름은 DUR·낱알의 영문 칸으로 병기합니다.</p>
+  </div></div>
+</section>
+
+<section id="krdict">
+  <p class="q">질문 · 번역에 국립국어원 API를 쓸 수 있나, 쓰면 어떻게 되나</p>
+  <h2>국립국어원 한국어기초사전 오픈 API</h2>
+  <div class="answer"><span class="chip c-warn">보조용</span><div>
+    <p>API 안내 페이지를 직접 확인했습니다. <b>단어를 넣으면 뜻과 외국어 번역을 XML로 돌려주는 사전</b>입니다. 문장 번역기가 아닙니다. 번역 언어는 영어(1), 일본어(2), 프랑스어(3), 스페인어(4), <b>아랍어(5), 몽골어(6), 베트남어(7), 태국어(8)</b>, 인도네시아어(9), 러시아어(10), 중국어(11)입니다. 인증키(32자리)를 발급받아야 하고, 호출은 <b>하루 50,000건</b>까지입니다.</p>
+    <p>"기초사전"이라 일상 어휘 위주입니다. 보톡스·필러·이소트레티노인 같은 전문어는 없을 가능성이 큽니다. 키를 받으면 우리 단어 목록으로 먼저 확인하세요.</p>
+  </div></div>
+  <div class="flow">
+    <div><b>1 · 키 발급</b>krdict.korean.go.kr 로그인 → 오픈 API → 인증키 신청. 키는 <code>.env</code>에만 둡니다.</div>
+    <div><b>2 · 단어 목록</b>세안, 자외선, 붓기, 가려움, 연고, 딱지, 각질처럼 생활관리 단어 100~200개를 팀이 정합니다.</div>
+    <div><b>3 · 한 번에 조회</b>스크립트가 단어마다 1번씩 불러 11개 언어 번역을 받아 CSV로 저장합니다(200건이면 1분 안쪽).</div>
+    <div><b>4 · 용어집 고정</b>그 CSV를 LLM 프롬프트에 "이 단어는 이 번역으로" 넣어 언어마다 표현이 흔들리지 않게 합니다.</div>
+  </div>
+<pre>요청 예시 (키 자리는 비워 둠)
+GET https://krdict.korean.go.kr/api/search
+    ?key=&lt;.env의 KRDICT_KEY&gt;
+    &amp;q=여드름
+    &amp;translated=y
+    &amp;trans_lang=1,5,6,7,8,10,11   ← 영·아랍·몽골·베트남·태국·러·중
+
+응답 (XML): 표제어 · 품사 · 뜻풀이 · 언어별 번역어와 번역 뜻풀이</pre>
+  <p class="sub">실시간 번역 서비스로 쓰지 말고, 개발 때 한 번 받아 두는 <b>용어집 재료</b>로 쓰는 게 맞습니다. 서비스 중에 부르면 한도와 속도 문제가 생깁니다.</p>
+</section>
+
+<section id="aihub">
+  <p class="q">질문 · AI Hub 한영 의료 25만 문장이 어떤 건가</p>
+  <h2>AI Hub "전문분야 한영 말뭉치" (dataSetSn 111)</h2>
+  <div class="answer"><span class="chip c-warn">조건부</span><div>
+    <p>페이지를 직접 열어 확인했습니다. 2020년에 만들어 2021-06에 갱신했고, 전체 406 MB입니다. <b>한국어 문장과 영어 번역이 짝지어진 150만 쌍</b>이며, 8개 분야 중 <b>의료/보건이 25만 쌍</b>입니다. 나머지는 금융 20, 가정통신문 10, 스포츠 20, IT 20, 축제 20, 판례 15, 향토문화 20(만 쌍)입니다. 문장은 평균 15어절입니다.</p>
+    <p><b>한계</b>: 영어만 있습니다(중·일·러·아랍 없음). 피부과 전용이 아니라 의료 전반 문장입니다. <b>내국인만 신청</b>할 수 있고, 비상업 R&amp;D용이며 출처 표기가 필요합니다.</p>
+    <p><b>쓰는 법</b>: 여기서 피부·약 관련 문장을 골라 <b>LLM 영어 번역 품질을 채점하는 정답지</b>로 씁니다. 학습에 쓰거나 서비스 답변에 그대로 넣지 않습니다. 이 데이터를 해외 LLM API로 보내는 것이 "국외 반출"에 해당하는지는 신청 전에 AI Hub에 문의하세요.</p>
+  </div></div>
+</section>
+
+<section id="training">
+  <p class="q">질문 · 트레이닝이 제대로 된 건가</p>
+  <h2>트레이닝 결과 점검</h2>
+  <div class="answer"><span class="chip c-good">대체로 정상</span><div>
+    <p>v01~v15 폴더 15개가 모두 있습니다. 문서(md)는 버전마다 5~22개, 코드는 누적으로 늘어 v14가 파이썬 129개, 테스트 파일 8개입니다. v14 기록에는 <b>테스트 151개 통과</b>, 브라우저 검사 23/23 통과가 적혀 있습니다.</p>
+    <p>오늘 v14 코드 129개의 문법을 다시 검사했습니다. 3개가 걸렸는데, 맥 작업 공간의 파이썬이 3.10이라서 생긴 것입니다. 코드는 3.12 이상을 요구하고(<code>requires-python &gt;=3.12</code>), 3.12부터 허용된 f-string 문법이라 <b>오류가 아닙니다.</b></p>
+    <p><b>확인 못 한 것</b>: 테스트를 여기서 다시 돌리지 못했습니다. 맥 작업 공간에 Docker와 PostgreSQL이 없기 때문입니다. 모든 측정은 Claude의 샌드박스(PostgreSQL 16)에서 했고, 한스님 맥의 Docker pg17에서는 한 번도 안 돌려 봤습니다. 옛 문서에 틀린 숫자가 있어 <code>v15_마무리/정정표.md</code>로 고쳐 두었습니다. <b><code>_v2</code> 파일이 최신</b>입니다.</p>
+  </div></div>
+</section>
+
+<section id="file">
+  <p class="q">질문 · "공식 데이터 조사" 파일이 안 열린다</p>
+  <h2>파일이 안 열린 이유와 해결</h2>
+  <div class="answer"><span class="chip c-good">해결</span><div>
+    <p>파일 자체는 정상입니다. 폴더(<code>data/external/공식데이터_조사_20260929.html</code>, 26 KB)에 있고 브라우저 검사도 통과했습니다. 채팅 사이드바의 미리보기에서 HTML이 안 뜨는 경우가 있습니다.</p>
+    <p>이번 페이지는 <b>claude.ai 링크(Artifact)</b>로 올려서 클릭하면 바로 열립니다. 폴더의 파일은 Finder에서 <b>더블클릭하거나 Safari·Chrome으로 끌어다 놓으면</b> 열립니다.</p>
+  </div></div>
+</section>
+
+<section id="next">
+  <h2>다음 할 일</h2>
+  <ol>
+    <li>메디컬코리아 통계 "자료 전체 다운로드" → 국적×진료과 교차표가 들어 있는지 엑셀에서 확인 (화면에는 없음)</li>
+    <li>국립국어원 API 키 신청 → 생활관리 단어 100~200개 목록 만들기 (FR-04)</li>
+    <li>DUR <code>INGR_ENG_NAME</code> + 낱알 <code>ITEM_ENG_NAME</code>으로 피부과 약 30개의 한·영 이름표 만들기</li>
+    <li>시술 10개(레이저 토닝, 보톡스, 필러, 필링, 여드름 압출 등) 사후관리 안내문 초안을 FDA·NHS 근거로 작성 → 멘토 검토</li>
+    <li>FR-01 가짜 진료기록 예시 5명분 (FHIR 모양) → 조태희님과 합의</li>
+    <li>AI Hub 111번 신청 여부 결정 (국외 반출 문의 먼저)</li>
+  </ol>
+</section>
+
+<footer>출처: 프로젝트 폴더 CSV 직접 집계 · medicalkorea.or.kr 통계 페이지 · aihub.or.kr dataSetSn 111 · krdict.korean.go.kr 오픈 API 안내 (모두 2026-09-29 확인)</footer>
+</div>
+
+</body></html>

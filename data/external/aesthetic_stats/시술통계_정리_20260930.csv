@@ -1,0 +1,66 @@
+﻿출처,기준연도,범위,국가,구분,시술(영문),시술(한글),값,단위,비고,확인상태
+보건복지부 보도자료,2025,한국 외국인환자,전체,진료과,Dermatology,피부과,1313000,명,전체 진료과의 62.9%,Claude 직접(mohw 2026-04-24)
+보건복지부 보도자료,2025,한국 외국인환자,전체,진료과,Plastic surgery,성형외과,233000,명,11.2%,Claude 직접
+보건복지부 보도자료,2025,한국 외국인환자,전체,총계,All,외국인 환자 실인원,2010000,명,"연환자 272만, 201개국",Claude 직접
+보건복지부 보도자료,2025,한국 외국인환자,미국,진료과 비중,Dermatology,피부과,44.3,%,"내과통합 13.2%, 성형 9.3%",Claude 직접
+보건복지부 보도자료,2025,한국 외국인환자,러시아,진료과,Dermatology,피부과,5641,명,러시아 1위 진료과가 처음으로 피부과,Claude 직접
+보건복지부 보도자료,2025,한국 외국인환자,카자흐스탄,진료과,Dermatology,피부과,1736,명,"내과통합 7,741이 1위",Claude 직접
+보건복지부 보도자료,2025,한국 외국인환자,대만,총계,All,외국인 환자,186000,명,전년 대비 +122.5%,Claude 직접
+보건복지부 보도자료,2024,한국 외국인환자,전체,진료과,Dermatology,피부과,705000,명,56.6%,Claude 직접(mohw 2025-04-02)
+보건복지부 보도자료,2024,한국 외국인환자,일본,진료과,Dermatology,피부과,308000,명,"일본 환자의 69.7%가 피부과, 성형 14.0%",Claude 직접
+보건복지부 보도자료,2024,한국 외국인환자,중국,진료과,Dermatology,피부과,172000,명,+278.8%,Claude 직접
+보건복지부 보도자료,2024,한국 외국인환자,대만,진료과,Dermatology,피부과,67000,명,+1017.0%,Claude 직접
+보건복지부 보도자료,2024,한국 외국인환자,미국,진료과 비중,Dermatology,피부과,33.0,%,,Claude 직접
+보건복지부 보도자료,2024,한국 외국인환자,태국,진료과,Dermatology,피부과,24492,명,,Claude 직접
+보건복지부 보도자료,2024,한국 외국인환자,싱가포르,진료과,Dermatology,피부과,21295,명,,Claude 직접
+보건복지부 보도자료,2024,한국 외국인환자,러시아,진료과,Dermatology,피부과,3169,명,,Claude 직접
+보건복지부 보도자료,2024,한국 외국인환자,카자흐스탄,진료과,Dermatology,피부과,1257,명,,Claude 직접
+보건복지부 보도자료,2023,한국 외국인환자,전체,진료과,Dermatology,피부과,239000,명,35.2%,Claude 직접(mohw 2024-04-29)
+ISAPS Global Survey,2024,세계,전체,비수술,Botulinum toxin,보툴리눔 톡신,7887955,건,"-17.4%, 여 6,622,473 / 남 1,265,482",Claude 원본 대조 ✅
+ISAPS Global Survey,2024,세계,전체,비수술,Hyaluronic acid filler,HA 필러,6338184,건,+5.2%,Claude 원본 대조 ✅
+ISAPS Global Survey,2024,세계,전체,비수술,Hair removal,제모,1487130,건,-12.9%,Claude 원본 대조 ✅
+ISAPS Global Survey,2024,세계,전체,비수술,Nonsurgical skin tightening,비수술 타이트닝(HIFU·RF),1239306,건,+38.9%,Claude 원본 대조 ✅
+ISAPS Global Survey,2024,세계,전체,비수술,Chemical peel,화학박피,820225,건,+33.3%,Claude 원본 대조 ✅
+ISAPS Global Survey,2024,세계,전체,비수술,Full field ablative laser,박피성 레이저,752717,건,+59.2%,Claude 원본 대조 ✅
+ISAPS Global Survey,2024,세계,전체,비수술,Nonsurgical fat reduction,비수술 지방감소,702836,건,+7.6%,Claude 원본 대조 ✅
+ISAPS Global Survey,2024,국가,일본,비수술,Botulinum toxin,보툴리눔 톡신,414800,건,비수술 125.2만 중 33.1%,Claude 원본 대조 ✅
+ISAPS Global Survey,2024,국가,일본,비수술,Hyaluronic acid filler,HA 필러,341600,건,,Claude 원본 대조 ✅
+ISAPS Global Survey,2024,국가,튀르키예,비수술,Botulinum toxin,보툴리눔 톡신,260390,건,비수술 54.0만 중 48.2%,Claude 원본 대조 ✅
+ISAPS Global Survey,2024,국가,대만,비수술,Botulinum toxin,보툴리눔 톡신,177846,건,비수술 40.1만,Claude 원본 대조 ✅
+ISAPS Global Survey,2024,국가,UAE,비수술,Hyaluronic acid filler,HA 필러,78400,건,"37.2%로 1위(보톡스 70,144)",Claude 원본 대조 ✅
+ISAPS Global Survey,2024,국가,사우디,비수술,Hyaluronic acid filler,HA 필러,26774,건,"38.4%로 1위(보톡스 21,868)",Claude 원본 대조 ✅
+ISAPS Global Survey,2024,국가,베트남,비수술,Botulinum toxin,보툴리눔 톡신,29220,건,"필러 24,720",Claude 원본 대조 ✅
+ISAPS Global Survey,2024,국가,태국,비수술,Botulinum toxin,보툴리눔 톡신,29925,건,58.8%,Claude 원본 대조 ✅
+ASPS Procedural Statistics,2024,미국,미국,최소침습,Neuromodulator,보톡스류,9883711,건,"+4%, 40-54세가 57%",잠정(원본 링크 삭제)
+ASPS Procedural Statistics,2024,미국,미국,최소침습,HA filler,HA 필러,5331426,건,+1%,잠정(원본 링크 삭제)
+ASPS Procedural Statistics,2024,미국,미국,최소침습,Skin resurfacing,피부 재생(필링·레이저),3703305,건,+6%,잠정(원본 링크 삭제)
+ASPS Procedural Statistics,2024,미국,미국,최소침습,Laser skin treatment,레이저 피부치료(제모·IPL 등),3112056,건,0%,잠정(원본 링크 삭제)
+JSAPS 全国美容医療実態調査,2025,일본,일본,비수술,Botulinum toxin,보툴리눔 톡신,1106865,건,1위,Claude 원본 대조 ✅
+JSAPS 全国美容医療実態調査,2025,일본,일본,비수술,Laser/light hair removal,레이저 제모,682178,건,남성 약 45%,Claude 원본 대조 ✅
+JSAPS 全国美容医療実態調査,2025,일본,일본,비수술,Pigment/wart laser,기미·사마귀 레이저,382568,건,,Claude 원본 대조 ✅
+JSAPS 全国美容医療実態調査,2025,일본,일본,비수술,Chemical peel,케미컬 필링,333903,건,,Claude 원본 대조 ✅
+JSAPS 全国美容医療実態調査,2025,일본,일본,비수술,Nonsurgical skin tightening,스킨 타이트닝,253691,건,,Claude 원본 대조 ✅
+JSAPS 全国美容医療実態調査,2025,일본,일본,비수술,IPL photorejuvenation,IPL,246870,건,,Claude 원본 대조 ✅
+JSAPS 全国美容医療実態調査,2025,일본,일본,비수술,HA filler,HA 필러,230158,건,,Claude 원본 대조 ✅
+ASDS 시술 서베이,2019,미국 피부과,미국,피부과,Botulinum toxin,보톡스,2300000,건,,Claude 원본 대조 ✅
+ASDS 시술 서베이,2019,미국 피부과,미국,피부과,Filler,필러,1600000,건,,Claude 원본 대조 ✅
+ASDS 시술 서베이,2019,미국 피부과,미국,피부과,Laser for pigment/melasma,기미·색소 레이저,382000,건,,Claude 원본 대조 ✅
+ASDS 시술 서베이,2019,미국 피부과,미국,피부과,Laser for acne,여드름 레이저·광,212000,건,,Claude 원본 대조 ✅
+ASDS 시술 서베이,2019,미국 피부과,미국,피부과,Laser for scars,흉터 레이저,211000,건,,Claude 원본 대조 ✅
+ASDS 시술 서베이,2019,미국 피부과,미국,피부과,Microneedling,마이크로니들링,238000,건,스킨부스터 대체 근거,Claude 원본 대조 ✅
+KHIDI 2025 통계분석보고서,2025,한국 외국인환자,중국,진료과,Dermatology,피부과,459521,명,피부과 비중 73.4% (여성 75.4% / 남성 55.7%),Claude 원본 추출 ✅
+KHIDI 2025 통계분석보고서,2025,한국 외국인환자,일본,진료과,Dermatology,피부과,399964,명,피부과 비중 66.5% (여성 66.4% / 남성 68.1%),Claude 원본 추출 ✅
+KHIDI 2025 통계분석보고서,2025,한국 외국인환자,대만,진료과,Dermatology,피부과,149126,명,피부과 비중 80.2% (여성 80.6% / 남성 77.8%),Claude 원본 추출 ✅
+KHIDI 2025 통계분석보고서,2025,한국 외국인환자,미국,진료과,Dermatology,피부과,85493,명,피부과 비중 44.3% (여성 50.9% / 남성 30.5%),Claude 원본 추출 ✅
+KHIDI 2025 통계분석보고서,2025,한국 외국인환자,태국,진료과,Dermatology,피부과,39667,명,피부과 비중 67.6% (여성 68.3% / 남성 64.4%),Claude 원본 추출 ✅
+KHIDI 2025 통계분석보고서,2025,한국 외국인환자,싱가포르,진료과,Dermatology,피부과,33402,명,피부과 비중 77.1% (여성 77.5% / 남성 75.3%),Claude 원본 추출 ✅
+KHIDI 2025 통계분석보고서,2025,한국 외국인환자,동남아시아,진료과,Dermatology,피부과,106775,명,피부과 비중 61.1% (여성 64.4% / 남성 49.1%),Claude 원본 추출 ✅
+KHIDI 2025 통계분석보고서,2025,한국 외국인환자,중동,진료과,Dermatology,피부과,5017,명,피부과 비중 43.3% (여성 51.9% / 남성 25.4%),Claude 원본 추출 ✅
+KHIDI 2025 통계분석보고서,2025,한국 외국인환자,몽골,진료과,Dermatology,피부과,6160,명,피부과 비중 13.0% (여성 16.6% / 남성 5.6%),Claude 원본 추출 ✅
+KHIDI 2025 통계분석보고서,2025,한국 외국인환자,중앙아시아,진료과,Dermatology,피부과,2458,명,피부과 비중 6.9% (여성 8.0% / 남성 5.4%),Claude 원본 추출 ✅
+ISAPS Global Survey,2024,의료관광,튀르키예,외국인 환자 비중,Medical tourism,외국인 환자 비중,29.6,%,"중앙값 15.0%, 독일·영국·미국",Claude 원본 대조 ✅
+ISAPS Global Survey,2024,의료관광,UAE,외국인 환자 비중,Medical tourism,외국인 환자 비중,38.1,%,"중앙값 30.0%, 영국·사우디·레바논",Claude 원본 대조 ✅
+Deloitte China 2026 (업계),2025,중국 소비자,중국,해외 의료미용 목적지,Outbound destination,한국,51,%,일본 23% · 홍콩마카오 19% · 기타 7%,Claude 원본 대조 ✅
+Deloitte China 2026 (업계),2025,중국 소비자,중국,한국 방문 시 진료,Dermatology in Korea,피부과,71,%,성형수술 18% · 기타 11%,Claude 원본 대조 ✅
+Deloitte China 2026 (업계),2025,중국 소비자,중국,인기 시술 5종,Top5,①미백광전 ②리프팅광전 ③딥클렌징 ④보톡스 ⑤물광,,순위,"소비자 2,000명 조사",Claude 원본 대조 ✅
+嘉世咨询 2025 (업계),2025,중국,중국,비수술 비중,Non-surgical share,비수술,74.2,%,주사류 55.7%,2차 인용(원문 미확보)

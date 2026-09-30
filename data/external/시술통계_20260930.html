@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>피부 시술 공식 통계</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: 결론 → 한국 공식(국적별 피부과) → 세계·국가별 시술 건수 → 시술 10개 근거표 → 원본 받기 */
+:root{
+  --bg:#f5f6f7; --surface:#ffffff; --ink:#1b2530; --muted:#5a6673; --line:#dde2e7;
+  --accent:#2f5d7c; --accent-soft:#e3edf4; --bar:#7aa3c0;
+  --good:#2d7a4b; --good-soft:#e2f2e8; --warn:#9a6300; --warn-soft:#fbf0db; --bad:#a3392b; --bad-soft:#f8e3df;
+  --f-body:"IBM Plex Sans KR","Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141a20; --surface:#1b232b; --ink:#e6ebef; --muted:#9aa7b3; --line:#2d3842;
+  --accent:#8fbbdb; --accent-soft:#1f3140; --bar:#4f7c9c;
+  --good:#7fcf9d; --good-soft:#1c3226; --warn:#e7b35c; --warn-soft:#352a16; --bad:#f09a8c; --bad-soft:#3a2320; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141a20; --surface:#1b232b; --ink:#e6ebef; --muted:#9aa7b3; --line:#2d3842;
+  --accent:#8fbbdb; --accent-soft:#1f3140; --bar:#4f7c9c;
+  --good:#7fcf9d; --good-soft:#1c3226; --warn:#e7b35c; --warn-soft:#352a16; --bad:#f09a8c; --bad-soft:#3a2320; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:16px/1.7 var(--f-body)}
+.wrap{max-width:940px;margin:0 auto;padding-inline:16px;padding-block:28px 72px}
+.eyebrow{font:500 12px/1 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font-size:28px;line-height:1.3;margin:10px 0 8px;text-wrap:balance}
+.lede{color:var(--muted);max-width:64ch;margin:0}
+.verdict{margin-top:20px;background:var(--accent-soft);border-radius:10px;padding:16px 18px}.verdict p{margin:0 0 6px}.verdict p:last-child{margin:0}
+nav{position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);border-bottom:1px solid var(--line);margin:24px -16px 0;padding:10px 16px;display:flex;gap:6px;overflow-x:auto;white-space:nowrap;z-index:3}
+nav a{font-size:13.5px;color:var(--ink);text-decoration:none;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 11px}
+nav a:hover,nav a:focus-visible{border-color:var(--accent);outline:none}
+section{margin-top:44px}
+h2{font-size:21px;margin:0 0 4px;text-wrap:balance}
+h3{font-size:16px;margin:18px 0 6px}
+.src{font:500 12px/1.5 var(--f-mono);color:var(--muted);margin:0 0 12px}
+.sub{color:var(--muted);margin:0 0 12px}
+.tbl{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:10px;margin:10px 0}
+table{border-collapse:collapse;width:100%;min-width:640px;font-size:14.5px}
+th,td{text-align:left;vertical-align:top;padding:9px 11px;border-bottom:1px solid var(--line)}
+tr:last-child td{border-bottom:none}
+th{font:500 12px/1.3 var(--f-mono);letter-spacing:.03em;color:var(--muted);background:var(--bg)}
+td.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right}
+.barcell{min-width:140px}
+.bar{height:10px;background:var(--bar);border-radius:3px}
+.chip{display:inline-block;font:500 11.5px/1 var(--f-mono);padding:4px 7px;border-radius:5px;white-space:nowrap}
+.c-good{background:var(--good-soft);color:var(--good)}.c-warn{background:var(--warn-soft);color:var(--warn)}.c-bad{background:var(--bad-soft);color:var(--bad)}
+.note{border-left:3px solid var(--warn);background:var(--warn-soft);padding:10px 14px;border-radius:0 8px 8px 0;margin:12px 0;font-size:15px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin:12px 0}
+.grid div{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;min-width:0}
+.grid b{display:block;font:500 22px/1.2 var(--f-mono);color:var(--accent);font-variant-numeric:tabular-nums}
+.grid span{font-size:14px;color:var(--muted)}
+code{font:13px var(--f-mono);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:1px 5px;word-break:break-all}
+a{color:var(--accent);word-break:break-all}
+ol li,ul li{margin:4px 0}
+footer{margin-top:48px;color:var(--muted);font-size:13px}
+</style>
+
+</head><body>
+<div class="wrap">
+<header>
+  <div class="eyebrow">GlowPass 4팀 · v5 최신판 (2026-09-30) · v1 조사 → v2 원본 대조 → v3 정정 → v4 미국·중국 추가 → v5 딜로이트 원문 반영</div>
+  <h1>외국인은 어떤 피부 시술을 많이 받나</h1>
+  <p class="lede">한국 정부 공식 통계, 국제미용성형학회(ISAPS)와 미국·일본 학회 통계를 모아 우리 시술 10개 목록의 근거를 정리했습니다.</p>
+  <div class="verdict">
+    <p><b>결론 1</b>: 한국 정부 자료로 <b>"어느 나라 사람이 피부과에 얼마나 왔나"</b>까지는 공식 숫자가 있습니다. 2025년 외국인 환자의 <b>62.9%(131만 명)가 피부과</b>이고, 중국 환자는 73.4%, 대만 80.2%, 일본 66.5%가 피부과입니다.</p>
+    <p><b>결론 2</b>: <b>"무슨 시술을"</b>은 한국 공식 자료에 없습니다. 대신 ISAPS·미국·일본 학회 통계로 <b>보톡스 → 필러 → 제모·레이저 → 타이트닝 → 필링</b> 순서가 나라마다 거의 같게 나옵니다. 우리 목록의 근거로 쓸 수 있습니다.</p>
+    <p><b>결론 3</b>: <b>스킨부스터(리쥬란·물광)</b>는 공식 통계에 항목이 없습니다. 중국 업계 보고서에서는 물광 주사가 가장 인기 있는 주사 시술로 나옵니다.</p>
+  </div>
+</header>
+
+<nav>
+  <a href="#korea">한국 공식</a><a href="#world">세계 ISAPS</a><a href="#country">나라별</a><a href="#us-jp">미국·일본</a><a href="#who">누가 받나</a><a href="#top10">시술 10개 근거</a><a href="#files">원본 파일</a>
+</nav>
+
+<section id="korea">
+  <h2>한국 공식 — 국적별 피부과 환자</h2>
+  <p class="src">출처: 보건복지부 보도자료 "2025년 외국인 환자 유치 200만 돌파"(2026-04-24) · "2024년 117만 명"(2025-04-02) · 공공누리 출처표시 · Claude가 원문 직접 확인</p>
+  <div class="grid">
+    <div><b>201만 명</b><span>2025년 외국인 환자 (201개국)</span></div>
+    <div><b>62.9%</b><span>그중 피부과 131.3만 명 (2024년 56.6%, 2023년 35.2%)</span></div>
+    <div><b>87.7%</b><span>동네 의원급 이용 · 서울 87.2%</span></div>
+    <div><b>1위 중국</b><span>2025년 국가 순위: 중국·일본·대만·미국·태국</span></div>
+  </div>
+  <div class="tbl"><table>
+    <thead><tr><th>국적</th><th>피부과 관련 공식 숫자</th><th>연도</th><th>특징</th></tr></thead>
+    <tbody>
+      <tr><td>일본</td><td>피부과 30.8만 명 · 일본 환자의 <b>69.7%</b>가 피부과</td><td>2024</td><td>성형외과 14.0%</td></tr>
+      <tr><td>중국</td><td>피부과 17.2만 명 (+278.8%)</td><td>2024</td><td>2025년 전체 1위, +137.5%</td></tr>
+      <tr><td>대만</td><td>피부과 6.7만 명 (+1,017%)</td><td>2024</td><td>2025년 18.6만 명</td></tr>
+      <tr><td>미국</td><td>환자의 <b>44.3%</b>가 피부과</td><td>2025</td><td>내과·검진도 이용 (다양함)</td></tr>
+      <tr><td>태국</td><td>피부과 24,492명</td><td>2024</td><td>2025년 피부과 +62.0%</td></tr>
+      <tr><td>싱가포르</td><td>피부과 21,295명</td><td>2024</td><td>2025년 피부과 +56.9%</td></tr>
+      <tr><td>러시아</td><td>피부과 5,641명 → <b>처음으로 1위 진료과</b></td><td>2025</td><td>예전엔 내과·검진 위주</td></tr>
+      <tr><td>카자흐스탄</td><td>피부과 1,736명 (3위)</td><td>2025</td><td>내과·검진 중심 유지</td></tr>
+    </tbody>
+  </table></div>
+  <p class="sub">보건복지부는 증가 이유로 "피부과 중심의 미용·비수술 수요, 중국 무비자, 한국 화장품 호감도(선도국가 인식 1위)"를 들었습니다.</p>
+
+  <h3>국적별 피부과 비중과 성별 (2025)</h3>
+  <p class="src">출처: 한국보건산업진흥원 「2025년 외국인환자 유치실적 통계분석 보고서」 표 3.3~3.63 · 원본 PDF를 Claude가 직접 추출 ✅ · 진료과별 실환자 기준</p>
+  <div class="tbl"><table>
+    <thead><tr><th>국적</th><th>피부과 환자</th><th>피부과 비중</th><th class="barcell">비중</th><th>여성 중 피부과</th><th>남성 중 피부과</th><th>성형외과 비중</th></tr></thead>
+    <tbody>
+      <tr><td>중국</td><td class="num">459,521</td><td class="num">73.4%</td><td class="barcell"><div class="bar" style="width:73.4%"></div></td><td class="num">75.4%</td><td class="num">55.7%</td><td class="num">9.1%</td></tr>
+      <tr><td>일본</td><td class="num">399,964</td><td class="num">66.5%</td><td class="barcell"><div class="bar" style="width:66.5%"></div></td><td class="num">66.4%</td><td class="num">68.1%</td><td class="num">16.3%</td></tr>
+      <tr><td>대만</td><td class="num">149,126</td><td class="num">80.2%</td><td class="barcell"><div class="bar" style="width:80.2%"></div></td><td class="num">80.6%</td><td class="num">77.8%</td><td class="num">8.8%</td></tr>
+      <tr><td>미국</td><td class="num">85,493</td><td class="num">44.3%</td><td class="barcell"><div class="bar" style="width:44.3%"></div></td><td class="num">50.9%</td><td class="num">30.5%</td><td class="num">9.3%</td></tr>
+      <tr><td>태국</td><td class="num">39,667</td><td class="num">67.6%</td><td class="barcell"><div class="bar" style="width:67.6%"></div></td><td class="num">68.3%</td><td class="num">64.4%</td><td class="num">14.2%</td></tr>
+      <tr><td>싱가포르</td><td class="num">33,402</td><td class="num">77.1%</td><td class="barcell"><div class="bar" style="width:77.1%"></div></td><td class="num">77.5%</td><td class="num">75.3%</td><td class="num">8.9%</td></tr>
+      <tr><td>동남아 전체</td><td class="num">106,775</td><td class="num">61.1%</td><td class="barcell"><div class="bar" style="width:61.1%"></div></td><td class="num">64.4%</td><td class="num">49.1%</td><td class="num">13.7%</td></tr>
+      <tr><td>중동 전체</td><td class="num">5,017</td><td class="num">43.3%</td><td class="barcell"><div class="bar" style="width:43.3%"></div></td><td class="num">51.9%</td><td class="num">25.4%</td><td class="num">8.2%</td></tr>
+      <tr><td>몽골</td><td class="num">6,160</td><td class="num">13.0%</td><td class="barcell"><div class="bar" style="width:13%"></div></td><td class="num">16.6%</td><td class="num">5.6%</td><td class="num">7.4%</td></tr>
+      <tr><td>중앙아시아</td><td class="num">2,458</td><td class="num">6.9%</td><td class="barcell"><div class="bar" style="width:6.9%"></div></td><td class="num">8.0%</td><td class="num">5.4%</td><td class="num">5.1%</td></tr>
+    </tbody>
+  </table></div>
+  <p class="sub">중국 환자는 <b>여성 90.3%</b>, <b>20대 39.4% · 30대 41.1%</b>입니다. 일본 환자는 20대가 44.1%입니다. 몽골·중앙아시아는 피부과보다 내과·검진이 중심이라 GlowPass 1차 대상에서 우선순위가 낮습니다. 이 보고서도 <b>시술 종류는 나누지 않습니다.</b></p>
+</section>
+
+<section id="world">
+  <h2>세계 — ISAPS Global Survey 2024</h2>
+  <p class="src">출처: International Society of Aesthetic Plastic Surgery, Global Survey 2024 (2025년 발표, 86쪽) · 성형외과 전문의 2,975명 설문 기반 추정치 · 원본 PDF를 Claude가 직접 대조 ✅</p>
+  <p class="sub">세계 전체 3,790만 건 중 비수술이 2,050만 건입니다. 비수술 상위 7개는 아래와 같습니다.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>시술</th><th>2024 건수</th><th class="barcell">크기</th><th>전년 대비</th></tr></thead>
+    <tbody>
+      <tr><td>보툴리눔 톡신 (보톡스)</td><td class="num">7,887,955</td><td class="barcell"><div class="bar" style="width:100%"></div></td><td class="num">−17.4%</td></tr>
+      <tr><td>HA 필러</td><td class="num">6,338,184</td><td class="barcell"><div class="bar" style="width:80.4%"></div></td><td class="num">+5.2%</td></tr>
+      <tr><td>제모</td><td class="num">1,487,130</td><td class="barcell"><div class="bar" style="width:18.9%"></div></td><td class="num">−12.9%</td></tr>
+      <tr><td>비수술 타이트닝 (HIFU·RF)</td><td class="num">1,239,306</td><td class="barcell"><div class="bar" style="width:15.7%"></div></td><td class="num">+38.9%</td></tr>
+      <tr><td>화학박피 (필링)</td><td class="num">820,225</td><td class="barcell"><div class="bar" style="width:10.4%"></div></td><td class="num">+33.3%</td></tr>
+      <tr><td>박피성 레이저 (리서페이싱)</td><td class="num">752,717</td><td class="barcell"><div class="bar" style="width:9.5%"></div></td><td class="num">+59.2%</td></tr>
+      <tr><td>비수술 지방감소</td><td class="num">702,836</td><td class="barcell"><div class="bar" style="width:8.9%"></div></td><td class="num">+7.6%</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note">ISAPS 는 <b>성형외과 의사</b>에게 설문하기 때문에 피부과 시술(레이저 토닝, 여드름 치료 등)은 적게 잡힙니다. 2025년판(16차)은 분석 중이라고 공지돼 있습니다.</div>
+
+  <h3>왜 한국·중국·러시아 표가 없나</h3>
+  <p>ISAPS 보고서 방법론에 이렇게 적혀 있습니다. "응답 수가 통계적으로 충분한 곳만 국가별 수치를 싣는다." 세 나라는 성형외과 의사가 많은데도 <b>설문에 답한 의사가 부족해서</b> 표가 빠졌습니다. 영어가 아니어서는 아닙니다. 설문은 영어·스페인어·<b>중국어</b>·일본어로 배포됐습니다.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>나라</th><th>추정 성형외과 의사 수</th><th>세계 순위</th><th>국가표</th></tr></thead>
+    <tbody>
+      <tr><td>중국</td><td class="num">5,000</td><td class="num">3위</td><td>없음</td></tr>
+      <tr><td>한국</td><td class="num">2,808</td><td class="num">5위</td><td>없음</td></tr>
+      <tr><td>러시아</td><td class="num">2,000</td><td class="num">8위</td><td>없음</td></tr>
+      <tr><td>일본 (비교)</td><td class="num">4,000</td><td class="num">4위</td><td>있음</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>중국은 어디에 있나 — 업계 보고서 (모두 민간 = "업계 자료")</h3>
+  <p>중국 정부(국가위생건강위원회)는 시술 종류별 통계를 내지 않습니다. 대신 컨설팅사·플랫폼 보고서가 많습니다. 공식 통계가 아니라 <b>"업계 자료"</b>로 표시해야 합니다.</p>
+  <ul>
+    <li><b>Roland Berger × 美团医美 「2025医美行业白皮书」</b>: 중국 의료미용 시장이 2030년 약 7,000억 위안으로 커지고, 비수술(轻医美)이 약 64%를 차지할 것으로 전망 (다운로드는 로랜드버거 회원가입 필요 → Claude 는 계정을 만들 수 없어 한스님이 가입 후 받기)</li>
+    <li><b>Deloitte China × 艾尔建美学(Allergan Aesthetics) 「中国医美行业2026年度洞悉报告」</b> (2026-08-15, 18쪽, 원문 PDF Claude 대조 ✅): 소비자 2,000명 + 운영자·의사 200명 조사(2026년 1분기).</li>
+    <li><b>嘉世咨询 「2025中国轻医美行业现状报告」</b> (공식 사이트 배포 없음, 유료 보고서 모음 사이트에만 있음): 의료미용 중 비수술 74.2%, 비수술 중 주사류 55.7%. 다른 주사류 보고서는 <b>水光针(물광 주사)이 주사 시술의 80.7%</b>로 가장 인기라고 적음</li>
+  </ul>
+  <div class="tbl"><table>
+    <thead><tr><th>딜로이트 2026 항목</th><th>내용</th></tr></thead>
+    <tbody>
+      <tr><td>중국인 해외 의료미용 목적지 (2025)</td><td><b>한국 51%</b> · 일본 23% · 홍콩·마카오 19% · 기타 7%</td></tr>
+      <tr><td>한국에 온 중국인이 고른 진료</td><td><b>피부과 71%</b> · 성형수술 18% · 기타 11%</td></tr>
+      <tr><td>해외에서 많이 받는 시술</td><td>보톡스·필러 같은 주사 시술 (싸고 회복이 빨라서) · 1인당 3~5만 위안 · 5~7일 체류</td></tr>
+      <tr><td>2025 가장 인기 있는 시술 5종</td><td>① 피부톤·미백 광전(레이저·IPL) ② 주름·리프팅 광전(울쎄라·써마지 계열) ③ 딥클렌징 기기 ④ 주름 개선 주사(보톡스 등) ⑤ 메조·물광 주사(스킨부스터)</td></tr>
+      <tr><td>1인당 연간 의료미용 지출</td><td>1.2~1.5만 위안 (2024년과 비슷)</td></tr>
+      <tr><td>최근 1년 새 허가 제품</td><td>주사류 약 50개 (히알루론산 25 · 콜라겐 12 · 콜라겐 자극제 9 · 보톡스 2) · 레이저·RF·초음파 3등급 기기 약 30개</td></tr>
+    </tbody>
+  </table></div>
+  <p class="sub">GlowPass 관점에서 가장 중요한 숫자는 <b>"중국인 해외 의료미용의 51%가 한국, 그중 71%가 피부과"</b>입니다. KHIDI 통계(중국 환자의 73.4%가 피부과)와도 맞아떨어집니다. 시술 목록 10개 중 광전 레이저·리프팅·보톡스·스킨부스터가 중국 수요의 상위 5종과 겹칩니다.</p>
+  <p class="src">嘉世咨询 수치(비수술 74.2%, 주사 55.7%)와 "물광 주사가 주사 시술의 80.7%"는 원문을 못 받아 <b>2차 인용</b>(검색 요약 기준)입니다.</p>
+  <p class="sub">스킨부스터(물광·리쥬란 계열)는 한국처럼 중국에서도 가장 인기 있는 주사 시술로 나옵니다. 중국 환자가 73%로 피부과를 찾는 이유와 맞물리므로, 목록 10번 스킨부스터는 <b>중국 업계 자료를 근거</b>로 넣을 수 있습니다. 위 보고서 숫자는 검색 요약에서 확인한 값이라 원문을 받으면 다시 대조합니다.</p>
+
+  <h3>튀르키예(터키)는 왜 많나</h3>
+  <p>ISAPS 숫자는 <b>그 나라 안에서 그 나라 의사가 한 시술</b>입니다. 한국에서 받은 터키인이 아니라, 터키 병원에서 한 시술입니다. 터키는 의료관광 국가라 외국인 비중이 큽니다.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>나라</th><th>외국인 환자 비중 (평균 / 중앙값)</th><th>많이 오는 나라 1·2·3위</th></tr></thead>
+    <tbody>
+      <tr><td>튀르키예</td><td class="num">29.6% / 15.0%</td><td>독일 · 영국 · 미국</td></tr>
+      <tr><td>UAE</td><td class="num">38.1% / 30.0%</td><td>영국 · 사우디 · 레바논</td></tr>
+      <tr><td>태국</td><td class="num">20.1% / 10.0%</td><td>호주 · 중국 · 캄보디아</td></tr>
+      <tr><td>싱가포르</td><td class="num">20.0% / 20.0%</td><td>인도네시아 · 베트남 · 중국</td></tr>
+      <tr><td>일본</td><td class="num">5.4% / 3.0%</td><td>중국 · 한국 · 대만</td></tr>
+      <tr><td>세계 평균</td><td class="num">14.3% / 5.0%</td><td>—</td></tr>
+    </tbody>
+  </table></div>
+  <p class="src">출처: ISAPS Global Survey 2024 "Medical Tourism" (79~80쪽) ✅</p>
+  <p class="sub">정리하면 <b>터키 = 유럽(독일·영국)·미국 환자</b>, <b>UAE(두바이) = 영국·사우디 등 중동 환자</b>가 가는 곳입니다. 사우디 병원의 외국인은 쿠웨이트·시리아·바레인에서 옵니다. 중동 환자는 터키보다 UAE 로 많이 갑니다.</p>
+</section>
+
+<section id="country">
+  <h2>나라별 — 어느 나라가 무엇을 많이 하나</h2>
+  <p class="src">출처: ISAPS Global Survey 2024 국가표 · 원본 PDF와 Claude가 직접 대조 ✅ (인도는 제모 208,880건이 보톡스보다 많음)</p>
+  <div class="tbl"><table>
+    <thead><tr><th>나라</th><th>비수술 합계</th><th>보톡스</th><th>HA 필러</th><th>그다음</th><th>특징</th></tr></thead>
+    <tbody>
+      <tr><td>일본</td><td class="num">1,251,600</td><td class="num">414,800</td><td class="num">341,600</td><td>제모 13.3만 · 필링 13.1만 · 타이트닝 8.2만</td><td>보톡스 33%</td></tr>
+      <tr><td>튀르키예</td><td class="num">539,828</td><td class="num">260,390</td><td class="num">160,944</td><td>제모 3.9만 · 타이트닝 3.0만</td><td>보톡스 48%</td></tr>
+      <tr><td>대만</td><td class="num">400,840</td><td class="num">177,846</td><td class="num">85,882</td><td>제모 3.7만 · 타이트닝 3.4만</td><td>보톡스 비중 큼</td></tr>
+      <tr><td>UAE</td><td class="num">210,752</td><td class="num">70,144</td><td class="num"><b>78,400</b></td><td>제모 1.9만 · 타이트닝 1.4만</td><td><b>필러가 1위</b></td></tr>
+      <tr><td>사우디</td><td class="num">69,740</td><td class="num">21,868</td><td class="num"><b>26,774</b></td><td>—</td><td><b>필러가 1위</b></td></tr>
+      <tr><td>베트남</td><td class="num">62,340</td><td class="num">29,220</td><td class="num">24,720</td><td>필링 4,860</td><td></td></tr>
+      <tr><td>태국</td><td class="num">50,920</td><td class="num">29,925</td><td class="num">10,450</td><td>타이트닝 3,278</td><td>보톡스 59%</td></tr>
+    </tbody>
+  </table></div>
+  <p class="sub">GlowPass 관점: <b>중동(UAE·사우디) 환자는 필러 사후관리</b>, <b>일본·대만·태국은 보톡스</b>, <b>일본은 제모·필링·기미 레이저</b>까지 안내가 필요하다는 근거가 됩니다.</p>
+</section>
+
+<section id="us-jp">
+  <h2>미국·일본 — 나라 전체 공식 통계</h2>
+  <h3>일본 JSAPS 제9회 전국 미용의료 실태조사 (2025년 시술)</h3>
+  <p class="src">출처: 日本美容外科学会 第9回 全国美容医療実態調査 (2026-08-01 공개) · 원본 PDF와 Claude가 직접 대조 ✅ · 비수술 397.7만 건</p>
+  <div class="tbl"><table>
+    <thead><tr><th>순위</th><th>시술</th><th>합계</th><th>여성</th><th>남성</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>보툴리눔 톡신</td><td class="num">1,106,865</td><td class="num">1,029,038</td><td class="num">77,827</td></tr>
+      <tr><td>2</td><td>레이저·광 제모</td><td class="num">682,178</td><td class="num">376,321</td><td class="num">305,857</td></tr>
+      <tr><td>3</td><td>기미·사마귀 레이저</td><td class="num">382,568</td><td class="num">346,784</td><td class="num">35,784</td></tr>
+      <tr><td>4</td><td>케미컬 필링</td><td class="num">333,903</td><td class="num">308,643</td><td class="num">25,260</td></tr>
+      <tr><td>5</td><td>비수술 타이트닝</td><td class="num">253,691</td><td class="num">233,062</td><td class="num">20,629</td></tr>
+      <tr><td>6</td><td>IPL 광회춘</td><td class="num">246,870</td><td class="num">228,614</td><td class="num">18,256</td></tr>
+      <tr><td>7</td><td>HA 필러</td><td class="num">230,158</td><td class="num">219,806</td><td class="num">10,352</td></tr>
+      <tr><td>8</td><td>프랙셔널 레이저</td><td class="num">58,079</td><td class="num">49,974</td><td class="num">8,105</td></tr>
+    </tbody>
+  </table></div>
+  <p class="sub">일본은 한국 외국인 환자 2위 국가입니다. 일본 안에서 많이 받는 시술이 곧 한국에 와서 받을 시술 후보입니다. 제모는 <b>남성이 45%</b>입니다.</p>
+
+  <h3>미국 ASPS 2024 · ASDS 2019 (피부과)</h3>
+  <p class="src">출처: ASPS 2024(학회가 내림 → <b>잠정</b>) · ASDS 2019 인포그래픽(받아서 Claude 대조 ✅, ASDS 의 가장 최근 조사) · ASPS 2025(받음 ✅: 건수 대신 비율 — 보톡스류 50%, HA 필러 30%, 필러의 약 70%가 얼굴, 66세 이상이 가장 빠르게 증가) · The Aesthetic Society 2023(받음 ✅: 수술만 집계, 비수술 표 없음)</p>
+  <div class="tbl"><table>
+    <thead><tr><th>시술</th><th>ASPS 2024 (성형외과)</th><th>ASDS 2019 (피부과)</th></tr></thead>
+    <tbody>
+      <tr><td>보톡스류</td><td class="num">9,883,711</td><td class="num">2,300,000</td></tr>
+      <tr><td>HA 필러</td><td class="num">5,331,426</td><td class="num">1,600,000</td></tr>
+      <tr><td>피부 재생 (필링·레이저·더마브레이전)</td><td class="num">3,703,305</td><td class="num">필링 418,000</td></tr>
+      <tr><td>레이저 치료 (제모·IPL·혈관)</td><td class="num">3,112,056</td><td class="num">제모 457,000</td></tr>
+      <tr><td>기미·색소 레이저</td><td class="num">—</td><td class="num">382,000</td></tr>
+      <tr><td>여드름 레이저·광</td><td class="num">—</td><td class="num">212,000</td></tr>
+      <tr><td>흉터 레이저</td><td class="num">—</td><td class="num">211,000</td></tr>
+      <tr><td>RF + 집속초음파 (써마지·울쎄라 계열)</td><td class="num">439,032</td><td class="num">208,000 + 134,000</td></tr>
+      <tr><td>마이크로니들링</td><td class="num">—</td><td class="num">238,000</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="who">
+  <h2>누가 많이 받나 — 성별·나이</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>자료</th><th>성별</th><th>나이</th></tr></thead>
+    <tbody>
+      <tr><td>ISAPS 2024 (세계)</td><td>보톡스 남성 약 16% · 필러 남성 약 14%</td><td>35~50세가 보톡스 최다 (371.5만 건)</td></tr>
+      <tr><td>ASPS 2024 (미국)</td><td>여성 93% · 남성 7%</td><td>40~54세가 보톡스 57% · 필러 50%</td></tr>
+      <tr><td>JSAPS 2025 (일본)</td><td>제모만 남성 45%, 나머지는 여성 90% 이상</td><td>연령 자료 없음</td></tr>
+      <tr><td>Aesthetic Society 2021 (미국)</td><td>뉴로톡신 여성 347만 · 남성 16만</td><td>36~50세 41% · 51~70세 37%</td></tr>
+    </tbody>
+  </table></div>
+  <p class="sub">화면 설계에 쓰면: 주 사용자는 <b>30~50대 여성</b>이고, <b>남성은 제모</b>에서 비중이 큽니다. 언어 선택 다음 화면에서 시술을 고를 때 이 순서로 보여 주면 됩니다.</p>
+</section>
+
+<section id="top10">
+  <h2>GlowPass 시술 10개 — 근거표</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>#</th><th>시술</th><th>근거 자료</th><th>대표 숫자</th><th>근거</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>보톡스</td><td>ISAPS · ASPS · JSAPS · ASDS</td><td>세계 788만 · 일본 110.7만 (모두 1위)</td><td><span class="chip c-good">충분</span></td></tr>
+      <tr><td>2</td><td>HA 필러</td><td>ISAPS · ASPS · JSAPS</td><td>세계 634만 · UAE·사우디 1위</td><td><span class="chip c-good">충분</span></td></tr>
+      <tr><td>3</td><td>레이저 토닝·기미·IPL</td><td>JSAPS · ASDS · ASPS</td><td>일본 기미 38.3만 + IPL 24.7만</td><td><span class="chip c-good">충분</span></td></tr>
+      <tr><td>4</td><td>레이저 제모</td><td>ISAPS · JSAPS · ASDS</td><td>세계 149만 · 일본 68.2만 (남성 45%)</td><td><span class="chip c-good">충분</span></td></tr>
+      <tr><td>5</td><td>HIFU·RF 리프팅 (울쎄라·써마지)</td><td>ISAPS · ASPS · JSAPS · ASDS</td><td>세계 124만 (+38.9%)</td><td><span class="chip c-good">충분</span></td></tr>
+      <tr><td>6</td><td>화학박피 (필링)</td><td>ISAPS · JSAPS · ASDS</td><td>세계 82만 (+33.3%)</td><td><span class="chip c-good">충분</span></td></tr>
+      <tr><td>7</td><td>프랙셔널·흉터 레이저</td><td>ISAPS · JSAPS · ASDS</td><td>세계 박피성 75.3만 (+59.2%)</td><td><span class="chip c-good">충분</span></td></tr>
+      <tr><td>8</td><td>여드름 치료</td><td>ASDS</td><td>레이저·광 21.2만 (2019)</td><td><span class="chip c-warn">자료 1개</span></td></tr>
+      <tr><td>9</td><td>점·색소 병변 제거</td><td>JSAPS · ASDS</td><td>일본 기미·사마귀 38.3만에 포함</td><td><span class="chip c-warn">간접</span></td></tr>
+      <tr><td>10</td><td>스킨부스터 (리쥬란·물광)</td><td>공식 통계 없음</td><td>ASDS 마이크로니들링 23.8만이 가장 가까움</td><td><span class="chip c-bad">업계자료</span></td></tr>
+    </tbody>
+  </table></div>
+  <p class="sub">스킨부스터는 한국 방문 이유로 뉴스·업계 자료에 자주 나오지만 공식 통계가 없습니다. 목록에 넣으려면 "K-뷰티 특화 시술(업계 자료 기준)"로 따로 표시하세요.</p>
+</section>
+
+<section id="files">
+  <h2>원본 파일 (받아 둠)</h2>
+  <p class="sub">한스님 Chrome으로 받아 <code>data/external/aesthetic_stats/</code>에 넣었습니다. Claude 작업 환경은 조직 네트워크 설정 때문에 이 사이트들에 직접 못 들어가서, 한스님 브라우저를 통해 받았습니다.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>파일</th><th>쪽수</th><th>무엇</th></tr></thead>
+    <tbody>
+      <tr><td><code>isaps-global-survey-2024.pdf</code></td><td class="num">86</td><td>ISAPS 2024 전체 (세계·32개국·성별·나이·의료관광)</td></tr>
+      <tr><td><code>ISAPS_global-survey-2024-press-release-english.pdf</code></td><td class="num">3</td><td>ISAPS 보도자료</td></tr>
+      <tr><td><code>JSAPS_explore2026.pdf</code></td><td class="num">1</td><td>일본 전국 미용의료 실태조사 (2025년 시술)</td></tr>
+      <tr><td><code>ASPS_plastic-surgery-statistics-report-2025.pdf</code></td><td class="num">47</td><td>미국 성형외과학회 2025 (비율 위주)</td></tr>
+      <tr><td><code>KHIDI_2025_외국인환자유치실적_통계분석보고서.pdf</code></td><td class="num">184</td><td>국적별·성별·나이·진료과 표</td></tr>
+      <tr><td><code>ASDS_procedures-survey-results-infographic-2019.pdf</code></td><td class="num">1</td><td>미국 피부외과학회 시술 조사 (ASDS 최신 = 2019)</td></tr>
+      <tr><td><code>AestheticSociety_2023.pdf</code></td><td class="num">25</td><td>미국 The Aesthetic Society 2023 (수술만)</td></tr>
+      <tr><td><code>Deloitte_China_medical_aesthetic_outlook_2026.pdf</code></td><td class="num">18</td><td>중국 딜로이트 2026 (업계 자료)</td></tr>
+    </tbody>
+  </table></div>
+  <p class="sub">숫자 정리본: <code>시술통계_정리_20260930.csv</code>. 아직 없는 것: ASPS 2024(학회가 내림) · Aesthetic Society 2021(비수술 표 있음, Chrome 이 연속 다운로드를 막음 → 한스님이 한 번 클릭) · Roland Berger 백서(회원가입 필요) · 嘉世咨询(공식 배포 없음).</p>
+  <h3>논문에서 인용할 때</h3>
+  <ul>
+    <li>ISAPS 권장 문구: "Please credit the International Society of Aesthetic Plastic Surgery when citing statistical data."</li>
+    <li>ISAPS 데이터를 쓴 논문 예: Triana L 외, "Trends in Surgical and Nonsurgical Aesthetic Procedures: A 14-Year Analysis of ISAPS", <i>Aesthetic Plastic Surgery</i> 2024;48:4217–4227 (<a href="https://link.springer.com/article/10.1007/s00266-024-04260-2" target="_blank" rel="noopener">링크</a>)</li>
+    <li>보건복지부 보도자료·KHIDI 보고서: 공공누리 출처표시</li>
+  </ul>
+</section>
+
+<footer>v5 · 2026-09-30. 보건복지부·KHIDI·ISAPS·JSAPS·ASDS·ASPS 2025·딜로이트 2026 은 원문과 직접 대조했습니다. 잠정: ASPS 2024(학회가 내림) · 嘉世咨询 등 2차 인용. 중국·중동 정부의 공식 시술 통계는 찾지 못했습니다(중국은 업계 보고서만 있음).</footer>
+</div>
+
+</body></html>
