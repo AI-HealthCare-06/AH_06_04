@@ -1,7 +1,7 @@
 from datetime import date, datetime
 from typing import Annotated
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from app.core.validators import optional_after_validator, validate_birthday, validate_phone_number
 from app.dtos.base import BaseSerializerModel
@@ -9,6 +9,7 @@ from app.models.users import Gender
 
 
 class UserUpdateRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     name: Annotated[str | None, Field(None, min_length=2, max_length=20)]
     phone_number: Annotated[
         str | None,
