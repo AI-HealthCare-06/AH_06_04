@@ -1,9 +1,12 @@
 """요청·응답 모양 (DTO)."""
 
 import re
+from datetime import date
 from typing import Annotated
 
-from pydantic import AfterValidator, BaseModel, EmailStr, Field
+from pydantic import AfterValidator, BaseModel, ConfigDict, EmailStr, Field
+
+from app.models import Gender
 
 
 def _check_password(v: str) -> str:
@@ -46,8 +49,17 @@ class TokenResponse(BaseModel):
     token_type: str = "bearer"
 
 
+def _past_date(v: date | None) -> date | None:
+    if v is not None and v >= date.today():
+        raise ValueError("생일은 오늘보다 앞이어야 합니다.")
+    return v
+
+
 class ProfileUpdate(BaseModel):
-    """간편 가입자 추가 정보 · 언어 변경."""
+    """간편 가입자 추가 정보 · 언어 변경.
+    email 은 로그인 아이디라 여기서 못 바꾼다. 모르는 칸(email 등)을 보내면 422 (팀 PR #2 와 같은 규칙, extra="forbid")."""
+
+    model_config = ConfigDict(extra="forbid")
 
     nationality: Nationality | None = None
     preferred_language: LangCode | None = None
@@ -56,6 +68,9 @@ class ProfileUpdate(BaseModel):
     agree_terms: bool | None = None
     agree_privacy: bool | None = None
     agree_health_info: bool | None = None
+    phone_number: Phone | None = None
+    gender: Gender | None = None
+    birthday: Annotated[date | None, AfterValidator(_past_date)] = None
 
 
 class MeResponse(BaseModel):
@@ -64,6 +79,10 @@ class MeResponse(BaseModel):
     name: str | None
     nationality: str | None
     preferred_language: str
+    phone_number: str | None
+    gender: Gender | None
+    birthday: date | None
+    is_admin: bool
     health_consent: bool
     needs_profile: bool
     social_providers: list[str]

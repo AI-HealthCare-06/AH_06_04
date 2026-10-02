@@ -2,6 +2,13 @@ from app.models import SocialAccount, User, WithdrawalLog
 from tests.conftest import signup_login
 
 
+async def _admin_access(client):
+    """관리자 만들기 — API 로는 못 만들고 DB 에서 is_admin 을 켠다 (팀 템플릿과 같음)."""
+    access = await signup_login(client, email="admin@example.com")
+    await User.filter(email="admin@example.com").update(is_admin=True)
+    return access
+
+
 async def _withdraw(client, access, **body):
     return await client.post("/api/v1/users/me/withdraw", headers={"Authorization": f"Bearer {access}"}, json=body)
 
@@ -60,7 +67,20 @@ async def test_withdraw_social_user_and_stats(client):
     ]
     assert (await _withdraw(client, access, reason_code="privacy", reason_text="건강정보가 걱정")).status_code == 200
     assert await SocialAccount.all().count() == 0
-    stats = (await client.get("/api/v1/meta/withdrawal-stats")).json()
+    admin = await _admin_access(client)
+    stats = (await client.get("/api/v1/meta/withdrawal-stats", headers={"Authorization": f"Bearer {admin}"})).json()
     assert stats["total"] == 1 and {s["code"]: s["count"] for s in stats["by_reason"]}["privacy"] == 1
     assert stats["recent_texts"] == ["건강정보가 걱정"]
     assert (await WithdrawalLog.first()).login_method == "kakao"
+
+
+async def test_withdrawal_stats_admin_only(client):
+    """10/2 리뷰: 탈퇴 사유는 관리자만. 로그인 안 함 401 · 일반 회원 403 · 관리자 200."""
+    url = "/api/v1/meta/withdrawal-stats"
+    assert (await client.get(url)).status_code == 401
+    normal = await signup_login(client)
+    r = await client.get(url, headers={"Authorization": f"Bearer {normal}"})
+    assert r.status_code == 403 and r.json()["detail"] == "관리자만 볼 수 있습니다."
+    admin = await _admin_access(client)
+    r = await client.get(url, headers={"Authorization": f"Bearer {admin}"})
+    assert r.status_code == 200 and r.json()["total"] == 0

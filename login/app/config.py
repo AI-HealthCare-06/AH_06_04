@@ -1,14 +1,14 @@
 """설정 — 값은 환경변수(.env)에서 읽는다. 코드에 키를 쓰지 않는다."""
 
-import secrets
-
+from pydantic import Field, ValidationError
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
-    SECRET_KEY: str = ""  # 비어 있으면 실행할 때마다 임시 키 (실습용)
+    # 필수 (10/2 리뷰 반영): 없으면 서버가 켜지지 않는다. 자동 임시 키는 재시작·서버 여러 대에서 토큰이 깨져서 뺐다.
+    SECRET_KEY: str = Field(min_length=32)
     DB_URL: str = "sqlite://glowpass_login.sqlite3"
     ACCESS_TOKEN_MINUTES: int = 15  # 트레이닝 v14 제안 (템플릿은 60)
     REFRESH_TOKEN_DAYS: int = 14
@@ -36,6 +36,15 @@ class Settings(BaseSettings):
     LINE_CHANNEL_SECRET: str = ""
 
 
-settings = Settings()
-if not settings.SECRET_KEY:
-    settings.SECRET_KEY = secrets.token_hex(32)
+SECRET_KEY_HELP = (
+    "⚠ SECRET_KEY 가 .env 에 없거나 32자보다 짧습니다.\n"
+    '  만들기: python3 -c "import secrets; print(secrets.token_hex(32))"\n'
+    "  나온 값을 .env 의 SECRET_KEY= 뒤에 붙여넣기 (팀이 같이 쓰는 서버는 같은 값을 써야 함)"
+)
+
+try:
+    settings = Settings()
+except ValidationError as e:
+    if any(err["loc"] == ("SECRET_KEY",) for err in e.errors()):
+        raise SystemExit(SECRET_KEY_HELP) from e
+    raise

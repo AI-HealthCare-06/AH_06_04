@@ -18,6 +18,10 @@ async def _me(user) -> MeResponse:
         name=user.name,
         nationality=user.nationality,
         preferred_language=user.preferred_language,
+        phone_number=user.phone_number,
+        gender=user.gender,
+        birthday=user.birthday,
+        is_admin=user.is_admin,
         health_consent=user.agreed_health_at is not None,
         needs_profile=user.needs_profile,
         social_providers=[str(getattr(p, "value", p)) for p in providers],
@@ -34,7 +38,7 @@ async def me(user: CurrentUser) -> MeResponse:
 async def update_me(data: ProfileUpdate, user: CurrentUser) -> MeResponse:
     await check_codes(data.nationality, data.preferred_language)
     t = now()
-    for f in ("nationality", "preferred_language", "name"):
+    for f in ("nationality", "preferred_language", "name", "phone_number", "gender", "birthday"):
         v = getattr(data, f)
         if v is not None:
             setattr(user, f, v)

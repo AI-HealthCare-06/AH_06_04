@@ -33,3 +33,13 @@ def require_csrf_header(x_requested_with: Annotated[str | None, Header()] = None
 
 
 CurrentUser = Annotated[User, Depends(current_user)]
+
+
+async def admin_user(user: CurrentUser) -> User:
+    """관리자(is_admin)만 통과. 로그인 안 했으면 401, 일반 회원이면 403."""
+    if not user.is_admin:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "관리자만 볼 수 있습니다.")
+    return user
+
+
+AdminUser = Annotated[User, Depends(admin_user)]

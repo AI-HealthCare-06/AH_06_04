@@ -1,10 +1,14 @@
-import httpx
-import pytest
-from app.config import settings
-from tortoise import Tortoise
+import os
 
-from app.main import create_app, init_db
-from app.services import auth as auth_svc
+os.environ.setdefault("SECRET_KEY", "test-only-secret-key-not-for-real-use-0123456789")  # 테스트 전용 (SECRET_KEY 필수)
+
+import httpx  # noqa: E402
+import pytest  # noqa: E402
+from app.config import settings  # noqa: E402
+from tortoise import Tortoise  # noqa: E402
+
+from app.main import create_app, init_db  # noqa: E402
+from app.services import auth as auth_svc  # noqa: E402
 
 CSRF = {"X-Requested-With": "glowpass"}
 

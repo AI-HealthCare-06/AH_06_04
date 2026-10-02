@@ -107,7 +107,7 @@ tests/           pytest (진짜 제공자 대신 가짜 응답으로 5개 모두
 </tr>
 <tr>
 <td><code>GET·PATCH /users/me</code></td>
-<td>내 정보 보기·고치기 (간편 로그인 첫 방문의 "추가 정보 입력"도 이것)</td>
+<td>내 정보 보기·고치기 (간편 로그인 첫 방문의 "추가 정보 입력"도 이것) · <strong>email 은 못 바꿈 — 보내면 422</strong> (팀 PR #2 와 같은 규칙)</td>
 <td><code>routers/users.py</code></td>
 </tr>
 <tr>
@@ -119,6 +119,11 @@ tests/           pytest (진짜 제공자 대신 가짜 응답으로 5개 모두
 <td><code>GET /meta/countries</code> · <code>/meta/languages</code> · <code>/meta/providers</code></td>
 <td>국적 249 · 언어 8 · 간편 로그인 진짜/가짜 상태</td>
 <td><code>routers/meta.py</code></td>
+</tr>
+<tr>
+<td><code>GET /meta/withdrawal-stats</code></td>
+<td>탈퇴 이유 집계 — <strong>관리자(<code>is_admin</code>)만</strong> (로그인 안 함 401 · 일반 회원 403)</td>
+<td><code>routers/meta.py</code> · <code>deps.admin_user</code></td>
 </tr>
 </tbody>
 </table>
@@ -146,7 +151,7 @@ tests/           pytest (진짜 제공자 대신 가짜 응답으로 5개 모두
 <tbody>
 <tr>
 <td><code>users</code></td>
-<td>이메일(간편은 없을 수 있음) · 비밀번호 해시(간편은 없음) · 이름 · 국적 · 사용 언어 · 동의 시각 4개 · 활성 여부</td>
+<td><strong>팀 <code>app/models/users.py</code> 의 User 칸을 이름 그대로 전부</strong> + 국적 · 사용 언어 · 동의 시각 4개 (아래 "팀 레포로 옮길 때" 표)</td>
 </tr>
 <tr>
 <td><code>social_accounts</code></td>
@@ -166,14 +171,18 @@ tests/           pytest (진짜 제공자 대신 가짜 응답으로 5개 모두
 </tr>
 </tbody>
 </table>
-<h3>테스트 (<code>tests/</code>, 49개)</h3>
-<p>일반 가입·로그인·잠금 · refresh 회전·재사용 감지 · 로그아웃 · 간편 5개(가짜 화면) · <strong>진짜 모드 5개를 가짜 응답으로</strong> · 같은 이메일 · 탈퇴 이유 · 국적·언어</p>
+<h3>테스트 (<code>tests/</code>, 55개)</h3>
+<p>일반 가입·로그인·잠금 · refresh 회전·재사용 감지 · 로그아웃 · 간편 5개(가짜 화면) · <strong>진짜 모드 5개를 가짜 응답으로</strong> · 같은 이메일 · 탈퇴 이유 · 국적·언어 · 🆕 탈퇴 통계 관리자만 · SECRET_KEY 필수 · /users/me 이메일 거부 · 팀 User 칸 (<code>test_review_1002.py</code>)</p>
 <h2>실행 (맥)</h2>
 <pre><code>uv sync
 </code></pre>
 <pre><code>cp .env.example .env
 </code></pre>
 <p><code>.env</code> 를 열어 <code>=</code> 뒤에 값 붙여넣기 (따옴표·공백 없이). <strong><code>.env</code> 는 GitHub·카톡·채팅에 올리지 않는다.</strong></p>
+<p><strong><code>SECRET_KEY</code> 는 필수</strong> — 비어 있으면 서버가 켜지지 않고 만드는 법을 알려 준다. 만들기:</p>
+<pre><code>python3 -c &quot;import secrets; print(secrets.token_hex(32))&quot;
+</code></pre>
+<p>나온 값을 <code>.env</code> 의 <code>SECRET_KEY=</code> 뒤에. 같은 서버(여러 대 포함)는 <strong>같은 값</strong>을 써야 로그인 토큰이 안 깨진다 → 배포 값은 팀 비공개 드라이브로.</p>
 <pre><code>uv run python 키확인.py
 </code></pre>
 <pre><code>uv run pytest -q
@@ -238,5 +247,52 @@ tests/           pytest (진짜 제공자 대신 가짜 응답으로 5개 모두
 <p>이 폴더는 팀 템플릿과 같은 FastAPI + Tortoise 로 만든 <strong>독립 실행본</strong>이다. 팀 레포(<code>AI-HealthCare-06/AH_06_04</code>)에 넣을 때는
 - SQLite → MySQL (<code>DB_URL</code>), <code>generate_schemas()</code> → Aerich 마이그레이션
 - 로그인 실패 횟수·<code>state</code> 저장: 메모리 → Redis
-- <code>models/users.py</code> 변경(전화번호 E.164, 소셜 계정 테이블, 동의 시각 칸)은 <strong>팀에 먼저 공유</strong>
-- 탈퇴 이유 집계 API 는 관리자만 보게 막기</p><hr><p style="color:#888;font-size:12px">README.md 자동 변환 · 내용이 다르면 README.md 가 맞다</p></body></html>
+- <code>SECRET_KEY</code> 는 <code>envs/.local.env</code>·<code>.prod.env</code> 에 필수로 (예시 파일의 템플릿 공개값은 바꾸기)
+- 탈퇴 통계는 이미 관리자만 (<code>deps.admin_user</code>) → 팀 <code>get_request_user</code> 에 <code>is_admin</code> 확인만 붙이면 됨</p>
+<h3>User 모델 — 새 테이블 말고 <strong>기존 팀 User 에 칸 추가</strong> (10/2 안애영님 의견 반영)</h3>
+<p>FR-08·FR-10 이 기존 User 로 진행 중이라, 기존 <code>users</code> 테이블을 그대로 두고 아래만 바꾸는 방식을 제안한다. 이 폴더의 <code>User</code> 도 이미 같은 모양 (팀 칸 이름 전부 + 추가 칸).</p>
+<table>
+<thead>
+<tr>
+<th>구분</th>
+<th>칸</th>
+<th>이유</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>추가</td>
+<td><code>nationality</code> (2자, ISO 국가 코드) · <code>preferred_language</code> (10자, 기본 <code>en</code>)</td>
+<td>외국인 서비스 — 국적·사용 언어</td>
+</tr>
+<tr>
+<td>추가</td>
+<td><code>agreed_age14_at</code> · <code>agreed_terms_at</code> · <code>agreed_privacy_at</code> · <code>agreed_health_at</code></td>
+<td>약관·건강정보 동의 시각</td>
+</tr>
+<tr>
+<td>추가 (별도 테이블)</td>
+<td><code>social_accounts</code> · <code>refresh_tokens</code></td>
+<td>간편 로그인 연결 · refresh 회전 (User 를 바꾸지 않음)</td>
+</tr>
+<tr>
+<td>null 허용</td>
+<td><code>hashed_password</code> · <code>gender</code> · <code>birthday</code> · <code>phone_number</code></td>
+<td>간편 가입 직후엔 없음 → "추가 정보 입력" 에서 채움</td>
+</tr>
+<tr>
+<td>길이</td>
+<td><code>email</code> 40→255 (unique, null 허용) · <code>name</code> 20→50 · <code>phone_number</code> 11→16 (E.164 <code>+8210…</code>)</td>
+<td>외국 이메일·이름·번호</td>
+</tr>
+<tr>
+<td>그대로</td>
+<td><code>id</code> · <code>is_active</code> · <code>is_admin</code> · <code>last_login</code> · <code>created_at</code> · <code>updated_at</code></td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><code>PATCH /users/me</code> 는 팀 PR #2 와 같이 <strong>email 을 받지 않는다</strong> (<code>extra="forbid"</code> → 422)</li>
+<li><code>models/users.py</code> 를 바꾸는 것은 <strong>팀에 먼저 공유</strong> 후 (공통 파일)</li>
+</ul><hr><p style="color:#888;font-size:12px">README.md 자동 변환 · 내용이 다르면 README.md 가 맞다</p></body></html>

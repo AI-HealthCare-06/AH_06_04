@@ -2,6 +2,7 @@ from typing import Literal
 
 from fastapi import APIRouter
 
+from app.deps import AdminUser
 from app.models import Country, Language, WithdrawalLog, WithdrawalReason
 from app.schemas import CountryOut, LanguageOut, WithdrawalReasonOut, WithdrawalStat, WithdrawalStats
 
@@ -33,8 +34,8 @@ async def withdrawal_reasons() -> list[WithdrawalReasonOut]:
 
 
 @router.get("/withdrawal-stats", response_model=WithdrawalStats)
-async def withdrawal_stats() -> WithdrawalStats:
-    """탈퇴 이유 집계 — ⚠ 실습용(누구나 볼 수 있음). glowpass 에서는 관리자(is_admin)만 보게 막아야 한다."""
+async def withdrawal_stats(admin: AdminUser) -> WithdrawalStats:
+    """탈퇴 이유 집계 — 관리자(is_admin)만. 로그인 안 하면 401, 일반 회원은 403 (10/2 리뷰 반영)."""
     reasons = await WithdrawalReason.all().order_by("sort_order")
     stats = [
         WithdrawalStat(code=r.code, label=r.label_ko, count=await WithdrawalLog.filter(reason_id=r.code).count())
