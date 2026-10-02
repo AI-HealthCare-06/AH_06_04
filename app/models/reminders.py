@@ -19,4 +19,3 @@ class ReminderSetting(models.Model):
 
     class Meta:
         table = "reminder_settings"
-        

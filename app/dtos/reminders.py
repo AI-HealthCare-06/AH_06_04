@@ -32,4 +32,3 @@ class ReminderResponse(BaseSerializerModel):
     repeat_rule: str | None
     is_active: bool
     created_at: datetime
-    

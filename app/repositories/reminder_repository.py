@@ -29,4 +29,3 @@ class ReminderRepository:
 
     async def delete_reminder(self, reminder: ReminderSetting) -> None:
         await reminder.delete()
-        
