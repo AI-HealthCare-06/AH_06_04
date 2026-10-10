@@ -1,0 +1,9 @@
+.env
+.env.*
+!.env.example
+.venv/
+__pycache__/
+*.sqlite3*
+.pytest_cache/
+eval/결과/
+*_기록/
