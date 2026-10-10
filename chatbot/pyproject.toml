@@ -1,0 +1,29 @@
+[project]
+name = "glowpass-chatbot"
+version = "0.1.0"
+description = "GlowPass FR-04 다국어 AI 챗봇 (안내문 근거 답 · 세이프가드 · 8개 언어 · SSE) — 실습 v3 최종본"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi[standard]>=0.115",
+    "tortoise-orm>=0.25",
+    "pydantic-settings>=2.6",
+    "httpx>=0.28",
+    "pyjwt>=2.10",
+]
+
+[dependency-groups]
+dev = ["pytest>=8", "pytest-asyncio>=0.24", "ruff>=0.6"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+addopts = "--tb=short"
+
+[tool.ruff]
+# 팀 레포(glowpass) pyproject 와 같은 규칙
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "C90", "B", "UP", "N"]
+ignore = ["UP046", "E501", "B008"]  # B008: FastAPI Depends() 기본값 (팀 템플릿도 같은 패턴)
