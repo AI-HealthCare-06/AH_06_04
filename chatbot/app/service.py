@@ -1,40 +1,83 @@
-"""챗봇 한 턴 (v2) — 질문 하나를 받아 '이벤트' 를 차례로 내보낸다. 라우터가 이것을 SSE 글자로 바꾼다.
+"""챗봇 한 턴 — 질문 하나를 받아 '이벤트' 를 차례로 내보낸다. 라우터가 이것을 SSE 글자로 바꾼다.
 
 이벤트 (event, data):
   meta     {conversation_id, lang}
-  sources  {docs: [{id, title, reviewed}]}  — v2: 근거 안내문 (답보다 먼저 — 끊겨도 근거는 감)
+  sources  {docs: [{id, title, reviewed}]}  — 근거 안내문 (답보다 먼저 — 끊겨도 근거는 감)
   token    {t}                    — 검사를 통과한 문장 조각 (문장 단위로 흘림)
   replace  {text, outcome}        — 지금까지 보인 답을 지우고 고정 문구로 (no_doc · blocked · emergency · limit · error)
   notice   {text}                 — 면책 문구 (LLM 이 아니라 고정 표)
   done     {outcome, tokens, cached}
 
-순서: 한도 → 응급 → 진단·처방 요청 → 🆕 안내문 찾기(없으면 AI 안 부름) → 캐시 → LLM(1번) → 문장 검사 → 저장
+순서: 한도 → 응급 → 진단·처방 요청 → 안내문 찾기(없으면 AI 안 부름) → 캐시 → LLM(1번) → 문장 검사 → 저장
+
+[리뷰 P1-4] 한도 = chat_daily_usage 의 조건부 UPDATE 한 번 (count < 한도 일 때만 +1) → 동시 요청에도 한도를 넘지 않음
+[리뷰 P1-5] LLM 쪽에서 무슨 일이 나도 오류 문구 + 저장 + done 으로 끝난다
+[리뷰 P2-9] 보관 기간이 지난 대화는 purge_expired() 가 지운다 (서버가 켜져 있는 동안 주기적으로)
 """
 
 import asyncio
 import contextlib
+import logging
 import re
 from collections.abc import AsyncIterator, Awaitable, Callable
-from datetime import UTC, datetime, timedelta, timezone
+from datetime import UTC, date, datetime, timedelta, timezone
+
+from tortoise.exceptions import IntegrityError
+from tortoise.expressions import F, Q
 
 from app import docs, i18n, safety
 from app.cache import answer_cache
 from app.config import settings
 from app.llm import LLMError
-from app.models import Conversation, Message
+from app.models import Conversation, DailyUsage, Message
 from app.prompt import build_messages
 
 Event = tuple[str, dict]
-KST = timezone(timedelta(hours=9))  # v2: '하루' = 한국 시간 자정 기준 (v1 은 UTC 라 오전 9시에 바뀌었음)
+KST = timezone(timedelta(hours=9))  # '하루' = 한국 시간 자정 기준
 
 
-def _today_start() -> datetime:
-    # ⚠ 실습 v2 에서 걸린 것: KST 시각을 그대로 비교하면 SQLite 가 글자로 비교해서 한도가 안 걸렸다 → UTC 로 바꿔 비교
-    return datetime.now(KST).replace(hour=0, minute=0, second=0, microsecond=0).astimezone(UTC)
+log = logging.getLogger("chatbot")  # 질문·답 내용은 절대 찍지 않는다 (건강 정보)
 
 
-async def questions_today(owner_sid: str) -> int:
-    return await Message.filter(conversation__owner_sid=owner_sid, role="user", created_at__gte=_today_start()).count()
+def kst_today() -> date:
+    return datetime.now(KST).date()
+
+
+async def questions_today(user_id: int) -> int:
+    row = await DailyUsage.get_or_none(user_id=user_id, day=kst_today())
+    return row.count if row else 0
+
+
+async def reserve_question(user_id: int) -> bool:
+    """오늘 질문 1개를 쓴다. 한도 안이면 True (+1 됨), 넘으면 False (그대로).
+    확인과 증가가 'count < 한도 인 줄만 +1' 하는 UPDATE 한 번이라 동시 요청이 와도 한도를 넘지 않는다."""
+    day = kst_today()
+    for _ in range(2):
+        updated = await DailyUsage.filter(user_id=user_id, day=day, count__lt=settings.daily_message_limit).update(
+            count=F("count") + 1
+        )
+        if updated:
+            return True
+        if await DailyUsage.exists(user_id=user_id, day=day):
+            return False  # 오늘 줄이 있는데 못 올림 = 한도
+        with contextlib.suppress(IntegrityError):  # 동시에 둘이 첫 줄을 만들면 하나는 실패 → 다시 UPDATE
+            await DailyUsage.create(user_id=user_id, day=day, count=0)
+    return False
+
+
+async def purge_expired(now: datetime | None = None) -> int:
+    """보관 기간(CHAT_RETENTION_DAYS)이 지난 대화를 메시지째 지운다. 지난 날짜의 사용량 줄도 정리."""
+    now = now or datetime.now(UTC)
+    cutoff = now - timedelta(days=settings.chat_retention_days)
+    old = Q(last_message_at__lt=cutoff) | Q(last_message_at__isnull=True, created_at__lt=cutoff)
+    ids = await Conversation.filter(old).values_list("id", flat=True)
+    if ids:
+        await Conversation.filter(id__in=ids).delete()  # 메시지는 CASCADE 로 같이
+    n = len(ids)
+    await DailyUsage.filter(day__lt=now.astimezone(KST).date() - timedelta(days=2)).delete()
+    if n:
+        log.info("purged %d expired conversations", n)  # 개수만
+    return n
 
 
 async def _save_answer(
@@ -64,10 +107,10 @@ async def _fixed(conv: Conversation, key: str, lang: str) -> AsyncIterator[Event
 
 
 # 이어지는 질문 표시 — 이런 말로 시작/포함하면 '앞 질문 이야기' 로 본다
-# ⚠ 실습 v2 에서 걸린 것: 처음엔 '못 찾으면 무조건 앞 안내문' 이었더니 "주차는 어디에 해요?" 에도 앞 안내문으로 답했다
+# (못 찾으면 무조건 앞 안내문을 쓰면 "주차는 어디에 해요?" 같은 엉뚱한 질문에도 앞 안내문으로 답하게 된다)
 _FOLLOW_UP = re.compile(
-    r"^(그럼|그러면|그건|그거|그때|그리고)|언제부터|얼마나|^(and|then|what about|how about|so)\b|^(それ|じゃあ|では)"
-    r"|^(那|那么|那麼)|^(а|и|тогда)\s|^(còn|vậy)\s|^(แล้ว|ถ้า)",
+    r"^(그럼|그러면|그건|그거|그때|그리고)|언제부터|얼마나|^(and|then|what about|how about|so)\b"
+    r"|^(それ|じゃあ|では)|いつから|^(那|那么|那麼)|什么时候",
     re.IGNORECASE,
 )
 
@@ -94,7 +137,7 @@ async def run_turn(
     yield "meta", {"conversation_id": str(conv.public_id), "lang": lang}
 
     # ① 하루 한도 — 질문을 저장하기 전에 (한도 초과 질문은 남기지 않음)
-    if await questions_today(conv.owner_sid) >= settings.daily_message_limit:
+    if not await reserve_question(conv.user_id):
         yield "replace", {"text": i18n.t("limit", lang), "outcome": "limit"}
         yield "done", {"outcome": "limit", "tokens": 0, "cached": False}
         return
@@ -126,9 +169,9 @@ async def run_turn(
     source_ids = [d.id for d in found]
     yield _sources_event(found, lang)
 
-    # ⑤ 캐시 (첫 질문만) — 키에 안내문 버전·id 를 넣어 안내문이 바뀌면 새로
+    # ⑤ 캐시 (첫 질문만 · 사용자마다 따로) — 키에 안내문 버전·id 를 넣어 안내문이 바뀌면 새로
     cache_q = f"{docs.store().version}|{','.join(source_ids)}|{question}"
-    if first_turn and (cached := answer_cache.get(lang, cache_q)) is not None:
+    if first_turn and (cached := answer_cache.get(conv.user_id, lang, cache_q)) is not None:
         sentences, tail = safety.split_complete_sentences(cached)
         for s in [*sentences, tail]:
             if s:
@@ -170,7 +213,7 @@ async def _finish(
         answer = "".join(st.shown)
         await _save_answer(conv, answer, lang, "ok", llm.name, llm.usage, source_ids)
         if cache_question is not None:
-            answer_cache.put(lang, cache_question, answer)
+            answer_cache.put(conv.user_id, lang, cache_question, answer)
         yield "notice", {"text": i18n.t("disclaimer", lang)}
     yield "done", {"outcome": st.outcome, "tokens": llm.usage.output_tokens, "cached": False}
 
@@ -222,8 +265,12 @@ async def _stream_checked(llm, messages, lang, is_disconnected, st: _TurnState) 
                 return
             st.shown.append(buf)
             yield "token", {"t": buf}
-    except (TimeoutError, LLMError):
+    except (TimeoutError, LLMError) as e:
         st.outcome = "error"
+        log.warning("llm failed: %s", type(e).__name__)  # 종류만
+    except Exception as e:  # 예상 못 한 실패도 스트림을 그냥 끊지 않는다 (오류 문구 + 저장 + done)
+        st.outcome = "error"
+        log.exception("llm unexpected failure: %s", type(e).__name__)
     finally:
         with contextlib.suppress(Exception):
             await stream.aclose()  # LLM 스트림을 닫아야 진짜 호출도 끊긴다

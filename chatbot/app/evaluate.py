@@ -1,10 +1,10 @@
-"""골든셋 평가 — 정해 둔 질문 35개를 돌려서 '지켜야 할 성질' 을 잰다 (트레이닝 v10 §A6-3).
+"""골든셋 평가 — 정해 둔 질문을 돌려서 '지켜야 할 성질' 을 잰다.
 
 AI 답은 매번 다르다 → 정확한 문장 대신 성질을 본다:
   ① 결과 종류가 맞나 (ok · no_doc · emergency · blocked)
   ② ok 면 기대한 안내문이 근거에 들어 있나
   ③ 화면에 나간 문장 중 나쁜 문장(지시·진단·용량)이 없나
-  ④ 답이 질문 언어로 쓰였나 (가짜 AI 는 번역을 못 해서 ko·en 외엔 틀리는 게 정상)
+  ④ 답이 질문 언어로 쓰였나 (안내문에 4개 언어 본문이 있어 가짜 AI 도 맞아야 함)
   ⑤ 첫 문장까지 걸린 시간 · 토큰 수
 
 실행: scripts/eval.py (가짜 AI 는 비용 0 · 진짜 AI 는 --mode openai --yes)
@@ -29,10 +29,6 @@ _SCRIPT = {
     "ko": re.compile(r"[가-힣]"),
     "ja": re.compile(r"[぀-ヿ]"),
     "zh-Hans": re.compile(r"[一-鿿]"),
-    "zh-Hant": re.compile(r"[一-鿿]"),
-    "ru": re.compile(r"[Ѐ-ӿ]"),
-    "th": re.compile(r"[฀-๿]"),
-    "vi": re.compile(r"[ăâđêôơưạảấầẩẫậắằẳẵặẹẻẽếềểễệỉịọỏốồổỗộớờởỡợụủứừửữựỳỵỷỹ]", re.I),
 }
 
 
@@ -40,11 +36,9 @@ def looks_like(lang: str, text: str) -> bool:
     """답이 그 언어 글자로 쓰였나 (대충) — 가짜 AI 표시 '(가짜 AI)' 는 빼고 본다."""
     text = text.replace("(가짜 AI)", "")
     if lang == "en":
-        return bool(text.strip()) and not any(rx.search(text) for k, rx in _SCRIPT.items() if k != "vi")
-    if lang == "ja":
-        return bool(_SCRIPT["ja"].search(text))
-    if lang in ("zh-Hans", "zh-Hant"):
-        return bool(_SCRIPT[lang].search(text)) and not _SCRIPT["ja"].search(text)
+        return bool(text.strip()) and not any(rx.search(text) for rx in _SCRIPT.values())
+    if lang == "zh-Hans":
+        return bool(_SCRIPT["zh-Hans"].search(text)) and not _SCRIPT["ja"].search(text)
     return bool(_SCRIPT[lang].search(text))
 
 
@@ -102,9 +96,9 @@ async def run_eval(llm, items: list[dict]) -> list[Row]:
     docs.store()
     rows: list[Row] = []
     try:
-        for it in items:
+        for n, it in enumerate(items):
             row = Row(it["id"], it["lang"], it["q"], it["expect"], it.get("doc"))
-            conv = await Conversation.create(owner_sid=f"s:eval-{it['id']}", lang=it["lang"])
+            conv = await Conversation.create(user_id=900000 + n, lang=it["lang"])  # 질문마다 새 사용자 (한도·캐시 분리)
             t0 = time.perf_counter()
             async for ev, data in run_turn(conv, it["q"], it["lang"], llm):
                 if ev == "sources":
@@ -177,6 +171,6 @@ def report(rows: list[Row], mode: str, model: str) -> str:
     if mode == "fake":
         lines += [
             "",
-            "> 가짜 AI 는 번역을 못 한다 → '답 언어' 는 ko·en 만 맞는 게 정상. 진짜 AI 로 다시 재야 의미가 있다.",
+            "> 가짜 AI 는 안내문 본문을 그대로 내보낸다 → 답 품질은 진짜 AI 로 다시 재야 의미가 있다.",
         ]
     return "\n".join(lines) + "\n"

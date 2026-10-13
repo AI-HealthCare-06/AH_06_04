@@ -1,9 +1,7 @@
-"""v2 새 기능 — 안내문 근거 답 · 안내문 없음 · 이어지는 질문 · 안내문 추가 · 로그인 토큰 · 골든셋."""
+"""안내문 근거 답 · 안내문 없음 · 이어지는 질문 · 안내문 추가 · 로그인 토큰 · 골든셋 · OpenAI 응답 모양."""
 
 import secrets
-import time
 
-import jwt
 import pytest
 
 from app import docs
@@ -11,7 +9,7 @@ from app.config import settings
 from app.evaluate import load_golden, looks_like, run_eval
 from app.llm import FakeLLM
 from app.models import Conversation, Message
-from tests.conftest import answer_text, ask, done, make_client, new_conv
+from tests.conftest import answer_text, ask, done, make_client, new_conv, token
 
 # ── 안내문 근거 ─────────────────────────────────────────
 
@@ -44,7 +42,7 @@ async def test_title_in_user_language(client):
     cid = await new_conv(client, "ja")
     events = await ask(client, cid, "ボトックスの後")
     src = next(d for e, d in events if e == "sources")["docs"]
-    assert src[0]["title"] == "Care after botox"  # ko 가 아니면 영어 제목
+    assert src[0]["title"] == "ボトックス施術後のケア"  # 그 언어 제목 (없으면 영어)
 
 
 async def test_follow_up_reuses_previous_doc(client, llm):
@@ -74,10 +72,10 @@ async def test_first_question_without_keyword_is_no_doc(client, llm):
     ("q", "doc_id"),
     [
         ("レーザーの後、洗顔は？", "laser-toning"),
-        ("Sau khi tiêm filler", "filler"),
-        ("หลังฉีดโบท็อกซ์", "botox"),
+        ("打完玻尿酸", "filler"),
+        ("ボトックスの後", "botox"),
         ("忘了吃药", "medicine-schedule"),
-        ("Можно ли умываться после лазера?", "laser-toning"),
+        ("Can I wash after laser?", "laser-toning"),
         ("雷射後可以化妝嗎", "laser-toning"),
     ],
 )
@@ -122,7 +120,7 @@ def test_teammate_adds_doc_file(tmp_path):
     s = docs.DocStore.from_dir(tmp_path)
     assert [d.id for d in s.docs] == ["chemical-peel"]
     assert s.search("필링 받았어요")[0].reviewed is True
-    assert s.docs[0].body("th") == ("en", "Do not pick the peeling skin.")
+    assert s.docs[0].body("ja") == ("en", "Do not pick the peeling skin.")  # 일본어 본문이 없으면 영어
 
 
 @pytest.mark.parametrize(
@@ -146,25 +144,18 @@ def test_duplicate_doc_id_rejected():
 
 # ── 로그인 토큰 ─────────────────────────────────────────
 
-# 테스트용 서명 값은 실행할 때마다 무작위로 만든다 (파일에 비밀처럼 보이는 문자열을 남기지 않음 — 키점검 0건)
-SECRET = secrets.token_hex(24)
 OTHER = secrets.token_hex(24)
 
 
-def token(user_id: int, typ: str = "access", secret: str = SECRET, exp_s: int = 900) -> str:
-    return jwt.encode({"type": typ, "user_id": user_id, "exp": int(time.time()) + exp_s}, secret, algorithm="HS256")
-
-
-async def test_login_token_sets_owner(llm, monkeypatch):
-    monkeypatch.setattr(settings, "login_secret_key", SECRET)
-    async with make_client(Authorization=f"Bearer {token(7)}") as me:
+async def test_login_token_sets_owner(llm):
+    async with make_client(7) as me:
         cid = await new_conv(me, "en")
-        assert (await Conversation.get(public_id=cid)).owner_sid == "u:7"
+        assert (await Conversation.get(public_id=cid)).user_id == 7
         await ask(me, cid, "sunscreen")
         assert (await me.get("/api/v1/chat/usage")).json()["used"] == 1
-    async with make_client(Authorization=f"Bearer {token(8)}") as other:
+    async with make_client(8) as other:
         assert (await other.get(f"/api/v1/chat/conversations/{cid}/messages")).status_code == 404
-    async with make_client(Authorization=f"Bearer {token(7)}") as me_again:  # 다른 기기·브라우저여도 내 대화
+    async with make_client(7) as me_again:  # 다른 기기·브라우저여도 내 대화
         assert (await me_again.get(f"/api/v1/chat/conversations/{cid}/messages")).status_code == 200
 
 
@@ -177,16 +168,22 @@ async def test_login_token_sets_owner(llm, monkeypatch):
         (lambda: "not.a.jwt", "invalid_token"),
     ],
 )
-async def test_bad_login_token_401(llm, monkeypatch, tok, code):
-    monkeypatch.setattr(settings, "login_secret_key", SECRET)
-    async with make_client(Authorization=f"Bearer {tok()}") as c:
+async def test_bad_login_token_401(llm, tok, code):
+    async with make_client(None, Authorization=f"Bearer {tok()}") as c:
         r = await c.post("/api/v1/chat/conversations", json={"lang": "en"})
         assert r.status_code == 401 and r.json()["detail"]["code"] == code
 
 
-async def test_without_login_secret_cookie_still_works(client):
-    cid = await new_conv(client, "en")
-    assert (await Conversation.get(public_id=cid)).owner_sid.startswith("s:")
+async def test_without_token_is_401_login_required(llm):
+    async with make_client(None) as anon:
+        for method, url in [
+            ("POST", "/api/v1/chat/conversations"),
+            ("GET", "/api/v1/chat/usage"),
+            ("GET", "/api/v1/chat/conversations/00000000-0000-0000-0000-000000000000/messages"),
+        ]:
+            r = await anon.request(method, url, json={} if method == "POST" else None)
+            assert r.status_code == 401 and r.json()["detail"]["code"] == "login_required", url
+        assert (await anon.get("/api/v1/chat/langs")).status_code == 200  # 언어 목록은 로그인 전에도
 
 
 # ── 골든셋 ─────────────────────────────────────────────
@@ -195,7 +192,7 @@ async def test_without_login_secret_cookie_still_works(client):
 def test_golden_set_shape():
     items = load_golden()
     assert len(items) >= 30
-    assert {it["lang"] for it in items} == {"ko", "en", "ja", "zh-Hans", "zh-Hant", "ru", "vi", "th"}
+    assert {it["lang"] for it in items} == {"ko", "ja", "zh-Hans", "en"}
     assert {it["expect"] for it in items} == {"ok", "no_doc", "emergency", "blocked"}
     for it in items:
         assert (it["doc"] is not None) == (it["expect"] == "ok"), it["id"]
@@ -203,21 +200,21 @@ def test_golden_set_shape():
 
 
 async def test_golden_set_all_pass_with_fake_llm():
-    """가짜 AI 로 35개 전부 통과 = 찾기·세이프가드·필터가 기대대로. (언어는 가짜라 ko·en 만 맞음)"""
+    """가짜 AI 로 전부 통과 = 찾기·세이프가드·필터가 기대대로. 답 언어도 4개 언어 모두 맞아야 함."""
     rows = await run_eval(FakeLLM(delay_s=0), load_golden())
     failed = [(r.id, r.q, r.outcome, r.sources) for r in rows if not r.passed]
     assert not failed, failed
-    assert all(r.lang_ok for r in rows if r.lang in ("ko", "en") and r.lang_ok is not None)
+    wrong_lang = [(r.id, r.lang) for r in rows if r.lang_ok is False]
+    assert not wrong_lang, wrong_lang
 
 
 def test_language_check():
     assert looks_like("ko", "안녕하세요")
     assert looks_like("ja", "こんにちは")
     assert not looks_like("zh-Hans", "こんにちは世界")
-    assert looks_like("th", "สวัสดี")
-    assert looks_like("vi", "Xin chào bạn")
+    assert looks_like("zh-Hans", "你好")
     assert looks_like("en", "(가짜 AI) Hello there")
-    assert not looks_like("en", "Привет")
+    assert not looks_like("en", "안녕")
 
 
 # ── OpenAI 연결 코드 (진짜 서버 대신 가짜 응답으로 — 키·비용 0) ─────────────
@@ -268,7 +265,7 @@ def test_openai_needs_key(monkeypatch):
 
 
 async def test_v3_local_server_without_key(monkeypatch):
-    """v3: 무료 로컬 AI(Ollama 같은 OpenAI 모양 서버)는 키 없이 — Authorization 헤더도 안 보냄."""
+    """OpenAI 모양 로컬 서버(Ollama 등)는 키 없이 — Authorization 헤더도 안 보냄."""
     import httpx
 
     from app.llm import OpenAILLM

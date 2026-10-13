@@ -1,7 +1,7 @@
 [project]
 name = "glowpass-chatbot"
 version = "0.1.0"
-description = "GlowPass FR-04 다국어 AI 챗봇 (안내문 근거 답 · 세이프가드 · 8개 언어 · SSE) — 실습 v3 최종본"
+description = "GlowPass FR-04 다국어 AI 챗봇 (감수된 안내문 근거 답 · 세이프가드 · 4개 언어 · 로그인 필수 · SSE) — 독립 실행본"
 requires-python = ">=3.12"
 dependencies = [
     "fastapi[standard]>=0.115",

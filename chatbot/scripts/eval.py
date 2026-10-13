@@ -22,7 +22,7 @@ from app.evaluate import load_golden, report, run_eval  # noqa: E402
 from app.llm import FakeLLM, OpenAILLM  # noqa: E402
 from app.safety import asks_for_medical_decision, is_emergency  # noqa: E402
 
-MAX_REAL_CALLS = 40  # CLAUDE.md §3 — 반복문 안 LLM 호출은 반드시 상한
+MAX_REAL_CALLS = 40  # 반복문 안 LLM 호출은 반드시 상한
 
 
 def main() -> int:
@@ -32,6 +32,10 @@ def main() -> int:
     args = ap.parse_args()
 
     items = load_golden()
+    if settings.app_env != "prod" and not settings.allow_unreviewed_docs:
+        # 지금 안내문은 모두 감수 전 예시라, 평가할 때만 포함한다 (서버 설정은 그대로)
+        settings.allow_unreviewed_docs = True
+        print("※ 평가에는 감수 전 안내문도 포함 (ALLOW_UNREVIEWED_DOCS 는 바꾸지 않음)")
     store = docs.store()
     # AI 를 부를 질문 수 = 응급·차단이 아니고 안내문을 찾은 것
     calls = sum(

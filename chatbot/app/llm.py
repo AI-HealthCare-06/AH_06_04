@@ -1,9 +1,11 @@
 """LLM 두 가지 — 같은 모양(stream)으로 갈아 끼운다.
 
-- FakeLLM (기본): 키·비용 0. v2 부터는 프롬프트에 들어온 **첫 번째 <doc> 본문**을 앞에서 3문장까지 흘린다
-  (번역은 못 한다 — 본문이 ko/en 뿐이라 다른 언어 질문엔 영어 본문이 나간다. 진짜 AI 는 그 언어로 바꿔 씀)
+- FakeLLM (기본): 키·비용 0. 프롬프트에 들어온 **첫 번째 <doc> 본문**을 앞에서 3문장까지 흘린다
+  (번역은 못 한다 — 안내문에 그 언어 본문(ko · ja · zh-Hans · en)이 있으면 그 언어로, 없으면 영어 본문)
   테스트에서는 scripted 로 '나쁜 답' 도 흉내
 - OpenAILLM: 팀 키(OPENAI_API_KEY)로 진짜 호출. `scripts/check_llm.py` 로 한 번 확인 · `scripts/eval.py --mode openai`
+- [리뷰 P1-5] 어떤 실패든(상태코드 · 네트워크 · 깨진 응답) 밖으로는 **LLMError 하나**로 나간다
+  → 챗봇은 오류 문구를 보여 주고 저장한 뒤 done 으로 정상 종료한다
 
 로그에 질문·답 내용을 찍지 않는다 (민감정보). 요청 URL·헤더도 찍지 않는다 (키).
 """
@@ -81,8 +83,8 @@ class FakeLLM:
 
 
 class OpenAILLM:
-    """OpenAI Chat Completions 스트리밍 (SSE). ⚠ v3 까지 진짜로 불러 보지 않았다 (팀 키 안 씀 — 한스 결정 10/8).
-    v3: OPENAI_BASE_URL 을 바꾸면 같은 모양의 다른 서버(무료 로컬 Ollama 등)도 키 없이 쓴다."""
+    """OpenAI Chat Completions 스트리밍 (SSE). 팀 키를 아직 쓰지 않아 실제 호출 측정은 하지 않았다
+    (가짜 OpenAI 서버로 응답 모양 · 실패 처리만 테스트). OPENAI_BASE_URL 로 OpenAI 모양의 다른 서버도 쓴다."""
 
     name = "openai"
 
@@ -106,25 +108,41 @@ class OpenAILLM:
         }
         headers = {"Authorization": f"Bearer {settings.openai_api_key}"} if settings.openai_api_key else {}
         timeout = httpx.Timeout(settings.llm_total_timeout_s, connect=5.0)
-        async with httpx.AsyncClient(
-            base_url=settings.openai_base_url, timeout=timeout, transport=self.transport
-        ) as client:
-            async with client.stream("POST", "/chat/completions", json=body, headers=headers) as res:
-                if res.status_code != 200:
-                    raise LLMError(f"openai status {res.status_code}")  # 상태코드만 (본문·키 안 찍음)
-                async for line in res.aiter_lines():
-                    if not line.startswith("data:"):
-                        continue
-                    data = line[5:].strip()
-                    if data == "[DONE]":
-                        break
-                    ev = json.loads(data)
-                    if ev.get("usage"):
-                        self.usage = Usage(ev["usage"].get("prompt_tokens", 0), ev["usage"].get("completion_tokens", 0))
-                    for ch in ev.get("choices", []):
-                        piece = (ch.get("delta") or {}).get("content")
+        try:
+            async with httpx.AsyncClient(
+                base_url=settings.openai_base_url, timeout=timeout, transport=self.transport
+            ) as client:
+                async with client.stream("POST", "/chat/completions", json=body, headers=headers) as res:
+                    if res.status_code != 200:
+                        raise LLMError(f"openai status {res.status_code}")  # 상태코드만 (본문·키 안 찍음)
+                    async for line in res.aiter_lines():
+                        piece = self._parse_line(line)
+                        if piece is _DONE:
+                            break
                         if piece:
                             yield piece
+        except LLMError:
+            raise
+        except httpx.HTTPError as e:  # 연결 실패 · 읽기 끊김 · 타임아웃 등
+            raise LLMError(f"openai network {type(e).__name__}") from e
+
+    def _parse_line(self, line: str):
+        """SSE 한 줄 → 조각 글자 / None(건너뜀) / _DONE. 형식이 깨졌으면 LLMError."""
+        if not line.startswith("data:"):
+            return None
+        data = line[5:].strip()
+        if data == "[DONE]":
+            return _DONE
+        try:
+            ev = json.loads(data)
+            if ev.get("usage"):
+                self.usage = Usage(ev["usage"].get("prompt_tokens", 0), ev["usage"].get("completion_tokens", 0))
+            return "".join((ch.get("delta") or {}).get("content") or "" for ch in ev.get("choices", []))
+        except (ValueError, AttributeError, TypeError) as e:
+            raise LLMError("openai bad response") from e
+
+
+_DONE = object()
 
 
 def make_llm():

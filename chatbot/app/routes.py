@@ -2,36 +2,36 @@
 
 | 메서드 | 주소 | 하는 일 |
 |---|---|---|
-| GET | /langs | 지원 언어 8개 + 브라우저 언어로 고른 기본값 |
+| GET | /langs | 지원 언어 4개 + 브라우저 언어로 고른 기본값 |
 | POST | /conversations | 새 대화 (언어 고름) → 인사말 |
 | GET | /conversations/{id}/messages | 이 대화 기록 |
 | POST | /conversations/{id}/stream | 질문 → SSE 로 답 흘리기 (중지 = 브라우저가 연결 끊기) |
 | DELETE | /conversations/{id} | 대화 지우기 (민감정보 — 사용자가 지울 수 있어야) |
 | GET | /usage | 오늘 쓴 질문 수 / 한도 |
 
-주인 확인 (v2): ① `Authorization: Bearer <로그인 access 토큰>` + LOGIN_SECRET_KEY 가 있으면 → 'u:<user_id>'
-               ② 없으면 v1 처럼 쿠키 gp_chat_sid → 's:<세션>'
-남의 대화는 404 (트레이닝 불변식 '남의 자원은 404'). 토큰이 틀리거나 만료면 401.
-⚠ 로그인의 '즉시 끊기(sid 확인)' 는 여기서 안 한다 — 팀 레포에 합칠 때 로그인의 current_user 를 그대로 쓰면 된다.
+[리뷰 P1-4] 로그인 필수 — 모든 주소에 `Authorization: Bearer <로그인 access 토큰>` (없으면 401 login_required).
+쿠키 세션은 없앴다 (쿠키를 지우면 한도가 초기화되던 문제 · Secure 쿠키 문제가 함께 사라짐).
+남의 대화는 404. 토큰이 틀리거나 만료면 401.
+[리뷰 P1-6] 팀 레포로 옮길 때는 `Depends(current_user_id)` → 팀 `Depends(get_request_user)` 로 바꾸고 `user.id` 를 쓴다.
 """
 
 import json
-import secrets
 import uuid
+from typing import Annotated
 
-import jwt
-from fastapi import APIRouter, Cookie, Depends, Header, HTTPException, Request, Response
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field, field_validator
 
 from app import i18n
+from app.auth import current_user_id
 from app.config import settings
 from app.llm import make_llm
 from app.models import Conversation, Message
 from app.service import questions_today, run_turn
 
 router = APIRouter(prefix="/api/v1/chat", tags=["chat"])
-COOKIE = "gp_chat_sid"
+UserId = Annotated[int, Depends(current_user_id)]  # 팀 레포에서는 Annotated[User, Depends(get_request_user)]
 
 
 def get_llm():
@@ -44,36 +44,12 @@ def _lang_or_422(lang: str | None) -> str | None:
     return lang
 
 
-def session_id(
-    response: Response,
-    gp_chat_sid: str | None = Cookie(default=None),
-    authorization: str | None = Header(default=None),
-) -> str:
-    """주인 정하기. 이름은 v1 그대로(session_id) — 값이 'u:..' 또는 's:..'."""
-    if authorization and authorization.lower().startswith("bearer ") and settings.login_secret_key:
-        token = authorization[7:].strip()
-        try:
-            payload = jwt.decode(token, settings.login_secret_key, algorithms=["HS256"])  # 로그인 security.py 와 같음
-        except jwt.ExpiredSignatureError:
-            raise HTTPException(401, detail={"code": "token_expired"}) from None
-        except jwt.InvalidTokenError:
-            raise HTTPException(401, detail={"code": "invalid_token"}) from None
-        if payload.get("type") != "access" or "user_id" not in payload:
-            raise HTTPException(401, detail={"code": "invalid_token"})
-        return f"u:{int(payload['user_id'])}"
-    if gp_chat_sid and 20 <= len(gp_chat_sid) <= 64:
-        return f"s:{gp_chat_sid}"
-    sid = secrets.token_urlsafe(24)
-    response.set_cookie(COOKIE, sid, httponly=True, samesite="lax", max_age=60 * 60 * 24 * 30, path="/api/v1/chat")
-    return f"s:{sid}"
-
-
-async def _own(conversation_id: str, sid: str) -> Conversation:
+async def _own(conversation_id: str, user_id: int) -> Conversation:
     try:
         pid = uuid.UUID(conversation_id)
     except ValueError:
         raise HTTPException(404, detail={"code": "not_found"}) from None
-    conv = await Conversation.get_or_none(public_id=pid, owner_sid=sid)
+    conv = await Conversation.get_or_none(public_id=pid, user_id=user_id)
     if conv is None:
         raise HTTPException(404, detail={"code": "not_found"})
     return conv
@@ -102,15 +78,15 @@ async def langs(request: Request):
 
 
 @router.post("/conversations", status_code=201)
-async def new_conversation(body: NewConversation, request: Request, sid: str = Depends(session_id)):
+async def new_conversation(body: NewConversation, request: Request, user_id: UserId):
     lang = _lang_or_422(body.lang) or i18n.from_accept_language(request.headers.get("accept-language")) or i18n.DEFAULT
-    conv = await Conversation.create(owner_sid=sid, lang=lang)
+    conv = await Conversation.create(user_id=user_id, lang=lang)
     return {"conversation_id": str(conv.public_id), "lang": lang, "greeting": i18n.t("greeting", lang)}
 
 
 @router.get("/conversations/{conversation_id}/messages")
-async def messages(conversation_id: str, sid: str = Depends(session_id)):
-    conv = await _own(conversation_id, sid)
+async def messages(conversation_id: str, user_id: UserId):
+    conv = await _own(conversation_id, user_id)
     rows = await Message.filter(conversation=conv).order_by("id")
     return {
         "conversation_id": conversation_id,
@@ -123,22 +99,22 @@ async def messages(conversation_id: str, sid: str = Depends(session_id)):
 
 
 @router.delete("/conversations/{conversation_id}", status_code=204)
-async def delete_conversation(conversation_id: str, sid: str = Depends(session_id)):
-    conv = await _own(conversation_id, sid)
+async def delete_conversation(conversation_id: str, user_id: UserId):
+    conv = await _own(conversation_id, user_id)
     await conv.delete()  # 메시지도 CASCADE 로 같이 지워진다
     return Response(status_code=204)
 
 
 @router.get("/usage")
-async def usage(sid: str = Depends(session_id)):
-    return {"used": await questions_today(sid), "limit": settings.daily_message_limit}
+async def usage(user_id: UserId):
+    return {"used": await questions_today(user_id), "limit": settings.daily_message_limit}
 
 
 @router.post("/conversations/{conversation_id}/stream")
 async def stream(
-    conversation_id: str, body: Ask, request: Request, sid: str = Depends(session_id), llm=Depends(get_llm)
+    conversation_id: str, body: Ask, request: Request, user_id: UserId, llm: Annotated[object, Depends(get_llm)]
 ):
-    conv = await _own(conversation_id, sid)  # 스트림을 열기 '전' 실패는 보통 JSON 에러 (404 · 422)
+    conv = await _own(conversation_id, user_id)  # 스트림을 열기 '전' 실패는 보통 JSON 에러 (404 · 422)
     lang = _lang_or_422(body.lang) or conv.lang
     if lang != conv.lang:  # 대화 중 언어를 바꾸면 대화 언어도 바꾼다
         conv.lang = lang

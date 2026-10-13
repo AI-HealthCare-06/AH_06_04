@@ -1,4 +1,4 @@
-"""진짜 AI 연결 확인 — 딱 1번, 아주 짧게 부른다. 키 값·요청 주소는 화면에 안 찍는다 (CLAUDE.md §1-1).
+"""진짜 AI 연결 확인 — 딱 1번, 아주 짧게 부른다. 키 값·요청 주소는 화면에 안 찍는다.
 
   uv run python scripts/check_llm.py
 
@@ -18,7 +18,9 @@ from app.llm import LLMError, OpenAILLM  # noqa: E402
 
 async def main() -> int:
     if settings.llm_needs_key and not settings.openai_api_key:
-        print("❌ .env 에 OPENAI_API_KEY 가 비어 있음 — .env.example 을 .env 로 복사하고 한스가 직접 붙여넣기")
+        print(
+            "❌ .env 에 OPENAI_API_KEY 가 비어 있음 — .env.example 을 .env 로 복사하고 키를 직접 붙여넣기 (채팅·문서에 쓰지 않기)"
+        )
         return 1
     llm = OpenAILLM()
     t0 = time.perf_counter()

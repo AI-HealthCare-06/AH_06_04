@@ -1,4 +1,4 @@
-"""API 흐름 (v1 테스트를 v2 에 맞춤: 질문은 안내문이 있는 주제로) — 대화 만들기 · 스트리밍 · 세이프가드 · 비용 손잡이 · 주인 확인."""
+"""API 흐름 — 대화 만들기 · 스트리밍 · 세이프가드 · 비용 손잡이 · 주인 확인 (모두 로그인 상태)."""
 
 import pytest
 
@@ -8,23 +8,23 @@ from app.models import Conversation, Message
 from tests.conftest import answer_text, ask, done, make_client, new_conv
 
 
-async def test_langs_8_and_default_from_browser(client):
+async def test_langs_4_and_default_from_browser(client):
     r = await client.get("/api/v1/chat/langs", headers={"Accept-Language": "ko-KR,ko;q=0.9"})
     body = r.json()
-    assert [x["code"] for x in body["langs"]] == list(i18n.LANGS)
+    assert [x["code"] for x in body["langs"]] == ["ko", "ja", "zh-Hans", "en"]
     assert body["default"] == "ko"
     r = await client.get("/api/v1/chat/langs", headers={"Accept-Language": "zh-TW"})
-    assert r.json()["default"] == "zh-Hant"
+    assert r.json()["default"] == "zh-Hans"  # 중국어는 간체 하나
     r = await client.get("/api/v1/chat/langs", headers={"Accept-Language": "de-DE"})
     assert r.json()["default"] == "en"  # 지원 안 하는 언어 → 영어
 
 
-async def test_new_conversation_sets_cookie_and_greets(client):
+async def test_new_conversation_greets_without_cookie(client):
     r = await client.post("/api/v1/chat/conversations", json={"lang": "ja"})
     assert r.status_code == 201
-    assert "gp_chat_sid" in r.headers.get("set-cookie", "")
-    assert "httponly" in r.headers["set-cookie"].lower()
+    assert "set-cookie" not in r.headers  # 로그인 필수 — 쿠키 세션 없음
     assert r.json()["greeting"] == i18n.t("greeting", "ja")
+    assert (await Conversation.get(public_id=r.json()["conversation_id"])).user_id == 1
 
 
 async def test_unsupported_lang_422(client):
@@ -51,7 +51,7 @@ async def test_stream_order_and_saved(client, llm):
 
 async def test_others_cannot_see_conversation(client):
     cid = await new_conv(client)
-    async with make_client() as stranger:  # 쿠키 없는 다른 사람
+    async with make_client(2) as stranger:  # 다른 사용자
         assert (await stranger.get(f"/api/v1/chat/conversations/{cid}/messages")).status_code == 404
         r = await stranger.post(f"/api/v1/chat/conversations/{cid}/stream", json={"message": "hi"})
         assert r.status_code == 404
@@ -143,12 +143,12 @@ async def test_history_is_sent_on_second_turn(client, llm):
 
 async def test_daily_limit(client, llm, monkeypatch):
     monkeypatch.setattr(settings, "daily_message_limit", 2)
-    cid = await new_conv(client, "vi")
-    await ask(client, cid, "kem chống nắng")
-    await ask(client, cid, "rượu bia")
-    events = await ask(client, cid, "câu thứ ba")
+    cid = await new_conv(client, "ja")
+    await ask(client, cid, "日焼け止め")
+    await ask(client, cid, "お酒")
+    events = await ask(client, cid, "三つ目")
     assert done(events)["outcome"] == "limit"
-    assert next(d for e, d in events if e == "replace")["text"] == i18n.t("limit", "vi")
+    assert next(d for e, d in events if e == "replace")["text"] == i18n.t("limit", "ja")
     assert await Message.filter(role="user").count() == 2  # 한도 넘은 질문은 저장 안 함
     assert llm.calls == 2
     assert (await client.get("/api/v1/chat/usage")).json() == {"used": 2, "limit": 2}
@@ -156,10 +156,10 @@ async def test_daily_limit(client, llm, monkeypatch):
 
 async def test_llm_failure_gives_fixed_error(client, llm):
     llm.fail = True
-    cid = await new_conv(client, "th")
-    events = await ask(client, cid, "แดด")
+    cid = await new_conv(client, "zh-Hans")
+    events = await ask(client, cid, "防晒")
     assert done(events)["outcome"] == "error"
-    assert next(d for e, d in events if e == "replace")["text"] == i18n.t("error", "th")
+    assert next(d for e, d in events if e == "replace")["text"] == i18n.t("error", "zh-Hans")
 
 
 async def test_first_token_timeout(client, llm, monkeypatch):
@@ -188,20 +188,22 @@ async def test_delete_conversation_removes_messages(client):
 
 async def test_switch_language_mid_conversation(client):
     cid = await new_conv(client, "ko")
-    events = await ask(client, cid, "sunscreen", lang="ru")
-    assert events[0][1]["lang"] == "ru"
-    assert next(d for e, d in events if e == "notice")["text"] == i18n.t("disclaimer", "ru")
-    assert (await Conversation.get(public_id=cid)).lang == "ru"
+    events = await ask(client, cid, "sunscreen", lang="ja")
+    assert events[0][1]["lang"] == "ja"
+    assert next(d for e, d in events if e == "notice")["text"] == i18n.t("disclaimer", "ja")
+    assert (await Conversation.get(public_id=cid)).lang == "ja"
     r = await client.post(f"/api/v1/chat/conversations/{cid}/stream", json={"message": "x", "lang": "xx"})
     assert r.status_code == 422
 
 
 @pytest.mark.parametrize("lang", i18n.LANGS)
-async def test_every_language_answers(client, lang):
+async def test_every_language_answers_in_that_language(client, lang):
+    from app.evaluate import looks_like
+
     cid = await new_conv(client, lang)
     events = await ask(client, cid, "laser")
     assert done(events)["outcome"] == "ok"
-    assert answer_text(events).strip()
+    assert looks_like(lang, answer_text(events))  # 안내문에 4개 언어 본문이 있어 그 언어로 답함
     assert next(d for e, d in events if e == "notice")["text"] == i18n.t("disclaimer", lang)
 
 

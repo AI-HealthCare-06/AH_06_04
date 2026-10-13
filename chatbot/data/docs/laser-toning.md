@@ -2,7 +2,9 @@
 id: laser-toning
 title_ko: 레이저 토닝 후 관리
 title_en: Care after laser toning
-keywords: 레이저, 토닝, 피코, laser, toning, pico, 激光, 雷射, レーザー, トーニング, лазер, tia laser, เลเซอร์
+title_ja: レーザートーニング後のケア
+title_zh-Hans: 激光嫩肤后的护理
+keywords: 레이저, 토닝, 피코, laser, toning, pico, 激光, 雷射, 镭射, 光子, レーザー, トーニング, ピコ
 source: 가짜 예시 (팀 작성 · 멘토 감수 전)
 reviewed: false
 ---
@@ -11,3 +13,9 @@ reviewed: false
 
 ## en
 For 2 to 3 days after laser toning your skin may look red or sting a little. Wash gently with lukewarm water and do not rub. Keep your skin well moisturized. Always use sunscreen when you go outside. If the redness gets worse or you see blisters, contact your clinic.
+
+## ja
+レーザートーニング後の2〜3日は、肌が赤くなったりヒリヒリしたりすることがあります。洗顔はぬるま湯でやさしく行い、こすらないでください。保湿剤をしっかり塗ってください。外出するときは日焼け止めを必ず使ってください。赤みがひどくなったり水ぶくれができたりしたら、クリニックに連絡してください。
+
+## zh-Hans
+激光嫩肤后的两三天内，皮肤可能会发红或有刺痛感。请用温水轻柔洗脸，不要揉搓。请充分涂抹保湿霜。外出时请一定使用防晒霜。如果发红加重或出现水疱，请联系就诊的医院。

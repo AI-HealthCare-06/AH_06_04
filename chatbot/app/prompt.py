@@ -1,4 +1,4 @@
-"""프롬프트 만들기 — 지시와 데이터를 가른다 (트레이닝 v10 §A6-5). v2: 안내문을 <doc> 로 넣고 '그 안에서만' 답하게."""
+"""프롬프트 만들기 — 지시와 데이터를 가른다. 안내문을 <doc> 로 넣고 '그 안에서만' 답하게."""
 
 from app.docs import Doc
 from app.i18n import LANG_FOR_PROMPT
