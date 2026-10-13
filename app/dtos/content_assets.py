@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Annotated
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from app.dtos.base import BaseSerializerModel
 from app.models.content_assets import ContentFormatType
@@ -13,7 +13,14 @@ class ContentAssetCreateRequest(BaseModel):
         ContentFormatType,
         Field(description="'AUDIO', 'VIDEO', 'IMAGE'"),
     ]
-    file_url: Annotated[str, Field(max_length=500, description="변환된 파일 저장 위치")]
+    file_url: Annotated[str, Field(max_length=500, description="변환된 파일 저장 위치 (http:// 또는 https:// 로 시작)")]
+
+    @field_validator("file_url")
+    @classmethod
+    def validate_file_url(cls, value: str) -> str:
+        if not value.startswith(("http://", "https://")):
+            raise ValueError("file_url 은 http:// 또는 https:// 로 시작해야 합니다.")
+        return value
 
 
 class ContentAssetResponse(BaseSerializerModel):

@@ -8,7 +8,7 @@ class ContentAssetRepository:
         return await ContentFormatAsset.create(**data)
 
     async def get_assets_by_guide(self, guide_id: int) -> list[ContentFormatAsset]:
-        return await ContentFormatAsset.filter(guide_id=guide_id).all()
+        return await ContentFormatAsset.filter(guide_id=guide_id).order_by("-created_at", "-id")
 
     async def get_asset(self, asset_id: int) -> ContentFormatAsset | None:
         return await ContentFormatAsset.filter(id=asset_id).first()

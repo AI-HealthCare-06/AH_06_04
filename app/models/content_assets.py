@@ -18,3 +18,4 @@ class ContentFormatAsset(models.Model):
 
     class Meta:
         table = "content_format_assets"
+        unique_together = (("guide_id", "format_type"),)

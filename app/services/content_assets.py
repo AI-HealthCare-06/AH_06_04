@@ -1,4 +1,5 @@
 from fastapi import HTTPException, status
+from tortoise.exceptions import IntegrityError
 
 from app.dtos.content_assets import ContentAssetCreateRequest
 from app.models.content_assets import ContentFormatAsset
@@ -10,7 +11,12 @@ class ContentAssetService:
         self.repo = ContentAssetRepository()
 
     async def create_asset(self, data: ContentAssetCreateRequest) -> ContentFormatAsset:
-        return await self.repo.create_asset(data=data.model_dump())
+        try:
+            return await self.repo.create_asset(data=data.model_dump())
+        except IntegrityError as e:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT, detail="이미 같은 형식의 콘텐츠가 등록되어 있습니다."
+            ) from e
 
     async def get_assets_by_guide(self, guide_id: int) -> list[ContentFormatAsset]:
         return await self.repo.get_assets_by_guide(guide_id=guide_id)
