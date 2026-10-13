@@ -1,8 +1,8 @@
 from fastapi import APIRouter
 
 from app.apis.v1.auth_routers import auth_router
-from app.apis.v1.reminder_routers import reminder_router
 from app.apis.v1.content_asset_routers import content_asset_router
+from app.apis.v1.reminder_routers import reminder_router
 from app.apis.v1.user_routers import user_router
 
 v1_routers = APIRouter(prefix="/api/v1")
