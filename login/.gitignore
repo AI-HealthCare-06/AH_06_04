@@ -1,0 +1,10 @@
+__pycache__/
+.venv/
+*.sqlite3*
+.env
+.pytest_cache/
+.DS_Store
+*.pem
+*.key
+.env.*
+!.env.example

@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GlowPass 로그인</title>
+<style>
+:root{--bg:#fbfaf7;--panel:#fff;--ink:#1f2328;--muted:#5b6470;--line:#e4e1da;--accent:#2f5f8f;--warn:#fff6e0}
+@media (prefers-color-scheme:dark){:root{--bg:#16181b;--panel:#1e2125;--ink:#e7e9ec;--muted:#a2a9b3;--line:#30343a;--accent:#8ab8e6;--warn:#2e2816}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 -apple-system,"Apple SD Gothic Neo","Noto Sans KR",sans-serif}
+.wrap{max-width:880px;margin:0 auto;padding:24px 16px 60px}h1{font-size:24px;margin:0 0 4px}.muted{color:var(--muted);font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:14px;margin-top:16px}
+section{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}
+h2{font-size:16px;margin:0 0 10px}label{display:block;font-size:13px;margin:8px 0 2px;color:var(--muted)}
+input,select{width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:7px;background:var(--bg);color:var(--ink);font-size:14px}
+.chk label{display:flex;gap:6px;align-items:center;color:var(--ink);margin:4px 0}.chk input{width:auto}
+button,.btn{display:inline-block;margin:10px 6px 0 0;padding:7px 12px;border:1px solid var(--accent);border-radius:7px;background:var(--accent);color:#fff;cursor:pointer;text-decoration:none;font-size:14px}
+button.ghost{background:transparent;color:var(--accent)}
+.social{display:grid;grid-template-columns:1fr;gap:8px}.social .btn{margin:0;text-align:center;padding:10px}
+.or{display:flex;align-items:center;gap:10px;margin:18px 0 4px;color:var(--muted);font-size:13px}.or:before,.or:after{content:"";flex:1;border-top:1px solid var(--line)}
+.hidden{display:none}.msg{margin-top:12px;padding:10px 12px;border-radius:8px;background:var(--warn);font-size:14px}
+dl{display:grid;grid-template-columns:110px 1fr;gap:4px 10px;margin:0}dt{color:var(--muted);font-size:13px}dd{margin:0}
+details{margin-top:24px;background:var(--panel);border:1px dashed var(--line);border-radius:12px;padding:12px 16px}
+summary{cursor:pointer;font-weight:600}
+pre{background:#1c1f24;color:#e6e6e6;border-radius:8px;padding:10px;overflow-x:auto;font-size:12.5px;min-height:60px;white-space:pre-wrap}
+</style></head><body><div class="wrap">
+<h1>GlowPass</h1>
+<p class="muted">GlowPass 로그인 — 일반 로그인 + 간편 로그인 5개 (키를 넣은 곳은 진짜, 아니면 가짜). 맨 아래 "개발자 확인"은 실제 서비스에서는 없는 칸.</p>
+<div id="msg" class="msg hidden"></div>
+
+<!-- 로그인 안 했을 때: ① 로그인 화면(간편 먼저 → 이메일 로그인) ② 회원가입 화면(링크로 이동) -->
+<section id="loginView" style="max-width:420px;margin:16px auto 0">
+<h2>로그인</h2>
+<p class="muted" style="margin:0 0 8px">간편 로그인</p>
+<div class="social">
+<a class="btn" data-p="google" href="/api/v1/auth/google">Google로 로그인하기</a><a class="btn" data-p="facebook" href="/api/v1/auth/facebook">Facebook으로 로그인하기</a>
+<a class="btn" data-p="kakao" href="/api/v1/auth/kakao">카카오로 로그인하기</a><a class="btn" data-p="naver" href="/api/v1/auth/naver">네이버로 로그인하기</a>
+<a class="btn" data-p="line" href="/api/v1/auth/line">LINE으로 로그인하기</a></div>
+<div class="or"><span>또는 이메일로 로그인</span></div>
+<label>이메일</label><input id="li_email" type="email" placeholder="you@example.com" autocomplete="email">
+<label>비밀번호</label><input id="li_pw" type="password" autocomplete="current-password">
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
+<button onclick="login()" style="margin:0">로그인</button><button class="ghost" onclick="go('signup')" style="margin:0">회원가입</button></div>
+</section>
+
+<section id="signupView" class="hidden" style="max-width:420px;margin:16px auto 0">
+<h2>회원가입</h2>
+<p class="muted" style="margin:0">간편 로그인을 쓰면 가입 절차 없이 바로 시작할 수 있어요. <a href="#" onclick="go('login');return false">← 로그인으로</a></p>
+<label>이메일</label><input id="su_email" type="email" placeholder="you@example.com" autocomplete="email">
+<label>비밀번호 (영문·숫자·특수문자 포함 8자 이상)</label><input id="su_pw" type="password" autocomplete="new-password">
+<label>비밀번호 확인</label><input id="su_pw2" type="password" autocomplete="new-password">
+<label>국적</label><select id="su_nat"></select>
+<label>사용 언어</label><select id="su_lang"></select>
+<div class="chk" style="margin-top:8px">
+<label><input type="checkbox" id="su_age">만 14세 이상입니다 (필수)</label>
+<label><input type="checkbox" id="su_terms">이용약관 동의 (필수)</label>
+<label><input type="checkbox" id="su_priv">개인정보 수집·이용 동의 (필수)</label>
+<label><input type="checkbox" id="su_health">건강정보 이용 동의 (선택 — 진료기록·복약 가이드에 필요)</label></div>
+<button onclick="signup()" style="width:100%">가입하기</button>
+</section>
+
+<!-- 간편 가입 직후: 추가 정보 -->
+<section id="extra" class="hidden" style="margin-top:16px"><h2>추가 정보 입력</h2>
+<p class="muted">간편 로그인으로 처음 오셨어요. 아래를 채우면 시작할 수 있어요.</p>
+<label>국적</label><select id="ex_nat"></select>
+<label>사용 언어</label><select id="ex_lang"></select>
+<div class="chk" style="margin-top:8px">
+<label><input type="checkbox" id="ex_age">만 14세 이상입니다 (필수)</label>
+<label><input type="checkbox" id="ex_terms">이용약관 동의 (필수)</label>
+<label><input type="checkbox" id="ex_priv">개인정보 수집·이용 동의 (필수)</label>
+<label><input type="checkbox" id="ex_health">건강정보 이용 동의 (선택)</label></div>
+<button onclick="saveExtra()">저장하고 시작</button></section>
+
+<!-- 로그인 했을 때: 마이페이지 -->
+<section id="mypage" class="hidden" style="margin-top:16px"><h2>마이페이지</h2>
+<dl id="info"></dl>
+<label>사용 언어 바꾸기</label><select id="my_lang" onchange="changeLang()"></select>
+<div class="chk" style="margin-top:8px"><label><input type="checkbox" id="my_health" onchange="changeHealth()">건강정보 이용 동의 (선택)</label></div>
+<button class="ghost" onclick="logout()">로그아웃</button><button class="ghost" onclick="openWithdraw()">회원 탈퇴</button>
+<div id="withdrawPanel" class="hidden" style="margin-top:16px;padding-top:12px;border-top:1px solid var(--line)">
+<h2>회원 탈퇴</h2>
+<p class="muted" style="margin:0 0 6px">떠나시는 이유를 알려 주시면 서비스 개선에 쓰겠습니다. (누가 썼는지는 남지 않아요)</p>
+<div id="reasonList" class="chk"></div>
+<label>직접 적기 (기타를 고르면 필수, 최대 500자)</label>
+<textarea id="reasonText" maxlength="500" rows="3" style="width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:7px;background:var(--bg);color:var(--ink);font:inherit"></textarea>
+<p class="muted" style="margin:6px 0 0">탈퇴하면 계정·건강정보·간편 로그인 연결이 모두 삭제되고 되돌릴 수 없어요.</p>
+<button onclick="withdraw()">탈퇴하기</button><button class="ghost" onclick="show('withdrawPanel', false)">취소</button>
+</div></section>
+
+<!-- 개발자 확인 (실제 서비스엔 없음) -->
+<details><summary>개발자 확인 (실제 서비스에는 없는 칸)</summary>
+<p class="muted">토큰 재발급은 사용자 화면에선 자동으로 일어남(15분마다 access 만료 → 화면이 뒤에서 재발급). 여기선 눈으로 확인용.</p>
+<button class="ghost" onclick="devRefresh()">토큰 재발급 직접</button>
+<button class="ghost" onclick="devHealth()">건강정보 기능 접근 시험</button>
+<button class="ghost" onclick="devExpire()">access 지우기(만료 흉내)</button>
+<button class="ghost" onclick="devWithdrawStats()">탈퇴 이유 통계 보기</button>
+<pre id="out">API 응답이 여기 보입니다.</pre></details>
+</div>
+<script>
+let access = null, countries = [], languages = [];
+const $ = id => document.getElementById(id);
+const show = (id, on) => $(id).classList.toggle('hidden', !on);
+function go(v) { show('loginView', v === 'login'); show('signupView', v === 'signup'); msg(''); }
+// 화면에 넣는 사용자 값은 꼭 escape (간편 로그인 이메일 등 밖에서 온 값)
+const esc = v => String(v ?? '').replace(/[&<>"']/g, ch => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'})[ch]);
+const msg = t => { $('msg').textContent = t; show('msg', !!t); };
+const log = (label, status, body) => { $('out').textContent = `[${label}] ${status}\n` + JSON.stringify(body, null, 2); };
+
+async function raw(url, opts = {}) {
+  opts.headers = Object.assign({'Content-Type': 'application/json', 'X-Requested-With': 'glowpass'}, opts.headers || {});
+  if (access) opts.headers['Authorization'] = 'Bearer ' + access;
+  const r = await fetch(url, opts); let body = null; try { body = await r.json(); } catch (e) {}
+  return [r.status, body];
+}
+async function refreshToken() {
+  const saved = access; access = null;
+  const [s, b] = await raw('/api/v1/auth/token/refresh', {method: 'POST'});
+  access = s === 200 ? b.access_token : null;
+  return s === 200;
+}
+// 사용자 화면용 호출: access 가 만료(401)면 뒤에서 한 번 재발급하고 다시 시도 → 사용자는 모름
+async function api(label, url, opts = {}) {
+  let [s, b] = await raw(url, opts);
+  if (s === 401 && url !== '/api/v1/auth/login' && await refreshToken()) [s, b] = await raw(url, opts);
+  log(label, s, b); return [s, b];
+}
+const detail = b => (b && (typeof b.detail === 'string' ? b.detail : '입력값을 확인해 주세요.')) || '오류';
+
+function fillCountry(sel) {
+  const top = countries.filter(c => c.priority), rest = countries.filter(c => !c.priority);
+  const opt = c => `<option value="${c.code}">${c.name} · ${c.name_en}</option>`;
+  sel.innerHTML = '<option value="">나라를 선택해 주세요 (Select your country)</option>' +
+    `<optgroup label="주요 국가">${top.map(opt).join('')}</optgroup><optgroup label="전체 (가나다순)">${rest.map(opt).join('')}</optgroup>`;
+}
+const langLabel = l => l.native_name === l.name_ko ? l.native_name : `${l.native_name} · ${l.name_ko}`;
+function fillLang(sel) { sel.innerHTML = languages.map(l => `<option value="${l.code}">${langLabel(l)}</option>`).join(''); }
+const countryName = code => (countries.find(c => c.code === code) || {}).name || '-';
+const langName = code => { const l = languages.find(x => x.code === code); return l ? langLabel(l) : code; };
+
+async function signup() {
+  if ($('su_pw').value !== $('su_pw2').value) return msg('비밀번호 확인이 다릅니다.');
+  if (!$('su_nat').value) return msg('국적을 선택해 주세요.');
+  const [s, b] = await api('가입', '/api/v1/auth/signup', {method: 'POST', body: JSON.stringify({
+    email: $('su_email').value, password: $('su_pw').value, nationality: $('su_nat').value, preferred_language: $('su_lang').value,
+    agree_age_14: $('su_age').checked, agree_terms: $('su_terms').checked, agree_privacy: $('su_priv').checked, agree_health_info: $('su_health').checked})});
+  msg(s === 201 ? '가입되었습니다. 로그인해 주세요.' : detail(b));
+  if (s === 201) { $('li_email').value = $('su_email').value; go('login'); msg('가입되었습니다. 로그인해 주세요.'); }
+}
+async function login() {
+  const [s, b] = await api('로그인', '/api/v1/auth/login', {method: 'POST', body: JSON.stringify({email: $('li_email').value, password: $('li_pw').value})});
+  if (s !== 200) return msg(detail(b));
+  access = b.access_token; msg(''); await loadMe();
+}
+async function loadMe() {
+  const [s, me] = await api('내 정보', '/api/v1/users/me');
+  if (s !== 200) { show('loginView', true); show('signupView', false); show('mypage', false); show('extra', false); return; }
+  show('loginView', false); show('signupView', false);
+  if (me.needs_profile) { show('extra', true); show('mypage', false); return; }
+  show('extra', false); show('mypage', true);
+  $('info').innerHTML = `<dt>이메일</dt><dd>${me.email ? esc(me.email) : '(없음)'}</dd><dt>국적</dt><dd>${esc(countryName(me.nationality))}</dd>` +
+    `<dt>사용 언어</dt><dd>${esc(langName(me.preferred_language))}</dd><dt>로그인 방법</dt><dd>${[me.has_password ? '이메일' : null, ...me.social_providers].filter(Boolean).map(esc).join(', ')}</dd>`;
+  $('my_lang').value = me.preferred_language; $('my_health').checked = me.health_consent;
+}
+async function saveExtra() {
+  if (!$('ex_nat').value) return msg('국적을 선택해 주세요.');
+  const [s, b] = await api('추가 정보', '/api/v1/users/me', {method: 'PATCH', body: JSON.stringify({nationality: $('ex_nat').value, preferred_language: $('ex_lang').value,
+    agree_age_14: $('ex_age').checked || null, agree_terms: $('ex_terms').checked || null, agree_privacy: $('ex_priv').checked || null, agree_health_info: $('ex_health').checked || null})});
+  if (s !== 200) return msg(detail(b));
+  if (b.needs_profile) return msg('필수 항목에 모두 동의해 주세요.');
+  msg(''); await loadMe();
+}
+async function changeLang() { await api('언어 변경', '/api/v1/users/me', {method: 'PATCH', body: JSON.stringify({preferred_language: $('my_lang').value})}); await loadMe(); }
+async function changeHealth() { await api('건강정보 동의', '/api/v1/users/me', {method: 'PATCH', body: JSON.stringify({agree_health_info: $('my_health').checked})}); }
+async function logout() { await api('로그아웃', '/api/v1/auth/logout', {method: 'POST'}); access = null; msg('로그아웃되었습니다.'); await loadMe(); }
+async function openWithdraw() {
+  const [, rows] = await raw('/api/v1/meta/withdrawal-reasons');
+  $('reasonList').innerHTML = (rows || []).map(r => `<label><input type="radio" name="reason" value="${r.code}">${r.label}</label>`).join('');
+  $('reasonText').value = ''; show('withdrawPanel', true);
+}
+async function withdraw() {
+  const picked = document.querySelector('input[name="reason"]:checked');
+  if (!picked) return msg('탈퇴 이유를 선택해 주세요.');
+  const text = $('reasonText').value.trim();
+  if (picked.value === 'other' && !text) return msg('기타를 고르셨다면 이유를 적어 주세요.');
+  if (!confirm('정말 탈퇴할까요? 정보가 모두 삭제되고 되돌릴 수 없어요.')) return;
+  const [s, b] = await api('탈퇴', '/api/v1/users/me/withdraw', {method: 'POST', body: JSON.stringify({reason_code: picked.value, reason_text: text || null})});
+  if (s !== 200) return msg(detail(b));
+  access = null; show('withdrawPanel', false); msg('탈퇴되었습니다. 이용해 주셔서 감사합니다.'); await loadMe();
+}
+async function devWithdrawStats() { const [s, b] = await raw('/api/v1/meta/withdrawal-stats'); log('탈퇴 이유 통계', s, b); }
+async function devRefresh() { const ok = await refreshToken(); log('재발급(직접)', ok ? 200 : 401, {access_token: access}); }
+async function devHealth() { await api('건강정보 기능', '/api/v1/users/me/health-check'); }
+function devExpire() { access = 'expired-or-broken'; log('access 지움', '-', {next: '아무 버튼이나 누르면 401 → 자동 재발급 → 다시 시도'}); }
+
+(async () => {
+  const [, c] = await raw('/api/v1/meta/countries?lang=ko'); countries = c || [];
+  const [, l] = await raw('/api/v1/meta/languages'); languages = l || [];
+  const [, pv] = await raw('/api/v1/meta/providers');
+  (pv || []).forEach(p => { const a = document.querySelector(`a[data-p="${p.name}"]`); if (a && p.mode === 'mock') a.insertAdjacentHTML('beforeend', ' <small style="opacity:.75">(가짜)</small>'); });
+  fillCountry($('su_nat')); fillCountry($('ex_nat')); ['su_lang', 'ex_lang', 'my_lang'].forEach(id => fillLang($(id)));
+  const q = new URLSearchParams(location.search);
+  if (q.get('error')) msg({email_exists: '이미 이메일로 가입된 계정입니다. 이메일로 로그인해 주세요.', cancelled: '간편 로그인을 취소했습니다.'}[q.get('error')] || '간편 로그인 중 문제가 생겼습니다.');
+  history.replaceState(null, '', '/');
+  if (await refreshToken()) await loadMe();   // 새로고침·간편 로그인 뒤: 쿠키로 로그인 상태 복구 (토큰은 주소창에 없음)
+})();
+</script></body></html>

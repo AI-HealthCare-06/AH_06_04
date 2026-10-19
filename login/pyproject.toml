@@ -1,0 +1,21 @@
+[project]
+name = "glowpass-login"
+version = "0.1.0"
+description = "GlowPass 회원가입·로그인 — 일반 로그인 + 간편 로그인 5개 (Google·Facebook·카카오·네이버·LINE). FastAPI + Tortoise ORM"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi[standard]>=0.115",
+    "tortoise-orm>=0.25",
+    "pydantic-settings>=2.6",
+    "email-validator>=2.2",
+    "pyjwt>=2.10",
+    "bcrypt>=4.0",
+    "httpx>=0.28",
+]
+
+[dependency-groups]
+dev = ["pytest>=8", "pytest-asyncio>=0.24"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"

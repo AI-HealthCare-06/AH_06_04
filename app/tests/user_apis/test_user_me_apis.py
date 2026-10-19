@@ -58,3 +58,26 @@ class TestUserMeApis(TestCase):
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             response = await client.get("/api/v1/users/me")
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+    async def test_update_user_me_email_rejected(self):
+        # 사용자 등록 및 로그인
+        email = "email_guard@example.com"
+        signup_data = {
+            "email": email,
+            "password": "Password123!",
+            "name": "이메일테스터",
+            "gender": "FEMALE",
+            "birth_date": "1995-05-05",
+            "phone_number": "01022223333",
+        }
+        update_data = {"email": "hacker@example.com"}
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+            await client.post("/api/v1/auth/signup", json=signup_data)
+
+            login_response = await client.post("/api/v1/auth/login", json={"email": email, "password": "Password123!"})
+            access_token = login_response.json()["access_token"]
+
+            # 이메일 수정 시도 (거부되어야 함)
+            headers = {"Authorization": f"Bearer {access_token}"}
+            response = await client.patch("/api/v1/users/me", json=update_data, headers=headers)
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT

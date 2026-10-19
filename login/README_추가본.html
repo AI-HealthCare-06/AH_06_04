@@ -1,0 +1,189 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>GlowPass 로그인 — 추가본</title><style>:root{--bg:#fbfaf7;--panel:#fff;--ink:#1f2328;--muted:#5b6470;--line:#e4e1da;--accent:#2f5f8f;--soft:#e7eef6;--why:#fff6e0;--whyl:#e8c66a;--code:#f3f1ec;--codeink:#2b2b2b;--term:#1c1f24;--termink:#e6e6e6}
+@media (prefers-color-scheme:dark){:root{--bg:#16181b;--panel:#1e2125;--ink:#e7e9ec;--muted:#a2a9b3;--line:#30343a;--accent:#8ab8e6;--soft:#1f2c3a;--why:#2e2816;--whyl:#8a7430;--code:#25282d;--codeink:#e2e4e8;--term:#0f1114}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.7 -apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif}
+.wrap{max-width:980px;margin:0 auto;padding:32px 16px 80px}
+h1{font-size:28px;margin:0 0 10px}h2{font-size:22px;margin:36px 0 12px;padding-bottom:8px;border-bottom:2px solid var(--soft)}h3{font-size:17px;margin:24px 0 8px}
+a{color:var(--accent)}nav.toc{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 20px;margin:20px 0}nav.toc ul{margin:4px 0;padding-left:20px}nav.toc>div>ul>li>ul>li>ul{display:none}
+code{background:var(--code);color:var(--codeink);padding:1px 6px;border-radius:5px;font:14px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace}
+pre{background:var(--term);color:var(--termink);border-radius:10px;padding:14px 16px;overflow-x:auto}pre code{background:none;color:inherit;padding:0;font-size:13.5px}
+table{width:100%;border-collapse:collapse;margin:10px 0;font-size:14.5px;display:block;overflow-x:auto}th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}th{background:var(--soft)}td code{white-space:normal;word-break:break-all}td:first-child,th:first-child{min-width:5.5em}
+blockquote.box{margin:12px 0;padding:10px 14px;border-left:4px solid var(--whyl);background:var(--why);border-radius:6px}blockquote p{margin:4px 0}
+hr{border:0;border-top:1px solid var(--line);margin:28px 0}
+footer{color:var(--muted);font-size:13px;text-align:center;margin-top:40px}nav.toc ul ul ul{display:none}h4{font-size:16px;margin:20px 0 6px;color:var(--accent)}</style></head><body><h1>GlowPass 로그인 — 추가본 (2026-10-02 리뷰 반영)</h1>
+<blockquote>
+<p>이 파일은 <code>README.md</code> 에 <strong>더해서 읽는 추가본</strong>이다. 기본 설명은 <code>README.md</code>, 여기는 <strong>PR #3 리뷰(안애영님) 뒤에 바뀐 것만</strong> 모았다.
+브라우저로 읽기 쉬운 판: <code>README_추가본.html</code> (같은 내용) · 담당 한승수(한스) · 커밋 <code>2fb3396</code></p>
+</blockquote>
+<h2>한눈에</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>리뷰 내용</th>
+<th>바꾼 것</th>
+<th>확인</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>withdrawal-stats</code> 에 로그인·관리자 체크가 없어 누구나 탈퇴 사유를 봄</td>
+<td><strong>관리자(<code>is_admin</code>)만</strong> 볼 수 있게 막음</td>
+<td>로그인 안 함 <strong>401</strong> · 일반 회원 <strong>403</strong> · 관리자 <strong>200</strong></td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>SECRET_KEY</code> 가 비어 있으면 자동 랜덤 → 재시작·서버 여러 대에서 토큰 깨짐</td>
+<td><strong>필수</strong>로 바꿈 (32자 이상). 없으면 서버가 안 켜지고 만드는 법을 알려 줌</td>
+<td>테스트 2개</td>
+</tr>
+<tr>
+<td>3</td>
+<td>User 는 새 테이블보다 <strong>기존 User 에 칸 추가</strong>가 충돌이 적음</td>
+<td>로그인 코드의 User 가 <strong>팀 <code>app/models/users.py</code> 의 칸 이름을 전부</strong> 갖고, 국적·언어·동의 칸만 더한 모양으로 맞춤</td>
+<td>팀 칸 전부 있는지 테스트</td>
+</tr>
+<tr>
+<td>+</td>
+<td>(팀 PR #2 와 규칙 맞추기)</td>
+<td><code>PATCH /users/me</code> 에 <strong>email 을 보내면 422</strong> (<code>extra="forbid"</code>)</td>
+<td>이메일 그대로인지 테스트</td>
+</tr>
+</tbody>
+</table>
+<p>테스트 <strong>49 → 55개 모두 통과</strong> · 팀 CI(ruff check·format) 통과 · 키점검 0건 · 팀 코드(<code>app/</code>)는 안 바꿈</p>
+<h2>1. 탈퇴 통계는 관리자만</h2>
+<table>
+<thead>
+<tr>
+<th>요청</th>
+<th>결과</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>토큰 없이 <code>GET /api/v1/meta/withdrawal-stats</code></td>
+<td>401</td>
+</tr>
+<tr>
+<td>일반 회원 토큰</td>
+<td>403 <code>관리자만 볼 수 있습니다.</code></td>
+</tr>
+<tr>
+<td>관리자 토큰</td>
+<td>200 (집계 · 직접 적은 이유 최근 10개)</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>코드: <code>app/deps.py</code> 의 <code>admin_user</code> (<code>AdminUser</code>) → <code>app/routers/meta.py</code> 에서 사용</li>
+<li>관리자는 <strong>API 로 못 만든다</strong> — DB 에서 <code>is_admin</code> 을 켠다 (팀 템플릿과 같음)</li>
+<li>팀 레포로 옮길 때: 팀 <code>get_request_user</code> 뒤에 <code>is_admin</code> 확인만 붙이면 같다</li>
+</ul>
+<h2>2. SECRET_KEY 필수</h2>
+<pre><code>python3 -c &quot;import secrets; print(secrets.token_hex(32))&quot;
+</code></pre>
+<p>나온 값을 <code>.env</code> 의 <code>SECRET_KEY=</code> 뒤에 붙여넣기.</p>
+<ul>
+<li>비어 있거나 32자보다 짧으면 서버가 켜지지 않고 위 명령을 안내한다 (<code>app/config.py</code>)</li>
+<li>같은 서비스를 돌리는 서버는 <strong>같은 값</strong>을 써야 로그인 토큰이 안 깨진다 → 배포 값은 <strong>팀 비공개 드라이브</strong>로</li>
+<li>테스트는 <code>tests/conftest.py</code> 가 테스트 전용 값을 넣는다 (진짜 키 아님)</li>
+<li>⚠ 코드 폴더를 처음 받은 사람은 <code>cp .env.example .env</code> 뒤 <strong>SECRET_KEY 부터</strong> 채워야 서버가 켜진다</li>
+</ul>
+<h2>3. User 모델 — 기존 팀 User 에 칸 추가</h2>
+<p>로그인 코드의 <code>users</code> 표 = 팀 User 칸(이름 그대로) + 아래 추가 칸. 그래서 팀 레포로 옮길 때 <strong>새 테이블 없이 칸 추가·변경만</strong> 하면 된다.</p>
+<table>
+<thead>
+<tr>
+<th>구분</th>
+<th>칸</th>
+<th>이유</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>추가</td>
+<td><code>nationality</code> (2자, ISO 국가 코드) · <code>preferred_language</code> (10자, 기본 <code>en</code>)</td>
+<td>외국인 서비스 — 국적·사용 언어</td>
+</tr>
+<tr>
+<td>추가</td>
+<td><code>agreed_age14_at</code> · <code>agreed_terms_at</code> · <code>agreed_privacy_at</code> · <code>agreed_health_at</code></td>
+<td>약관·건강정보 동의 시각</td>
+</tr>
+<tr>
+<td>별도 테이블</td>
+<td><code>social_accounts</code> · <code>refresh_tokens</code></td>
+<td>간편 로그인 연결 · refresh 회전 (User 를 바꾸지 않음)</td>
+</tr>
+<tr>
+<td>null 허용으로</td>
+<td><code>hashed_password</code> · <code>gender</code> · <code>birthday</code> · <code>phone_number</code></td>
+<td>간편 가입 직후엔 없음 → "추가 정보 입력" 에서 채움</td>
+</tr>
+<tr>
+<td>길이</td>
+<td><code>email</code> 40→255 (unique, null 허용) · <code>name</code> 20→50 · <code>phone_number</code> 11→16 (E.164 <code>+8210…</code>)</td>
+<td>외국 이메일·이름·번호</td>
+</tr>
+<tr>
+<td>그대로</td>
+<td><code>id</code> · <code>is_active</code> · <code>is_admin</code> · <code>last_login</code> · <code>created_at</code> · <code>updated_at</code></td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><code>PATCH /users/me</code> 로 이제 <code>gender</code>(MALE/FEMALE) · <code>birthday</code>(오늘 이전) · <code>phone_number</code>(E.164) 도 고칠 수 있다. <code>GET /users/me</code> 응답에도 이 칸들과 <code>is_admin</code> 이 나온다</li>
+<li><code>models/users.py</code> 를 실제로 바꾸는 것은 <strong>팀 합의 후</strong> (공통 파일)</li>
+</ul>
+<h2>4. /users/me 에서 email 거부</h2>
+<ul>
+<li>팀 PR #2 와 같은 규칙: 이메일은 로그인 아이디라 내 정보 수정으로 못 바꾼다</li>
+<li>모르는 칸(email 등)을 보내면 <strong>422</strong> — 조용히 무시하지 않아 프론트가 착각하지 않는다</li>
+</ul>
+<h2>바뀐 파일</h2>
+<table>
+<thead>
+<tr>
+<th>파일</th>
+<th>무엇</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>app/config.py</code></td>
+<td>SECRET_KEY 필수 · 없을 때 안내</td>
+</tr>
+<tr>
+<td><code>app/deps.py</code></td>
+<td><code>admin_user</code> 추가</td>
+</tr>
+<tr>
+<td><code>app/routers/meta.py</code></td>
+<td>탈퇴 통계에 관리자 체크</td>
+</tr>
+<tr>
+<td><code>app/models.py</code></td>
+<td>User = 팀 칸 전부 + 추가 칸 (<code>Gender</code> 추가)</td>
+</tr>
+<tr>
+<td><code>app/schemas.py</code> · <code>app/routers/users.py</code></td>
+<td><code>/users/me</code> email 거부 · gender·birthday·phone 수정</td>
+</tr>
+<tr>
+<td><code>tests/conftest.py</code> · <code>tests/test_withdraw.py</code> · 🆕 <code>tests/test_review_1002.py</code></td>
+<td>테스트 6개 추가</td>
+</tr>
+<tr>
+<td><code>.env.example</code> · <code>README.md</code> · <code>README.html</code></td>
+<td>SECRET_KEY 안내 · 표 갱신</td>
+</tr>
+</tbody>
+</table>
+<h2>아직 팀이 정할 것</h2>
+<ul>
+<li>실제 <code>app/models/users.py</code> 를 위 표대로 바꿀지 (FR-08·FR-10 담당과 같이)</li>
+<li>관리자 계정을 누가·어떻게 만들지</li>
+<li>배포용 <code>SECRET_KEY</code> 를 누가 만들고 어디에 둘지</li>
+</ul><hr><p style="color:#888;font-size:12px">README_추가본.md 자동 변환 · 내용이 다르면 README_추가본.md 가 맞다</p></body></html>
