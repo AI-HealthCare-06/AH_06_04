@@ -3,8 +3,12 @@
 # 진료기록 1건 : 처방 약 N개  (1:N 관계 — 영수증 1장 : 품목 여러 줄)
 # ─────────────────────────────────────────────
 from enum import StrEnum
+from typing import TYPE_CHECKING
 
 from tortoise import fields, models
+
+if TYPE_CHECKING:  # 타입 검사(mypy)할 때만 불러온다 — 실제 실행 때 순환 import 방지
+    from app.models.users import User
 
 
 class RecordSource(StrEnum):
@@ -19,7 +23,9 @@ class MedicalRecord(models.Model):
 
     id = fields.BigIntField(primary_key=True)  # 기록 번호 (자동 증가)
     # 누구의 기록인지 — users 테이블과 연결, 회원 탈퇴 시 기록도 함께 삭제
-    user = fields.ForeignKeyField("models.User", related_name="medical_records", on_delete=fields.CASCADE)
+    user: fields.ForeignKeyRelation["User"] = fields.ForeignKeyField(
+        "models.User", related_name="medical_records", on_delete=fields.CASCADE
+    )
     hospital_name = fields.CharField(max_length=100)  # 병원 이름
     visit_date = fields.DateField()  # 진료(시술) 날짜
     procedure_name = fields.CharField(max_length=100, null=True)  # 받은 시술 (없으면 비움)
@@ -40,7 +46,9 @@ class PrescriptionItem(models.Model):
 
     id = fields.BigIntField(primary_key=True)
     # 어느 진료기록에 속한 약인지 — 진료기록을 지우면 약도 같이 삭제
-    record = fields.ForeignKeyField("models.MedicalRecord", related_name="items", on_delete=fields.CASCADE)
+    record: fields.ForeignKeyRelation[MedicalRecord] = fields.ForeignKeyField(
+        "models.MedicalRecord", related_name="items", on_delete=fields.CASCADE
+    )
     drug_name = fields.CharField(max_length=100)  # 약 이름
     dose = fields.CharField(max_length=50, null=True)  # 1회 용량 (예: "1정")
     times_per_day = fields.SmallIntField(null=True)  # 하루 몇 번

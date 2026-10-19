@@ -112,3 +112,33 @@ class TestMedicalRecordApis(TestCase):
         assert response.json()["record_count"] == 1
         assert "리쥬란" in response.json()["summary_text"]
         assert "세티리진정 1정 하루1회 5일" in response.json()["summary_text"]
+
+    async def test_update_null_required_field_rejected(self):
+        # 필수 칸(병원 이름·날짜·약 목록)에 null을 보내면 500이 아니라 422
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+            headers = await signup_and_login(client, "mr_null@example.com", "01010000010")
+            record_id = (await client.post(BASE, json=SAMPLE_RECORD, headers=headers)).json()["id"]
+            for body in ({"hospital_name": None}, {"visit_date": None}, {"items": None}):
+                response = await client.patch(f"{BASE}/{record_id}", json=body, headers=headers)
+                assert response.status_code == 422, body
+            # 선택 칸(시술 이름)은 null로 비울 수 있다
+            response = await client.patch(f"{BASE}/{record_id}", json={"procedure_name": None}, headers=headers)
+        assert response.status_code == status.HTTP_200_OK
+        assert response.json()["procedure_name"] is None
+
+    async def test_source_and_unknown_fields_rejected(self):
+        # 사용자가 source(OCR 여부)나 모르는 칸을 보내면 422
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+            headers = await signup_and_login(client, "mr_extra@example.com", "01010000011")
+            source_response = await client.post(BASE, json={**SAMPLE_RECORD, "source": "OCR"}, headers=headers)
+            unknown_response = await client.post(BASE, json={**SAMPLE_RECORD, "memo": "x"}, headers=headers)
+        assert source_response.status_code == 422
+        assert unknown_response.status_code == 422
+
+    async def test_too_many_items_rejected(self):
+        # 약은 최대 30개까지, 31개면 422
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+            headers = await signup_and_login(client, "mr_items@example.com", "01010000012")
+            items = [{"drug_name": f"약{i}"} for i in range(31)]
+            response = await client.post(BASE, json={**SAMPLE_RECORD, "items": items}, headers=headers)
+        assert response.status_code == 422

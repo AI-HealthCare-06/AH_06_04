@@ -10,7 +10,7 @@ from app.dtos.medical_records import (
     MedicalRecordUpdateRequest,
     PrescriptionItemResponse,
 )
-from app.models.medical_records import MedicalRecord
+from app.models.medical_records import MedicalRecord, RecordSource
 from app.models.users import User
 from app.repositories.medical_record_repository import MedicalRecordRepository
 
@@ -44,6 +44,7 @@ class MedicalRecordService:
 
     async def create_record(self, user: User, data: MedicalRecordCreateRequest) -> MedicalRecordResponse:
         record_data = data.model_dump(exclude={"items"})  # 진료기록 부분
+        record_data["source"] = RecordSource.MANUAL  # 입력 경로는 서버가 정한다 (OCR은 FR-05 서버 코드만)
         items = [item.model_dump() for item in data.items]  # 약 목록 부분
         record = await self.repo.create(user_id=user.id, record_data=record_data, items=items)
         return self.to_response(record)
