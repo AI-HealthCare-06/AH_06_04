@@ -9,6 +9,7 @@ TORTOISE_APP_MODELS = [
     "app.models.users",
     "app.models.reminders",
     "app.models.content_assets",
+    "app.models.medical_records",
 ]
 
 TORTOISE_ORM = {
