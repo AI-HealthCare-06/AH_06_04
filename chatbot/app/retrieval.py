@@ -28,12 +28,13 @@ import asyncio
 import hashlib
 import logging
 import math
+import time
 from collections.abc import Sequence
 from typing import Protocol
 
 import httpx
 
-from app import docs
+from app import docs, privacy
 from app.config import settings
 
 log = logging.getLogger("chatbot.retrieval")
@@ -134,12 +135,16 @@ class Retriever:
         self.embedder = embedder
         self._vectors: list[tuple[str, Vector]] | None = None  # (안내문 id, 벡터) — 안내문 × 언어 수만큼
         self._lock = asyncio.Lock()  # 동시에 첫 질문이 와도 한 번만 만든다
+        self._failed_until = 0.0  # [PR #8 리뷰 2] 임베딩 실패 후 쉬는 시각 (time.monotonic 기준)
 
     async def build(self) -> None:
         """안내문을 언어별로 임베딩해 둔다. 한 번 만든 뒤에는 다시 부르지 않는다."""
         async with self._lock:
             if self._vectors is not None:
                 return
+            # 줄 서 있던 다른 요청: 앞사람이 방금 실패했으면 다시 시도하지 않고 바로 후퇴
+            if time.monotonic() < self._failed_until:
+                raise EmbeddingError("embedding cooldown")
             pairs = [(d.id, f"{d.title(lg)}\n{body}") for d in self.store.docs for lg, body in d.bodies.items()]
             vectors = await self.embedder.embed([text for _, text in pairs]) if pairs else []
             self._vectors = [(doc_id, v) for (doc_id, _), v in zip(pairs, vectors, strict=True)]
@@ -147,8 +152,16 @@ class Retriever:
 
     async def similarities(self, question: str) -> dict[str, float]:
         """안내문 id → 질문과의 최고 유사도 (언어별 본문 중 가장 가까운 것)."""
-        await self.build()
-        [q] = await self.embedder.embed([question])
+        # [PR #8 리뷰 2] 방금 실패했으면 잠깐 부르지 않는다 — 안 그러면 요청마다 timeout 을 기다리며 줄줄이 막힌다
+        if time.monotonic() < self._failed_until:
+            raise EmbeddingError("embedding cooldown")
+        try:
+            await self.build()
+            # [PR #8 리뷰 4] 외부 API 로 보내기 전 연락처·이메일 등은 가린다 (10/12 멘토링 결정)
+            [q] = await self.embedder.embed([privacy.mask_pii(question)])
+        except EmbeddingError:
+            self._failed_until = time.monotonic() + settings.embedding_cooldown_s
+            raise
         best: dict[str, float] = {}
         for doc_id, v in self._vectors or []:
             s = _dot(q, v)

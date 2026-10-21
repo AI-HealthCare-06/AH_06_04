@@ -169,3 +169,66 @@ async def test_chat_uses_retrieval(client, llm, monkeypatch):
     sources = next(d for e, d in events if e == "sources")["docs"]
     assert sources and sources[0]["id"] == "laser-toning"
     assert done(events)["outcome"] == "ok"
+
+
+async def test_embedding_failure_starts_cooldown(store, strict, monkeypatch):
+    # [PR #8 리뷰 2] 실패 직후 두 번째 검색은 임베딩을 부르지 않고 바로 낱말 맞추기 (줄줄이 막힘 방지)
+    monkeypatch.setattr(settings, "search_mode", "hybrid")
+    emb = StubEmbedder(fail=True)
+    r = Retriever(store, emb)
+    first = await r.search("레이저 후 관리", 2)
+    calls_after_first = emb.calls
+    second = await r.search("레이저 후 관리", 2)
+    assert emb.calls == calls_after_first  # 쿨다운 동안 embed 를 안 부름
+    assert [d.id for d in first] == [d.id for d in second] == [d.id for d in store.search("레이저 후 관리", 2)]
+
+
+async def test_cooldown_ends_and_embedding_is_tried_again(store, strict, monkeypatch):
+    monkeypatch.setattr(settings, "search_mode", "hybrid")
+    emb = StubEmbedder(fail=True)
+    r = Retriever(store, emb)
+    await r.search("레이저", 2)
+    r._failed_until = 0.0  # 쿨다운이 끝난 상황
+    emb.fail = False
+    await r.search("빨개졌어요", 2)
+    assert r._vectors is not None  # 다시 시도해서 성공
+
+
+async def test_question_is_masked_before_embedding(store, strict, monkeypatch):
+    # [PR #8 리뷰 4] 외부 임베딩 API 로 연락처·이메일이 나가지 않는다
+    monkeypatch.setattr(settings, "search_mode", "hybrid")
+    seen: list[str] = []
+
+    class Spy(StubEmbedder):
+        async def embed(self, texts):
+            seen.extend(texts)
+            return await super().embed(texts)
+
+    r = Retriever(store, Spy())
+    await r.search("레이저 후 빨개졌어요 010-1234-5678 kim@example.com 으로 연락주세요", 2)
+    question_sent = seen[-1]
+    assert "010-1234-5678" not in question_sent and "kim@example.com" not in question_sent
+    assert "[전화번호]" in question_sent and "[이메일]" in question_sent
+
+
+async def test_concurrent_requests_do_not_queue_behind_failing_embedder(store, strict, monkeypatch):
+    # [PR #8 리뷰 2] 느리게 실패하는 임베딩 서버 + 동시 요청 5개 → embed 는 한 번만, 나머지는 바로 낱말 맞추기
+    import asyncio
+
+    monkeypatch.setattr(settings, "search_mode", "hybrid")
+
+    class SlowFail(StubEmbedder):
+        async def embed(self, texts):
+            self.calls += 1
+            await asyncio.sleep(0.2)
+            raise EmbeddingError("slow down")
+
+    emb = SlowFail()
+    r = Retriever(store, emb)
+    loop = asyncio.get_running_loop()
+    start = loop.time()
+    results = await asyncio.gather(*[r.search("레이저 후 관리", 2) for _ in range(5)])
+    elapsed = loop.time() - start
+    assert emb.calls == 1
+    assert elapsed < 0.6  # 줄줄이 기다리면 1초(0.2 x 5)
+    assert all(res == results[0] for res in results)

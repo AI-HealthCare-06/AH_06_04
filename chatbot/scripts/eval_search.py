@@ -25,7 +25,9 @@ sys.path.insert(0, str(ROOT))
 
 from app import docs, retrieval  # noqa: E402
 from app.config import settings  # noqa: E402
-from app.evaluate import load_golden  # noqa: E402
+from app.evaluate import GOLDEN, load_golden  # noqa: E402
+
+SEARCH_GOLDEN = GOLDEN.with_name("golden_search.jsonl")
 
 MAX_REAL_CALLS = 60  # 반복문 안 API 호출은 반드시 상한
 LIMIT = 2  # 챗봇이 한 답에 쓰는 안내문 수와 같게
@@ -97,7 +99,9 @@ def main() -> int:
     if settings.app_env != "prod" and not settings.allow_unreviewed_docs:
         settings.allow_unreviewed_docs = True  # 지금 안내문은 감수 전 예시라 평가에만 포함
         print("※ 평가에는 감수 전 안내문도 포함 (ALLOW_UNREVIEWED_DOCS 는 바꾸지 않음)")
-    items = [it for it in load_golden() if it["expect"] in ("ok", "no_doc")]
+    # golden.jsonl (전체 흐름 평가용) + golden_search.jsonl (검색 전용 — keywords 와 다른 '바꿔 말한' 질문)
+    # 바꿔 말한 질문은 낱말 맞추기로는 못 찾는 게 정상이라 전체 흐름 테스트(가짜 AI)에서는 뺀다
+    items = [it for it in load_golden() + load_golden(SEARCH_GOLDEN) if it["expect"] in ("ok", "no_doc")]
     store = docs.store()
     calls = 1 + len(items)  # 안내문 1번(묶음) + 질문마다 1번
     print(f"검색 평가 질문 {len(items)}개 · 안내문 {len(store.docs)}개 · 임베딩 호출 예상 {calls}번")

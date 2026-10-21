@@ -1,0 +1,12 @@
+{"id": "s61", "lang": "ko", "q": "콧물약 먹으면 졸려요?", "expect": "ok", "doc": "med-cetirizine"}
+{"id": "s62", "lang": "zh-Hans", "q": "吃了抗过敏药会犯困吗？", "expect": "ok", "doc": "med-cetirizine"}
+{"id": "s63", "lang": "ko", "q": "여드름 먹는 약 먹는데 햇빛 조심해야 해요?", "expect": "ok", "doc": "med-doxycycline"}
+{"id": "s64", "lang": "en", "q": "Does the acne gel bleach my pillowcase?", "expect": "ok", "doc": "med-benzoyl-peroxide"}
+{"id": "s65", "lang": "zh-Hans", "q": "祛痘药会让衣服褪色吗？", "expect": "ok", "doc": "med-benzoyl-peroxide"}
+{"id": "s66", "lang": "ko", "q": "상처에 바르는 항생제 연고 얼마나 써요?", "expect": "ok", "doc": "med-fusidic-acid"}
+{"id": "s67", "lang": "ja", "q": "かゆみ止めのステロイドを顔に塗っていい？", "expect": "ok", "doc": "med-hydrocortisone-skin"}
+{"id": "s68", "lang": "ko", "q": "입술에 물집이 났어요", "expect": "ok", "doc": "med-aciclovir"}
+{"id": "s69", "lang": "zh-Hans", "q": "嘴角起了小水泡怎么办？", "expect": "ok", "doc": "med-aciclovir"}
+{"id": "s70", "lang": "en", "q": "What painkiller is okay after the procedure?", "expect": "ok", "doc": "med-paracetamol"}
+{"id": "s71", "lang": "ko", "q": "진통제 먹어도 간 괜찮아요?", "expect": "ok", "doc": "med-paracetamol"}
+{"id": "s72", "lang": "zh-Hans", "q": "打完填充后皮肤发白是怎么回事？", "expect": "ok", "doc": "filler-fda-safety"}

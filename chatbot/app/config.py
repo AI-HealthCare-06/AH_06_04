@@ -27,7 +27,8 @@ class Settings(BaseSettings):
     #   fake = 가짜 임베딩(키·비용 0, 테스트용) / openai = 진짜 (팀 키)
     embedding_mode: Literal["fake", "openai"] = "fake"
     openai_embedding_model: str = "text-embedding-3-small"
-    embedding_timeout_s: float = 5.0
+    embedding_timeout_s: float = 2.0  # [PR #8 리뷰 2] 늦게 실패하면 응답이 같이 늦어진다 (평가 기준 P95 3초)
+    embedding_cooldown_s: float = 60.0  # 임베딩이 실패하면 이 시간 동안은 부르지 않고 바로 낱말 맞추기로
     vector_min_score: float = 0.35  # 이 유사도 미만이면 '관련 없음' — scripts/eval_search.py 로 정한다
     keyword_bonus: float = 0.15  # hybrid 에서 낱말까지 맞은 안내문에 더하는 점수
 

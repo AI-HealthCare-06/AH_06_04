@@ -111,6 +111,7 @@ uv run uvicorn app.main:app --port 8002
 - 보관 기간: 마지막 메시지 후 **30일**(`CHAT_RETENTION_DAYS`) 지나면 서버가 자동 삭제 · 사용자는 언제든 삭제 가능
 - 로그에는 내용을 찍지 않습니다 (실패 종류·개수만)
 - 캐시는 사용자마다 따로 (다른 사람의 질문·답이 섞이지 않음) · 쿠키는 쓰지 않습니다
+- 임베딩 API 로 보내는 질문은 `app/privacy.py` 로 전화번호·이메일·등록번호·여권번호를 가립니다 (PR #8 리뷰).
 - LLM 에는 질문 글과 안내문만 보냅니다. 나중에 진료기록을 연결할 때는 이름·주민번호·이메일 같은 식별 정보는 빼거나 마스킹해서 보냅니다
 
 ## 6. 안내문 넣기 (팀원 누구나 — 코드 수정 없음)
@@ -147,7 +148,8 @@ uv run uvicorn app.main:app --port 8002
 | `tests/test_safety_and_parts.py` | 응급·차단·나쁜 답 정규식 · **안내문·고정 문구가 필터에 안 걸리는지** · 중지 |
 | `tests/test_docs_login_eval.py` | 안내문 근거 · 안내문 없음 · 이어지는 질문 · 안내문 파일 형식 · 로그인 토큰 · 골든셋 · OpenAI 응답 모양(가짜 서버) |
 | `tests/test_review_fixes.py` | **PR #7 리뷰 항목별** (감수 · 언어 · 필터 · 동시 요청 한도 · LLM 장애 · 예약 · faint · 보관 기간 · 캐시 · README) |
-| `eval/golden.jsonl` | 40 질문 · 4개 언어 · 정상 · 안내문 없음(예약 포함) · 응급 · 차단 → 가짜 AI 전부 통과 · 답 언어 일치 |
+| `eval/golden.jsonl` | 68 질문 · 4개 언어 · 정상 · 안내문 없음(예약 포함) · 응급 · 차단 → 가짜 AI 전부 통과 · 답 언어 일치 |
+| `eval/golden_search.jsonl` | 검색 전용 12 질문 — keywords 와 다른 '바꿔 말한' 표현 (벡터 검색 효과 측정용, `scripts/eval_search.py` 만 사용) |
 
 ## 9. 알아 둘 것 (한계)
 
