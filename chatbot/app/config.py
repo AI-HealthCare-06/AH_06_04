@@ -21,6 +21,17 @@ class Settings(BaseSettings):
     #   데모·개발에서만 true. prod 에서 true 면 서버가 켜지지 않는다.
     allow_unreviewed_docs: bool = False
 
+    # FR-02 RAG 근거 검색 (app/retrieval.py)
+    #   keyword = 기존 낱말 맞추기(기본) / vector = 임베딩 유사도만 / hybrid = 둘 다 (추천)
+    search_mode: Literal["keyword", "vector", "hybrid"] = "keyword"
+    #   fake = 가짜 임베딩(키·비용 0, 테스트용) / openai = 진짜 (팀 키)
+    embedding_mode: Literal["fake", "openai"] = "fake"
+    openai_embedding_model: str = "text-embedding-3-small"
+    embedding_timeout_s: float = 2.0  # [PR #8 리뷰 2] 늦게 실패하면 응답이 같이 늦어진다 (평가 기준 P95 3초)
+    embedding_cooldown_s: float = 60.0  # 임베딩이 실패하면 이 시간 동안은 부르지 않고 바로 낱말 맞추기로
+    vector_min_score: float = 0.35  # 이 유사도 미만이면 '관련 없음' — scripts/eval_search.py 로 정한다
+    keyword_bonus: float = 0.15  # hybrid 에서 낱말까지 맞은 안내문에 더하는 점수
+
     # [리뷰 P1-4] 로그인 필수 — 로그인 서버와 같은 SECRET_KEY · 알고리즘 · 여유 시간
     login_secret_key: str = Field(default="", repr=False)
     jwt_algorithm: str = "HS256"
@@ -54,6 +65,11 @@ class Settings(BaseSettings):
     def _default_base(cls, v: str) -> str:
         return (v or "https://api.openai.com/v1").rstrip("/")
 
+    @field_validator("openai_embedding_model")
+    @classmethod
+    def _default_embedding_model(cls, v: str) -> str:
+        return v or "text-embedding-3-small"  # .env 에 비어 있으면
+
     @field_validator("openai_chat_model")
     @classmethod
     def _default_model(cls, v: str) -> str:
@@ -71,7 +87,16 @@ class Settings(BaseSettings):
             problems.append("LOGIN_SECRET_KEY 가 비어 있음 — 챗봇은 로그인 필수라 로그인 서버의 SECRET_KEY 가 필요")
         if self.llm_mode == "openai" and self.llm_needs_key and not self.openai_api_key:
             problems.append("LLM_MODE=openai 인데 OPENAI_API_KEY 가 비어 있음")
+        if (
+            self.search_mode != "keyword"
+            and self.embedding_mode == "openai"
+            and self.llm_needs_key
+            and not self.openai_api_key
+        ):
+            problems.append("EMBEDDING_MODE=openai 인데 OPENAI_API_KEY 가 비어 있음")
         if self.app_env == "prod":
+            if self.search_mode != "keyword" and self.embedding_mode == "fake":
+                problems.append("prod 에서 가짜 임베딩(EMBEDDING_MODE=fake)으로 벡터 검색은 금지")
             if self.allow_unreviewed_docs:
                 problems.append("prod 에서 ALLOW_UNREVIEWED_DOCS=true 는 금지 — 감수된 안내문만 답의 근거로 쓴다")
             if self.llm_mode == "fake":

@@ -25,7 +25,7 @@ from datetime import UTC, date, datetime, timedelta, timezone
 from tortoise.exceptions import IntegrityError
 from tortoise.expressions import F, Q
 
-from app import docs, i18n, safety
+from app import docs, i18n, retrieval, safety
 from app.cache import answer_cache
 from app.config import settings
 from app.llm import LLMError
@@ -117,7 +117,7 @@ _FOLLOW_UP = re.compile(
 
 async def _find_docs(conv: Conversation, question: str, first_turn: bool) -> list[docs.Doc]:
     """질문으로 찾기. 못 찾았고 '이어지는 질문' 이면 ('그럼 언제부터요?') 바로 앞 답의 안내문을 다시 쓴다."""
-    found = docs.store().search(question, settings.docs_per_answer)
+    found = await retrieval.search(question, settings.docs_per_answer)  # FR-02: SEARCH_MODE 에 따라 낱말·벡터·혼합
     if found or first_turn or not _FOLLOW_UP.search(question.strip()):
         return found
     prev = (
