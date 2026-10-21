@@ -17,6 +17,11 @@ from app import privacy, safety
         "I have blurred vision after filler",
         "I can't see well after the injection",
         "필러 맞으면 실명할 수도 있어요?",
+        "보톡스 맞고 삼키기가 힘들어요",
+        "보톡스 후에 물체가 둘로 보여요",
+        "打完肉毒素后看东西重影",
+        "ボトックスの後、飲み込みにくい",
+        "Trouble swallowing after Botox",
     ],
 )
 def test_vision_problems_are_emergency(q):
@@ -33,6 +38,8 @@ def test_vision_problems_are_emergency(q):
         "눈썹 문신 해도 돼요?",
         "실명 인증은 어떻게 해요?",
         "I can't see any difference after botox",
+        "보톡스 맞고 말해도 돼요?",
+        "물광주사 맞고 물 마셔도 돼요?",
     ],
 )
 def test_normal_questions_are_not_emergency(q):
