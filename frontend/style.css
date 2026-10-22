@@ -38,3 +38,16 @@ label { display: block; font-size: 14px; font-weight: 600; margin: 12px 0 4px; }
 .badge { display: inline-block; font-size: 12px; padding: 2px 8px; border-radius: 999px; background: var(--brand-soft); color: var(--brand); }
 .footer { text-align: center; color: var(--muted); font-size: 12px; padding: 18px 16px 28px; }
 a { color: var(--brand); }
+/* 챗봇 (FR-04) */
+.chatlog { display: flex; flex-direction: column; gap: 8px; margin: 12px 0; max-height: 55vh; overflow-y: auto; }
+.msg { padding: 10px 12px; border-radius: 14px; max-width: 88%; white-space: pre-wrap; word-break: break-word; font-size: 15px; }
+.msg.user { align-self: flex-end; background: var(--brand); color: #fff; border-bottom-right-radius: 4px; }
+.msg.bot { align-self: flex-start; background: var(--bg); border: 1px solid var(--line); border-bottom-left-radius: 4px; }
+.msg.bot.emergency, .msg.bot.error { border-color: var(--warn); color: var(--warn); }
+.msg.bot.blocked, .msg.bot.no_doc, .msg.bot.limit { background: #fff3e0; }
+.chatform { display: flex; gap: 8px; align-items: flex-end; } .chatform .btn { width: auto; margin: 0; padding: 12px 16px; white-space: nowrap; }
+.srcs { margin-top: 6px; font-size: 12px; color: var(--muted); } .srcs .badge { margin: 2px 4px 0 0; }
+.small { font-size: 12px; }
+.emergency { background: #ffebee; border: 2px solid var(--warn); border-radius: 14px; padding: 14px; margin-bottom: 10px; }
+.emergency strong { color: var(--warn); font-size: 18px; }
+.btn.danger { background: var(--warn); }

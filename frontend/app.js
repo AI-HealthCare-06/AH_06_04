@@ -1,6 +1,6 @@
 // ─────────────────────────────────────────────
 // GlowPass 웹 화면 — 프레임워크 없이 한 파일 (빠른 데모·배포용)
-// 화면 흐름: 언어 선택 → 로그인/가입 → 진료기록 입력(FR-01) → AI 가이드(FR-02·03) → 챗봇(FR-04, 연결 예정)
+// 화면 흐름: 언어 선택 → 로그인/가입 → 진료기록 입력(FR-01) → AI 가이드(FR-02·03) → 챗봇(FR-04)
 // 보안: 사용자 글은 항상 textContent 로 넣는다 (innerHTML 금지 → XSS 방지)
 // ─────────────────────────────────────────────
 const API = "/api/v1";
@@ -134,6 +134,7 @@ async function home() {
   render(
     h("h1", {}, t("home_title")),
     h("a", { class: "btn", href: "#/record/new" }, t("add_record")),
+    h("a", { class: "btn secondary", href: "#/chat" }, t("chat_open")),
     h("div", { class: "card" }, h("h2", {}, t("my_records")), recordList),
     guides.length ? h("div", { class: "card" }, h("h2", {}, t("my_guides")), guideList) : null,
     h("button", { class: "btn secondary", onclick: () => { store.token = null; location.hash = "#/"; } }, t("logout")),
@@ -238,7 +239,7 @@ function guideResult(g) {
   show("med");
   return h("div", {},
     h("div", { class: "card" }, h("h1", {}, t("guide_title")), tabs, body, disclaimer(g)),
-    h("button", { class: "btn", onclick: (e) => (e.target.textContent = t("coming_soon")) }, t("ask_ai")),
+    h("a", { class: "btn", href: "#/chat" }, t("ask_ai")),
     h("button", { class: "btn secondary", onclick: (e) => (e.target.textContent = t("coming_soon")) }, t("contact_hospital")));
 }
 
@@ -253,6 +254,116 @@ function prescriptionCard(g) {
 
 function disclaimer(g) { return h("p", { class: "muted" }, g.disclaimer); }
 
+// ── 6. AI 챗봇 (FR-04) — 답을 글자 조각(SSE)으로 받아 바로바로 보여준다 ──
+// 챗봇 서버는 언어 코드가 조금 다르다 (중국어 간체 = zh-Hans)
+const CHAT_LANG = { ko: "ko", ja: "ja", zh: "zh-Hans", en: "en" };
+let chatAbort = null;  // 답 받는 중에 화면을 떠나면 연결을 끊는다
+
+async function chatView() {
+  if (!store.token) return (location.hash = "#/login");
+  const lang = CHAT_LANG[store.lang] || "ko";
+  const log = h("div", { class: "chatlog", "aria-live": "polite" });
+  const input = h("textarea", { rows: 2, maxlength: 500, placeholder: t("chat_ph") });
+  const sendBtn = h("button", { class: "btn", type: "submit" }, t("send"));
+  const emergencyBox = h("div");
+  const bubble = (role, text) => { const b = h("div", { class: `msg ${role}` }, text); log.append(b); b.scrollIntoView({ block: "end" }); return b; };
+
+  // 대화방: 이 탭에서 쓰던 게 있으면 이어서, 없거나 언어가 바뀌었으면 새로
+  let conv = JSON.parse(sessionStorage.getItem("gp_conv") || "null");
+  if (conv && conv.lang === lang) {
+    try {
+      const old = await api("GET", `/chat/conversations/${conv.id}/messages`);
+      old.messages.forEach((m) => bubble(m.role === "user" ? "user" : "bot", m.content));
+    } catch { conv = null; }
+  } else conv = null;
+  if (!conv) {
+    const made = await api("POST", "/chat/conversations", { lang });
+    conv = { id: made.conversation_id, lang };
+    sessionStorage.setItem("gp_conv", JSON.stringify(conv));
+    bubble("bot", made.greeting);
+  }
+
+  const form = h("form", { class: "chatform", onsubmit: async (e) => {
+    e.preventDefault();
+    const q = input.value.trim();
+    if (!q || sendBtn.disabled) return;
+    input.value = "";
+    bubble("user", q);
+    sendBtn.disabled = true;
+    try { await ask(conv.id, q, lang, bubble, emergencyBox); }
+    catch (ex) { bubble("bot error", ex.message || t("chat_error")); }
+    finally { sendBtn.disabled = false; input.focus(); }
+  } }, input, sendBtn);
+  // Enter = 보내기, Shift+Enter = 줄바꿈 (한글 조합 중에는 보내지 않음)
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); form.requestSubmit(); }
+  });
+
+  render(h("a", { href: "#/home" }, t("back")),
+    h("div", { class: "card" }, h("h1", {}, t("chat_title")), h("p", { class: "muted" }, t("chat_intro")), emergencyBox, log, form,
+      h("button", { class: "btn secondary", type: "button", onclick: () => { sessionStorage.removeItem("gp_conv"); chatView(); } }, t("chat_new"))));
+  input.focus();
+}
+
+// 질문 하나 보내고 SSE 답을 끝까지 읽는다
+async function ask(convId, message, lang, bubble, emergencyBox) {
+  chatAbort = new AbortController();
+  const res = await fetch(`${API}/chat/conversations/${convId}/stream`, {
+    method: "POST", signal: chatAbort.signal,
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${store.token}` },
+    body: JSON.stringify({ message, lang }),
+  });
+  if (res.status === 401) { store.token = null; location.hash = "#/login"; throw new Error(t("err_login")); }
+  if (!res.ok || !res.body) throw new Error(t("chat_error"));
+
+  const box = bubble("bot", "…");
+  let started = false, sources = [];
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buf = "";
+  for (;;) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buf += decoder.decode(value, { stream: true });
+    // SSE 한 덩어리는 빈 줄(\n\n)로 끝난다 → 덩어리마다 event·data 를 꺼낸다
+    let cut;
+    while ((cut = buf.indexOf("\n\n")) >= 0) {
+      const chunk = buf.slice(0, cut); buf = buf.slice(cut + 2);
+      let event = "message", data = "";
+      for (const line of chunk.split("\n")) {
+        if (line.startsWith("event:")) event = line.slice(6).trim();
+        else if (line.startsWith("data:")) data += line.slice(5).trim();
+      }
+      const d = data ? JSON.parse(data) : {};
+      if (event === "token") { if (!started) { box.textContent = ""; started = true; } box.textContent += d.t; }
+      else if (event === "replace") {  // 안전장치가 답을 통째로 바꿀 때 (응급·차단·자료 없음·한도)
+        box.textContent = d.text; started = true;
+        box.className = `msg bot ${d.outcome}`;
+        if (d.outcome === "emergency") showEmergency(emergencyBox);
+      }
+      else if (event === "sources") sources = d.docs || [];
+      else if (event === "notice") box.after(h("div", { class: "muted small" }, d.text));
+      else if (event === "done") {
+        if (d.outcome === "emergency") showEmergency(emergencyBox);
+        if (sources.length && ["ok", "cached"].includes(d.outcome)) {
+          box.append(h("div", { class: "srcs" }, t("chat_sources"), " ",
+            sources.map((s) => h("span", { class: "badge" }, s.title))));
+        }
+      }
+    }
+  }
+}
+
+// 응급 신호가 보이면 맨 위에 빨간 안내 (디자인 시안 8번 화면)
+function showEmergency(box) {
+  box.replaceChildren(h("div", { class: "emergency", role: "alert" },
+    h("strong", {}, t("emergency_title")), h("p", {}, t("emergency_body")),
+    h("a", { class: "btn danger", href: "tel:119" }, t("call_119")),
+    h("a", { class: "btn secondary", href: "https://www.google.com/maps/search/emergency+room", target: "_blank", rel: "noopener noreferrer" }, t("find_er")),
+    h("a", { class: "btn secondary", href: "tel:1330" }, t("call_1330"))));
+  box.scrollIntoView({ block: "start" });
+}
+
 // ── 화면 전환 (주소의 # 뒤를 보고 고른다) ─────────
 function setLang(code) {
   store.lang = code;
@@ -264,12 +375,14 @@ function setLang(code) {
 
 async function route() {
   const hash = location.hash || "#/";
+  if (chatAbort) { chatAbort.abort(); chatAbort = null; }  // 챗봇 화면을 떠나면 답 받기 중지
   try {
     if (hash === "#/") return store.token ? home() : onboarding();
     if (hash === "#/login") return loginView();
     if (hash === "#/signup") return signupView();
     if (hash === "#/home") return home();
     if (hash === "#/record/new") return recordForm();
+    if (hash === "#/chat") return chatView();
     const m = hash.match(/^#\/guide\/(\d+)$/);
     if (m) return guideView(m[1]);
     location.hash = "#/";
