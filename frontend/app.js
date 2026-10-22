@@ -87,6 +87,9 @@ function loginView(message) {
     try {
       const data = await api("POST", "/auth/login", { email: email.value, password: pw.value });
       store.token = data.access_token;
+      // 계정에 저장된 언어로 화면을 맞춘다 (다른 기기에서 로그인해도 같은 언어)
+      const me = await api("GET", "/users/me").catch(() => null);
+      if (me && me.preferred_language && me.preferred_language !== store.lang) setLang(me.preferred_language);
       location.hash = "#/home";
     } catch { err.textContent = t("err_login"); }
   } }, field("email", email), field("password", pw), h("button", { class: "btn", type: "submit" }, t("login")), err);
@@ -102,18 +105,22 @@ function signupView() {
     name: h("input", { required: true, maxlength: 20 }),
     gender: h("select", {}, h("option", { value: "FEMALE" }, t("female")), h("option", { value: "MALE" }, t("male"))),
     birth_date: h("input", { type: "date", required: true }),
-    phone_number: h("input", { required: true, placeholder: t("phone_hint") }),
+    phone_number: h("input", { type: "tel", placeholder: t("phone_hint") }),  // 선택 (외국인은 해외 번호 가능)
+    nationality: h("select", {}, [["CN", "nat_cn"], ["JP", "nat_jp"], ["US", "nat_us"], ["KR", "nat_kr"], ["", "nat_other"]]
+      .map(([code, key]) => h("option", { value: code }, t(key)))),
   };
   const err = errorBox();
   const form = h("form", { onsubmit: async (e) => {
     e.preventDefault();
-    const body = Object.fromEntries(Object.entries(inputs).map(([k, el]) => [k, el.value.trim()]));
+    const body = Object.fromEntries(Object.entries(inputs).map(([k, el]) => [k, el.value.trim() || null]));
+    body.preferred_language = store.lang;  // 고른 화면 언어를 계정에 저장
     try { await api("POST", "/auth/signup", body); loginView(t("signup_done")); history.replaceState(null, "", "#/login"); }
     catch (ex) { err.textContent = ex.message; }
   } },
   field("email", inputs.email), field("password", inputs.password), field("name", inputs.name),
   h("div", { class: "row" }, h("div", {}, field("gender", inputs.gender)), h("div", {}, field("birth", inputs.birth_date))),
-  field("phone", inputs.phone_number), h("button", { class: "btn", type: "submit" }, t("signup")), err);
+  field("nationality", inputs.nationality), field("phone", inputs.phone_number),
+  h("button", { class: "btn", type: "submit" }, t("signup")), err);
   render(h("div", { class: "card" }, h("h1", {}, t("signup")), form,
     h("p", { class: "muted" }, t("have_account"), " ", h("a", { href: "#/login" }, t("login")))));
 }
