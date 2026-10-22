@@ -44,12 +44,14 @@ async function api(method, path, body) {
     throw new Error(t("err_login"));
   }
   const data = res.status === 204 ? null : await res.json().catch(() => null);
-  if (!res.ok) throw new Error(errorText(data));
+  if (!res.ok) throw new Error(errorText(data, res.status));
   return data;
 }
 
-// FastAPI 에러 모양({detail: "..."} 또는 [{msg}])을 사람이 읽을 글로
-function errorText(data) {
+// 서버 에러 → 사람이 읽을 글. 서버 문구는 한국어라, 다른 언어는 상태코드별 번역 문구를 쓴다
+const STATUS_TEXT = { 409: "err_exists", 413: "err_too_big", 415: "err_file_type", 422: "err_input", 429: "err_limit" };
+function errorText(data, status) {
+  if (store.lang !== "ko") return t(STATUS_TEXT[status] || "err_generic");
   if (!data) return t("err_generic");
   if (typeof data.detail === "string") return data.detail;
   if (Array.isArray(data.detail)) return data.detail.map((d) => d.msg).join(" / ");
@@ -192,7 +194,7 @@ function recordForm() {
           headers: { Authorization: `Bearer ${store.token}` } });
         if (res.status === 401) { store.token = null; location.hash = "#/login"; return; }
         const accepted = await res.json().catch(() => null);
-        if (!res.ok) throw new Error(errorText(accepted));
+        if (!res.ok) throw new Error(errorText(accepted, res.status));
         const job = await pollOcr(accepted.job_id);
         if (job.status !== "DONE") throw new Error(t("ocr_failed"));
         fillFromOcr(job);
