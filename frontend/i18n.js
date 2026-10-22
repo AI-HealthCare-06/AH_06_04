@@ -199,3 +199,9 @@ Object.assign(window.I18N.zh, { err_exists: "邮箱或手机号已被使用，�
 Object.assign(window.I18N.en, { err_exists: "This email or phone number is already in use, or it was already saved.", err_too_big: "The file is too large (max 5MB).",
   err_file_type: "Only JPG or PNG photos can be uploaded.", err_input: "Please check your input (password: 8+ characters with upper, lower, number and symbol).",
   err_limit: "You've reached today's limit." });
+
+// 챗봇이 참고하는 내 기록
+Object.assign(window.I18N.ko, { chat_context: "최근 진료기록 참고:" });
+Object.assign(window.I18N.ja, { chat_context: "最近の診療記録を参照:" });
+Object.assign(window.I18N.zh, { chat_context: "参考最近的就诊记录：" });
+Object.assign(window.I18N.en, { chat_context: "Using your latest record:" });
