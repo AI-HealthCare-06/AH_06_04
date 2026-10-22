@@ -183,3 +183,10 @@ async def test_openai_mode_sends_sources_and_parses_json():
     assert seen["auth"] == "Bearer test-key"
     assert seen["body"]["temperature"] == 0
     assert "[med-isotretinoin]" in seen["body"]["messages"][1]["content"]
+
+
+def test_fake_example_docs_are_never_used_as_sources():
+    # 챗봇 개발용 '가짜 예시' 안내문(source: 가짜 예시 …)은 가이드 근거에서 빠진다
+    with patch.object(config, "GUIDE_ALLOW_UNREVIEWED_DOCS", True):
+        found = [d for d, _ in guide_knowledge.search("procedure: 레이저 토닝, 필러, 보톡스")]
+    assert found and all(not d.source.startswith("가짜") for d in found)

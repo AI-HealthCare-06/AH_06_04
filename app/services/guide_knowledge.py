@@ -121,6 +121,8 @@ def search(text: str, limit: int = 4) -> list[tuple[KnowledgeDoc, float]]:
     for doc in load_docs():
         if not doc.reviewed and not config.GUIDE_ALLOW_UNREVIEWED_DOCS:
             continue
+        if doc.source.startswith("가짜"):  # 챗봇 개발용 가짜 예시 안내문은 가이드 근거로 절대 쓰지 않는다
+            continue
         hits = sum(1 for kw in doc.keywords if _keyword_hit(kw, text))
         if hits:
             scored.append((doc, min(1.0, round(hits / 2, 2))))  # 낱말 2개 이상 맞으면 1.0
