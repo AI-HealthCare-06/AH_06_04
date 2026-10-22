@@ -1,0 +1,40 @@
+/* GlowPass 화면 꾸밈 — 모바일 우선, 밝은 핑크 톤 */
+:root {
+  --bg: #fff7f8; --card: #ffffff; --ink: #2a2230; --muted: #7a6f80;
+  --brand: #e2557a; --brand-soft: #fde4ea; --line: #f0dfe4; --warn: #c62828; --ok: #2e7d32;
+}
+* { box-sizing: border-box; }
+body { margin: 0; font-family: -apple-system, "Apple SD Gothic Neo", "PingFang SC", "Hiragino Sans", "Noto Sans", sans-serif;
+  background: var(--bg); color: var(--ink); line-height: 1.55; }
+.topbar { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px;
+  background: var(--card); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 2; }
+.brand { font-weight: 800; color: var(--brand); text-decoration: none; font-size: 20px; }
+select, input, textarea { font: inherit; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px;
+  width: 100%; background: #fff; color: var(--ink); }
+#lang { width: auto; }
+main { max-width: 520px; margin: 0 auto; padding: 16px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 18px; margin-bottom: 14px; }
+h1 { font-size: 24px; margin: 8px 0 6px; } h2 { font-size: 18px; margin: 0 0 10px; }
+.muted { color: var(--muted); font-size: 14px; }
+.btn { display: block; width: 100%; padding: 13px; border-radius: 12px; border: 0; background: var(--brand);
+  color: #fff; font-weight: 700; font-size: 16px; cursor: pointer; text-align: center; text-decoration: none; margin-top: 10px; }
+.btn.secondary { background: var(--brand-soft); color: var(--brand); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+label { display: block; font-size: 14px; font-weight: 600; margin: 12px 0 4px; }
+.row { display: flex; gap: 8px; } .row > * { flex: 1; }
+.langs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 12px 0; }
+.langs button { padding: 12px; border-radius: 12px; border: 1px solid var(--line); background: #fff; font-size: 16px; cursor: pointer; }
+.langs button.on { border-color: var(--brand); background: var(--brand-soft); font-weight: 700; }
+.item { border-top: 1px solid var(--line); padding: 10px 0; } .item:first-child { border-top: 0; }
+.drug { background: var(--bg); border-radius: 12px; padding: 10px; margin-top: 8px; }
+.tabs { display: flex; gap: 6px; margin-bottom: 10px; }
+.tabs button { flex: 1; padding: 10px; border-radius: 10px; border: 1px solid var(--line); background: #fff; cursor: pointer; }
+.tabs button.on { background: var(--brand); color: #fff; border-color: var(--brand); }
+.steps li { margin: 6px 0; } .steps li.done { color: var(--ok); } .steps li.now { font-weight: 700; }
+.bar { height: 8px; background: var(--brand-soft); border-radius: 8px; overflow: hidden; }
+.bar > div { height: 100%; background: var(--brand); transition: width .4s; }
+.notice { background: #fff3e0; border-radius: 12px; padding: 12px; font-size: 14px; }
+.error { color: var(--warn); font-size: 14px; margin-top: 8px; min-height: 1em; }
+.badge { display: inline-block; font-size: 12px; padding: 2px 8px; border-radius: 999px; background: var(--brand-soft); color: var(--brand); }
+.footer { text-align: center; color: var(--muted); font-size: 12px; padding: 18px 16px 28px; }
+a { color: var(--brand); }
