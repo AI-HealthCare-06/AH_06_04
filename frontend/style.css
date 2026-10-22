@@ -51,3 +51,9 @@ a { color: var(--brand); }
 .emergency { background: #ffebee; border: 2px solid var(--warn); border-radius: 14px; padding: 14px; margin-bottom: 10px; }
 .emergency strong { color: var(--warn); font-size: 18px; }
 .btn.danger { background: var(--warn); }
+/* 👍/👎 피드백 */
+.feedback { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 10px; }
+.feedback > button { border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 4px 12px; cursor: pointer; font-size: 16px; }
+.feedback > button.on { border-color: var(--brand); background: var(--brand-soft); }
+.feedback .reasons { display: flex; flex-wrap: wrap; gap: 6px; width: 100%; }
+.feedback .reasons button { border: 1px solid var(--line); background: var(--bg); border-radius: 999px; padding: 4px 10px; font-size: 13px; cursor: pointer; }

@@ -176,3 +176,13 @@ Object.assign(window.I18N.ko, { nationality: "국적", nat_cn: "중국", nat_jp:
 Object.assign(window.I18N.ja, { nationality: "国籍", nat_cn: "中国", nat_jp: "日本", nat_us: "アメリカ", nat_kr: "韓国", nat_other: "その他" });
 Object.assign(window.I18N.zh, { nationality: "国籍", nat_cn: "中国", nat_jp: "日本", nat_us: "美国", nat_kr: "韩国", nat_other: "其他" });
 Object.assign(window.I18N.en, { nationality: "Nationality", nat_cn: "China", nat_jp: "Japan", nat_us: "USA", nat_kr: "Korea", nat_other: "Other" });
+
+// 👍/👎 피드백 문구
+Object.assign(window.I18N.ko, { fb_question: "도움이 됐나요?", fb_thanks: "의견 고마워요!", fb_wrong_info: "내용이 틀린 것 같아요",
+  fb_hard_to_understand: "이해하기 어려워요", fb_not_relevant: "내 상황과 관계없어요", fb_other: "기타" });
+Object.assign(window.I18N.ja, { fb_question: "役に立ちましたか？", fb_thanks: "ご意見ありがとうございます！", fb_wrong_info: "内容が間違っていそう",
+  fb_hard_to_understand: "わかりにくい", fb_not_relevant: "自分の状況と関係ない", fb_other: "その他" });
+Object.assign(window.I18N.zh, { fb_question: "对您有帮助吗？", fb_thanks: "感谢您的反馈！", fb_wrong_info: "内容似乎有误",
+  fb_hard_to_understand: "难以理解", fb_not_relevant: "与我的情况无关", fb_other: "其他" });
+Object.assign(window.I18N.en, { fb_question: "Was this helpful?", fb_thanks: "Thanks for the feedback!", fb_wrong_info: "Seems incorrect",
+  fb_hard_to_understand: "Hard to understand", fb_not_relevant: "Not relevant to me", fb_other: "Other" });

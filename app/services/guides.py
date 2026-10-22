@@ -13,8 +13,17 @@ from datetime import datetime
 from fastapi import HTTPException, status
 
 from app.core import config
-from app.dtos.guides import GuideCreateRequest, GuideResponse, GuideSourceResponse, PrescriptionLine
-from app.models.guides import Guide, GuideStatus
+from app.dtos.guides import (
+    FeedbackCount,
+    GuideCreateRequest,
+    GuideFeedbackRequest,
+    GuideFeedbackResponse,
+    GuideFeedbackSummary,
+    GuideResponse,
+    GuideSourceResponse,
+    PrescriptionLine,
+)
+from app.models.guides import FeedbackRating, Guide, GuideFeedback, GuideStatus
 from app.models.medical_records import MedicalRecord
 from app.models.users import User
 from app.repositories.guide_repository import GuideRepository
@@ -43,6 +52,18 @@ def _record_text(record: MedicalRecord) -> str:
     if drugs:
         line += " / medicines: " + ", ".join(drugs)
     return line
+
+
+def _my_feedback(guide: Guide) -> FeedbackRating | None:
+    """미리 읽어 둔(prefetch) 평가가 있으면 그 값 (없으면 None)"""
+    feedback = getattr(guide, "feedback", None)
+    # 미리 읽지 않았으면 DB 객체가 아니라 '조회 예정' 객체라서 평가 없음으로 본다
+    return feedback.rating if isinstance(feedback, GuideFeedback) else None
+
+
+def _counts(table: dict[str, list[int]], top: int = 20) -> list[FeedbackCount]:
+    rows = [FeedbackCount(key=k, up=v[0], down=v[1]) for k, v in table.items()]
+    return sorted(rows, key=lambda r: (-r.down, r.key))[:top]
 
 
 class GuideService:
@@ -126,6 +147,7 @@ class GuideService:
             llm_model=guide.llm_model,
             created_at=guide.created_at,
             generated_at=guide.generated_at,
+            my_feedback=_my_feedback(guide),
         )
 
     async def get_guide(self, user: User, guide_id: int) -> GuideResponse:
@@ -137,3 +159,49 @@ class GuideService:
     async def list_guides(self, user: User, limit: int, offset: int) -> list[GuideResponse]:
         guides = await self.repo.list_user_guides(user_id=user.id, limit=limit, offset=offset)
         return [self.to_response(g) for g in guides]
+
+    # ── 사용자 피드백 (평가 3-4: 피드백 반영 구조) ──────────
+    async def save_feedback(self, user: User, guide_id: int, data: GuideFeedbackRequest) -> GuideFeedbackResponse:
+        guide = await self.repo.get_user_guide(guide_id=guide_id, user_id=user.id)
+        if guide is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="가이드를 찾을 수 없습니다.")
+        if guide.status == GuideStatus.PENDING:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="가이드를 만드는 중입니다.")
+        values = data.model_dump()
+        if data.rating == FeedbackRating.UP:  # 👍 이면 이유·의견은 비운다
+            values.update(reason=None, comment=None)
+        elif values["comment"] is not None:
+            values["comment"] = values["comment"].strip() or None
+        feedback = await self.repo.save_feedback(guide, values)
+        return GuideFeedbackResponse(
+            guide_id=guide.id,
+            rating=feedback.rating,
+            reason=feedback.reason,
+            comment=feedback.comment,
+            updated_at=feedback.updated_at,
+        )
+
+    async def feedback_summary(self, user: User) -> GuideFeedbackSummary:
+        """관리자 전용 집계 — 의견(comment) 원문은 내보내지 않고 숫자만"""
+        if not user.is_admin:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="관리자만 볼 수 있습니다.")
+        rows = await self.repo.all_feedback()
+        reasons: dict[str, int] = {}
+        by_doc: dict[str, list[int]] = {}
+        by_model: dict[str, list[int]] = {}
+        for fb in rows:
+            idx = 0 if fb.rating == FeedbackRating.UP else 1
+            if idx and fb.reason:
+                reasons[str(fb.reason)] = reasons.get(str(fb.reason), 0) + 1
+            by_model.setdefault(fb.guide.llm_model or "unknown", [0, 0])[idx] += 1
+            for src in fb.guide.sources:
+                by_doc.setdefault(src.doc_id, [0, 0])[idx] += 1
+        down = sum(1 for fb in rows if fb.rating == FeedbackRating.DOWN)
+        return GuideFeedbackSummary(
+            total=len(rows),
+            up=len(rows) - down,
+            down=down,
+            down_reasons=reasons,
+            by_doc=_counts(by_doc),
+            by_model=_counts(by_model),
+        )

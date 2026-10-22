@@ -6,7 +6,7 @@ from typing import Any
 
 from tortoise.transactions import in_transaction
 
-from app.models.guides import Guide, GuideSource, GuideStatus
+from app.models.guides import Guide, GuideFeedback, GuideSource, GuideStatus
 
 
 class GuideRepository:
@@ -15,7 +15,9 @@ class GuideRepository:
 
     async def get_user_guide(self, guide_id: int, user_id: int) -> Guide | None:
         """내 가이드만 꺼낸다 (남의 것은 None → 404)"""
-        return await Guide.get_or_none(id=guide_id, user_id=user_id).prefetch_related("sources", "record__items")
+        return await Guide.get_or_none(id=guide_id, user_id=user_id).prefetch_related(
+            "sources", "record__items", "feedback"
+        )
 
     async def get(self, guide_id: int) -> Guide | None:
         return await Guide.get_or_none(id=guide_id).prefetch_related("record__items")
@@ -26,7 +28,7 @@ class GuideRepository:
             .order_by("-created_at", "-id")
             .offset(offset)
             .limit(limit)
-            .prefetch_related("sources", "record__items")
+            .prefetch_related("sources", "record__items", "feedback")
         )
 
     async def finish(
@@ -45,3 +47,11 @@ class GuideRepository:
             guide.generated_at = generated_at
             await guide.save()
             await GuideSource.bulk_create([GuideSource(guide_id=guide.id, **s) for s in sources])
+
+    async def save_feedback(self, guide: Guide, data: dict[str, Any]) -> GuideFeedback:
+        """가이드당 1개 — 있으면 고치고 없으면 만든다"""
+        feedback, _ = await GuideFeedback.update_or_create(defaults=data, guide_id=guide.id)
+        return feedback
+
+    async def all_feedback(self) -> list[GuideFeedback]:
+        return await GuideFeedback.all().prefetch_related("guide__sources")
