@@ -45,7 +45,8 @@ class PrescriptionItemResponse(BaseSerializerModel):
 
 # ── 진료기록 ──────────────────────────────────
 class MedicalRecordCreateRequest(BaseModel):
-    """POST(등록) 주문서 — source(입력 경로)는 받지 않고 서버가 MANUAL로 정한다"""
+    """POST(등록) 주문서 — source(입력 경로)는 받지 않고 서버가 정한다
+    (ocr_job_id 가 있고 내 완료된 OCR 결과면 OCR, 아니면 MANUAL)"""
 
     model_config = ConfigDict(extra="forbid")  # 모르는 칸(source 포함)을 보내면 422
 
@@ -55,6 +56,8 @@ class MedicalRecordCreateRequest(BaseModel):
     doctor_note: Annotated[str | None, Field(None, max_length=1000)]
     # 약이 없으면 빈 목록, 최대 30개까지
     items: list[PrescriptionItemRequest] = Field(default_factory=list, max_length=MAX_ITEMS_PER_RECORD)
+    # FR-05: 사진 인식 결과를 확인·수정해서 저장할 때 그 작업 번호 (한 번만 쓸 수 있다)
+    ocr_job_id: Annotated[int | None, Field(None, ge=1)]
 
     _validate_visit_date = field_validator("visit_date")(_check_not_future)
 

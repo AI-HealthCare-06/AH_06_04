@@ -14,7 +14,7 @@ window.I18N = {
     visit_date: "진료일", hospital: "병원 이름", procedure: "진료/시술 내용", procedure_ph: "예: 여드름 치료, 레이저 토닝",
     doctor_note: "의사 설명 메모", drugs: "처방약", drug_name: "약 이름", dose: "1회 용량", dose_ph: "예: 1정",
     times_per_day: "하루 횟수", days: "며칠분", add_drug: "+ 약 추가", save: "저장하고 AI 가이드 만들기",
-    ocr_upload: "처방전 사진으로 입력", ocr_soon: "처방전 사진 인식(OCR)은 준비 중이에요.",
+    ocr_upload: "처방전 사진으로 입력",
     analyzing: "AI 분석 · 가이드 생성", step_record: "진료기록·처방정보 확인", step_rag: "근거 자료 검색 (FR-02)",
     step_guide: "AI 복약·생활관리 가이드 생성 (FR-03)", wait_msg: "조금만 기다려주세요. 다 되면 바로 보여드릴게요.",
     guide_title: "AI 맞춤 가이드", tab_med: "복약 안내", tab_life: "생활관리", tab_src: "출처",
@@ -40,7 +40,7 @@ window.I18N = {
     visit_date: "受診日", hospital: "病院名", procedure: "診療・施術内容", procedure_ph: "例: ニキビ治療、レーザートーニング",
     doctor_note: "医師の説明メモ", drugs: "処方薬", drug_name: "薬の名前", dose: "1回量", dose_ph: "例: 1錠",
     times_per_day: "1日の回数", days: "日数", add_drug: "+ 薬を追加", save: "保存してAIガイドを作る",
-    ocr_upload: "処方箋の写真で入力", ocr_soon: "処方箋の写真読み取り（OCR）は準備中です。",
+    ocr_upload: "処方箋の写真で入力",
     analyzing: "AI分析・ガイド作成", step_record: "診療記録・処方情報の確認", step_rag: "根拠資料の検索 (FR-02)",
     step_guide: "AIお薬・生活ケアガイドの作成 (FR-03)", wait_msg: "少々お待ちください。できたらすぐにお見せします。",
     guide_title: "AIガイド", tab_med: "お薬の案内", tab_life: "生活ケア", tab_src: "出典",
@@ -66,7 +66,7 @@ window.I18N = {
     visit_date: "就诊日期", hospital: "医院名称", procedure: "诊疗/项目内容", procedure_ph: "例如: 痘痘治疗、激光美白",
     doctor_note: "医生说明备注", drugs: "处方药", drug_name: "药名", dose: "每次用量", dose_ph: "例如: 1片",
     times_per_day: "每天次数", days: "天数", add_drug: "+ 添加药品", save: "保存并生成 AI 指南",
-    ocr_upload: "用处方照片填写", ocr_soon: "处方照片识别（OCR）正在准备中。",
+    ocr_upload: "用处方照片填写",
     analyzing: "AI 分析 · 生成指南", step_record: "确认就诊记录和处方信息", step_rag: "检索依据资料 (FR-02)",
     step_guide: "生成 AI 用药·生活护理指南 (FR-03)", wait_msg: "请稍等，完成后马上为您显示。",
     guide_title: "AI 专属指南", tab_med: "用药说明", tab_life: "生活护理", tab_src: "出处",
@@ -92,7 +92,7 @@ window.I18N = {
     visit_date: "Visit date", hospital: "Clinic name", procedure: "Treatment / procedure", procedure_ph: "e.g. acne care, laser toning",
     doctor_note: "Doctor's notes", drugs: "Prescribed medicines", drug_name: "Medicine name", dose: "Dose", dose_ph: "e.g. 1 tablet",
     times_per_day: "Times a day", days: "Days", add_drug: "+ Add medicine", save: "Save and create AI guide",
-    ocr_upload: "Fill in from a prescription photo", ocr_soon: "Prescription photo reading (OCR) is coming soon.",
+    ocr_upload: "Fill in from a prescription photo",
     analyzing: "AI analysis · creating guide", step_record: "Checking your records and prescriptions", step_rag: "Searching trusted sources (FR-02)",
     step_guide: "Writing your medicine and care guide (FR-03)", wait_msg: "Please wait a moment. We'll show it as soon as it's ready.",
     guide_title: "Your AI guide", tab_med: "Medicines", tab_life: "Daily care", tab_src: "Sources",
@@ -139,4 +139,34 @@ Object.assign(window.I18N.en, {
   chat_error: "We couldn't get an answer. Please try again shortly.", chat_sources: "Sources:",
   emergency_title: "⚠ This may be an emergency", emergency_body: "The symptoms you describe may need immediate care. Call 119 now or go to the nearest emergency room.",
   call_119: "Call 119", find_er: "Find the nearest ER", call_1330: "Call 1330 (multilingual travel hotline)",
+});
+
+// 처방전 사진 인식 (FR-05) 문구
+Object.assign(window.I18N.ko, {
+  ocr_upload: "처방전·약봉투 사진으로 입력", ocr_hint: "사진에서 읽은 내용으로 아래 칸을 채워요. 주민번호 등은 저장하지 않아요.",
+  ocr_reading: "사진을 읽고 있어요…", ocr_done: "사진에서 읽은 내용으로 채웠어요.",
+  ocr_check: "글자를 잘못 읽을 수 있어요. 처방전과 한 번 더 비교해 고친 뒤 저장해 주세요.",
+  ocr_items_not_read: "약 목록은 읽지 못했어요. 직접 입력해 주세요.", ocr_fake: "(데모용 가짜 인식 결과)",
+  ocr_failed: "사진을 읽지 못했어요. 밝고 선명하게 다시 찍거나 직접 입력해 주세요.", ocr_badge: "사진 입력",
+});
+Object.assign(window.I18N.ja, {
+  ocr_upload: "処方箋・薬袋の写真で入力", ocr_hint: "写真から読み取った内容で下の欄を埋めます。個人番号などは保存しません。",
+  ocr_reading: "写真を読み取っています…", ocr_done: "写真から読み取った内容で入力しました。",
+  ocr_check: "文字を読み間違えることがあります。処方箋と見比べて修正してから保存してください。",
+  ocr_items_not_read: "お薬の一覧は読み取れませんでした。直接入力してください。", ocr_fake: "（デモ用の仮の読み取り結果）",
+  ocr_failed: "写真を読み取れませんでした。明るく鮮明に撮り直すか、直接入力してください。", ocr_badge: "写真入力",
+});
+Object.assign(window.I18N.zh, {
+  ocr_upload: "拍摄处方或药袋自动填写", ocr_hint: "将根据照片识别的内容填写下方栏目。不会保存身份证号等信息。",
+  ocr_reading: "正在识别照片…", ocr_done: "已根据照片识别内容填写。",
+  ocr_check: "识别可能有误。请与处方核对并修改后再保存。",
+  ocr_items_not_read: "未能识别药品列表，请手动填写。", ocr_fake: "（演示用的模拟识别结果）",
+  ocr_failed: "未能识别照片。请在光线充足处清晰重拍，或手动填写。", ocr_badge: "照片录入",
+});
+Object.assign(window.I18N.en, {
+  ocr_upload: "Fill in from a prescription photo", ocr_hint: "We fill the fields below from the photo. ID numbers are not stored.",
+  ocr_reading: "Reading the photo…", ocr_done: "Filled in from the photo.",
+  ocr_check: "The text may be misread. Compare with your prescription and fix it before saving.",
+  ocr_items_not_read: "We couldn't read the medicine list. Please enter it yourself.", ocr_fake: "(Demo: simulated result)",
+  ocr_failed: "We couldn't read the photo. Retake it bright and sharp, or enter the details yourself.", ocr_badge: "From photo",
 });

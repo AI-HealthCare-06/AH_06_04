@@ -48,3 +48,15 @@ class Config(BaseSettings):
     GUIDE_KB_DIR: str = ""
     # 감수 전(reviewed: false) 안내문도 근거로 쓸지 — 운영(prod)에서는 반드시 false
     GUIDE_ALLOW_UNREVIEWED_DOCS: bool = False
+
+    # ── FR-05 처방전·약봉투 사진 인식 (OCR) ─────────────
+    # fake   = 가짜 결과(키·비용 0, 테스트·데모용)
+    # openai = 팀 키로 사진을 직접 읽어 칸별로 정리 (gpt-4o-mini 비전)
+    # clova  = 네이버 CLOVA OCR 로 글자 추출 → (OPENAI 키가 있으면) AI 로 칸 정리, 없으면 날짜·병원만
+    OCR_MODE: str = "fake"
+    OCR_MAX_BYTES: int = 5 * 1024 * 1024  # 사진 1장 최대 5MB
+    OCR_TIMEOUT_S: float = 30.0
+    OCR_DAILY_LIMIT: int = 20  # 한 사용자 하루 OCR 횟수 (비용 보호)
+    OPENAI_VISION_MODEL: str = "gpt-4o-mini"
+    CLOVA_OCR_SECRET_KEY: str = ""  # .env 에만 (공개 레포)
+    CLOVA_OCR_INVOKE_URL: str = ""  # 콘솔의 General OCR 'APIGW Invoke URL' (이것도 비밀값)

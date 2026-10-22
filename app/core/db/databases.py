@@ -11,6 +11,7 @@ TORTOISE_APP_MODELS = [
     "app.models.content_assets",
     "app.models.medical_records",
     "app.models.guides",
+    "app.models.ocr_jobs",
 ]
 
 TORTOISE_ORM = {

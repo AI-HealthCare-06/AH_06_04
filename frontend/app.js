@@ -124,7 +124,7 @@ async function home() {
   const [records, guides] = await Promise.all([api("GET", "/medical-records"), api("GET", "/guides")]);
   const recordList = records.length
     ? records.map((r) => h("div", { class: "item" },
-        h("strong", {}, `${r.visit_date} · ${r.hospital_name}`),
+        h("strong", {}, `${r.visit_date} · ${r.hospital_name}`), r.source === "OCR" ? h("span", { class: "badge" }, t("ocr_badge")) : null,
         h("div", { class: "muted" }, [r.procedure_name, r.items.map((i) => i.drug_name).join(", ")].filter(Boolean).join(" / ")),
         h("button", { class: "btn secondary", onclick: () => makeGuide(r.id) }, t("make_guide"))))
     : [h("p", { class: "muted" }, t("no_records"))];
@@ -158,14 +158,59 @@ function recordForm() {
     doctor_note: h("textarea", { rows: 3, maxlength: 1000 }),
   };
   const drugBox = h("div");
-  const addDrug = () => drugBox.append(h("div", { class: "drug" },
-    field("drug_name", h("input", { name: "drug_name", maxlength: 100 })),
+  // 약 한 줄 추가 (OCR 결과가 있으면 그 값으로 채운다)
+  const addDrug = (v = {}) => drugBox.append(h("div", { class: "drug" },
+    field("drug_name", h("input", { name: "drug_name", maxlength: 100, value: v.drug_name ?? null })),
     h("div", { class: "row" },
-      h("div", {}, field("dose", h("input", { name: "dose", maxlength: 50, placeholder: t("dose_ph") }))),
-      h("div", {}, field("times_per_day", h("input", { name: "times_per_day", type: "number", min: 1, max: 10 }))),
-      h("div", {}, field("days", h("input", { name: "days", type: "number", min: 1, max: 365 }))))));
+      h("div", {}, field("dose", h("input", { name: "dose", maxlength: 50, placeholder: t("dose_ph"), value: v.dose ?? null }))),
+      h("div", {}, field("times_per_day", h("input", { name: "times_per_day", type: "number", min: 1, max: 10, value: v.times_per_day ?? null }))),
+      h("div", {}, field("days", h("input", { name: "days", type: "number", min: 1, max: 365, value: v.days ?? null }))))));
   addDrug();
   const err = errorBox();
+
+  // ── FR-05 처방전·약봉투 사진 → 칸 자동 채우기 (저장 전 사용자가 꼭 확인) ──
+  let ocrJobId = null;
+  const ocrBox = h("div");
+  const fileInput = h("input", { type: "file", accept: "image/jpeg,image/png", capture: "environment", hidden: true,
+    onchange: async () => {
+      const file = fileInput.files[0];
+      fileInput.value = "";
+      if (!file) return;
+      err.textContent = "";
+      ocrBox.replaceChildren(h("p", { class: "notice" }, t("ocr_reading")));
+      try {
+        const form = new FormData();
+        form.append("file", file);
+        const res = await fetch(`${API}/ocr/prescriptions`, { method: "POST", body: form,
+          headers: { Authorization: `Bearer ${store.token}` } });
+        if (res.status === 401) { store.token = null; location.hash = "#/login"; return; }
+        const accepted = await res.json().catch(() => null);
+        if (!res.ok) throw new Error(errorText(accepted));
+        const job = await pollOcr(accepted.job_id);
+        if (job.status !== "DONE") throw new Error(t("ocr_failed"));
+        fillFromOcr(job);
+      } catch (ex) { ocrBox.replaceChildren(); err.textContent = ex.message; }
+    } });
+  const pollOcr = async (id) => {
+    for (let i = 0; i < 40; i++) {  // 최대 약 40초
+      const job = await api("GET", `/ocr/prescriptions/${id}`);
+      if (job.status !== "PENDING") return job;
+      await new Promise((r) => setTimeout(r, 1000));
+    }
+    throw new Error(t("ocr_failed"));
+  };
+  const fillFromOcr = (job) => {
+    const d = job.draft;
+    ocrJobId = job.job_id;
+    if (d.visit_date) f.visit_date.value = d.visit_date;
+    if (d.hospital_name) f.hospital_name.value = d.hospital_name;
+    if (d.procedure_name) f.procedure_name.value = d.procedure_name;
+    if (d.items.length) { drugBox.replaceChildren(); d.items.forEach((it) => addDrug(it)); }
+    ocrBox.replaceChildren(h("div", { class: "notice" },
+      h("strong", {}, t("ocr_done")), h("div", {}, t("ocr_check")),
+      d.warnings.includes("items_not_read") ? h("div", {}, t("ocr_items_not_read")) : null,
+      d.warnings.includes("fake_result") ? h("div", { class: "muted" }, t("ocr_fake")) : null));
+  };
   const form = h("form", { onsubmit: async (e) => {
     e.preventDefault();
     const items = [...drugBox.children].map((row) => {
@@ -175,15 +220,18 @@ function recordForm() {
     }).filter((i) => i.drug_name);
     const body = { visit_date: f.visit_date.value, hospital_name: f.hospital_name.value.trim(),
       procedure_name: f.procedure_name.value.trim() || null, doctor_note: f.doctor_note.value.trim() || null, items };
+    if (ocrJobId) body.ocr_job_id = ocrJobId;  // 사진에서 읽은 기록이면 서버가 source=OCR 로 저장
     try { const rec = await api("POST", "/medical-records", body); await makeGuide(rec.id); }
     catch (ex) { err.textContent = ex.message; }
   } },
   field("visit_date", f.visit_date), field("hospital", f.hospital_name), field("procedure", f.procedure_name),
   field("doctor_note", f.doctor_note), h("h2", { style: "margin-top:16px" }, t("drugs")), drugBox,
   h("button", { class: "btn secondary", type: "button", onclick: addDrug }, t("add_drug")),
-  h("button", { class: "btn secondary", type: "button", onclick: () => (err.textContent = t("ocr_soon")) }, t("ocr_upload")),
   h("button", { class: "btn", type: "submit" }, t("save")), err);
-  render(h("a", { href: "#/home" }, t("back")), h("div", { class: "card" }, h("h1", {}, t("add_record")), form));
+  // 사진 입력을 맨 위에: 찍으면 아래 칸이 채워지고, 사용자는 확인만 하면 된다
+  render(h("a", { href: "#/home" }, t("back")), h("div", { class: "card" }, h("h1", {}, t("add_record")),
+    h("button", { class: "btn secondary", type: "button", onclick: () => fileInput.click() }, "📷 " + t("ocr_upload")),
+    h("p", { class: "muted small" }, t("ocr_hint")), fileInput, ocrBox, form));
 }
 
 // ── 5. AI 가이드 (FR-02·03) — 만드는 중이면 진행 화면, 끝나면 결과 ──
