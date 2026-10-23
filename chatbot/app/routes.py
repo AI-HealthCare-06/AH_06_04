@@ -63,6 +63,8 @@ class NewConversation(BaseModel):
 class Ask(BaseModel):
     message: str = Field(min_length=1, max_length=settings.max_question_chars)
     lang: str | None = None
+    # FR-01 → 챗봇: 내 최근 진료기록의 약·시술 이름 ("이 약 먹고 술 마셔도 돼요?" 의 '이 약')
+    context: list[str] | None = Field(None, max_length=10)
 
     @field_validator("message")
     @classmethod
@@ -130,7 +132,7 @@ async def stream(
 
     async def gen():
         n = 0
-        async for event, data in run_turn(conv, body.message, lang, llm, request.is_disconnected):
+        async for event, data in run_turn(conv, body.message, lang, llm, request.is_disconnected, body.context):
             if event == "done":  # 마지막에 방금 저장한 답 번호를 붙인다 → 화면이 👍/👎 를 이 번호로 보낸다
                 last = await Message.filter(conversation=conv, role="assistant").order_by("-id").first()
                 data = {**data, "message_id": last.id if last else None}

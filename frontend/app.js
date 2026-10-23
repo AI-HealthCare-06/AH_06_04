@@ -44,12 +44,14 @@ async function api(method, path, body) {
     throw new Error(t("err_login"));
   }
   const data = res.status === 204 ? null : await res.json().catch(() => null);
-  if (!res.ok) throw new Error(errorText(data));
+  if (!res.ok) throw new Error(errorText(data, res.status));
   return data;
 }
 
-// FastAPI 에러 모양({detail: "..."} 또는 [{msg}])을 사람이 읽을 글로
-function errorText(data) {
+// 서버 에러 → 사람이 읽을 글. 서버 문구는 한국어라, 다른 언어는 상태코드별 번역 문구를 쓴다
+const STATUS_TEXT = { 409: "err_exists", 413: "err_too_big", 415: "err_file_type", 422: "err_input", 429: "err_limit" };
+function errorText(data, status) {
+  if (store.lang !== "ko") return t(STATUS_TEXT[status] || "err_generic");
   if (!data) return t("err_generic");
   if (typeof data.detail === "string") return data.detail;
   if (Array.isArray(data.detail)) return data.detail.map((d) => d.msg).join(" / ");
@@ -192,7 +194,7 @@ function recordForm() {
           headers: { Authorization: `Bearer ${store.token}` } });
         if (res.status === 401) { store.token = null; location.hash = "#/login"; return; }
         const accepted = await res.json().catch(() => null);
-        if (!res.ok) throw new Error(errorText(accepted));
+        if (!res.ok) throw new Error(errorText(accepted, res.status));
         const job = await pollOcr(accepted.job_id);
         if (job.status !== "DONE") throw new Error(t("ocr_failed"));
         fillFromOcr(job);
@@ -341,6 +343,9 @@ async function chatView() {
   const input = h("textarea", { rows: 2, maxlength: 500, placeholder: t("chat_ph") });
   const sendBtn = h("button", { class: "btn", type: "submit" }, t("send"));
   const emergencyBox = h("div");
+  // 내 최근 진료기록의 약·시술 이름 → "이 약 먹고 …" 질문에서 '이 약' 이 무엇인지 챗봇이 알 수 있게
+  const latest = (await api("GET", "/medical-records?limit=1").catch(() => []))[0];
+  const context = latest ? [latest.procedure_name, ...latest.items.map((i) => i.drug_name)].filter(Boolean).slice(0, 10) : [];
   const bubble = (role, text) => { const b = h("div", { class: `msg ${role}` }, text); log.append(b); b.scrollIntoView({ block: "end" }); return b; };
 
   // 대화방: 이 탭에서 쓰던 게 있으면 이어서, 없거나 언어가 바뀌었으면 새로
@@ -365,7 +370,7 @@ async function chatView() {
     input.value = "";
     bubble("user", q);
     sendBtn.disabled = true;
-    try { await ask(conv.id, q, lang, bubble, emergencyBox); }
+    try { await ask(conv.id, q, lang, bubble, emergencyBox, context); }
     catch (ex) { bubble("bot error", ex.message || t("chat_error")); }
     finally { sendBtn.disabled = false; input.focus(); }
   } }, input, sendBtn);
@@ -375,18 +380,20 @@ async function chatView() {
   });
 
   render(h("a", { href: "#/home" }, t("back")),
-    h("div", { class: "card" }, h("h1", {}, t("chat_title")), h("p", { class: "muted" }, t("chat_intro")), emergencyBox, log, form,
+    h("div", { class: "card" }, h("h1", {}, t("chat_title")), h("p", { class: "muted" }, t("chat_intro")),
+      context.length ? h("p", { class: "muted small" }, t("chat_context"), " ", context.map((c) => h("span", { class: "badge" }, c))) : null,
+      emergencyBox, log, form,
       h("button", { class: "btn secondary", type: "button", onclick: () => { sessionStorage.removeItem("gp_conv"); chatView(); } }, t("chat_new"))));
   input.focus();
 }
 
 // 질문 하나 보내고 SSE 답을 끝까지 읽는다
-async function ask(convId, message, lang, bubble, emergencyBox) {
+async function ask(convId, message, lang, bubble, emergencyBox, context = []) {
   chatAbort = new AbortController();
   const res = await fetch(`${API}/chat/conversations/${convId}/stream`, {
     method: "POST", signal: chatAbort.signal,
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${store.token}` },
-    body: JSON.stringify({ message, lang }),
+    body: JSON.stringify({ message, lang, context }),
   });
   if (res.status === 401) { store.token = null; location.hash = "#/login"; throw new Error(t("err_login")); }
   if (!res.ok || !res.body) throw new Error(t("chat_error"));

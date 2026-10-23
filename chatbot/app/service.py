@@ -115,9 +115,35 @@ _FOLLOW_UP = re.compile(
 )
 
 
-async def _find_docs(conv: Conversation, question: str, first_turn: bool) -> list[docs.Doc]:
-    """질문으로 찾기. 못 찾았고 '이어지는 질문' 이면 ('그럼 언제부터요?') 바로 앞 답의 안내문을 다시 쓴다."""
+# '내 약' 을 가리키는 질문 — 이럴 때만 진료기록의 약·시술 이름으로 안내문을 찾는다
+# (아무 질문에나 기록을 붙이면 "주차는 어디예요?" 에도 약 안내문으로 답하게 된다)
+_MY_RECORD = re.compile(
+    r"(이|그|내|제|먹는|처방\s*받은|바르는)\s*(약|연고|크림)|(약|연고)(을|를|은|는|이|가)?\s*(먹|바르|복용)"
+    r"|\b(my|this|these|the)\s+(medicine|medication|meds|pills?|cream|ointment|prescription)"
+    r"|(这个|那个|我的|我吃的)\s*(药|药膏)|(この|その|私の|飲んでいる)\s*(薬|軟膏)",
+    re.IGNORECASE,
+)
+
+
+def clean_context(items: list[str] | None) -> list[str]:
+    """화면이 보낸 내 기록 이름 정리 — 최대 10개 · 각 60자 · 꺾쇠 제거 (프롬프트 태그 깨기 방지)"""
+    out: list[str] = []
+    for item in items or []:
+        text = " ".join(str(item).replace("<", " ").replace(">", " ").split())[:60]
+        if text and text not in out:
+            out.append(text)
+    return out[:10]
+
+
+async def _find_docs(
+    conv: Conversation, question: str, first_turn: bool, context: list[str] | None = None
+) -> list[docs.Doc]:
+    """질문으로 찾기. ① '내 약' 질문이면 기록의 약 이름으로 찾은 안내문을 앞에 ② 못 찾았고 '이어지는 질문' 이면 앞 답의 안내문."""
     found = await retrieval.search(question, settings.docs_per_answer)  # FR-02: SEARCH_MODE 에 따라 낱말·벡터·혼합
+    if context and _MY_RECORD.search(question):
+        # '내 약' 질문 → 기록의 약 안내문을 앞에 두고, 질문으로 찾은 것은 뒤에 (같은 건 한 번만)
+        mine = await retrieval.search(" ".join(context), settings.docs_per_answer)
+        found = [*mine, *(d for d in found if d not in mine)][: settings.docs_per_answer]
     if found or first_turn or not _FOLLOW_UP.search(question.strip()):
         return found
     prev = (
@@ -132,7 +158,12 @@ def _sources_event(found: list[docs.Doc], lang: str) -> Event:
 
 
 async def run_turn(
-    conv: Conversation, question: str, lang: str, llm, is_disconnected: Callable[[], Awaitable[bool]] | None = None
+    conv: Conversation,
+    question: str,
+    lang: str,
+    llm,
+    is_disconnected: Callable[[], Awaitable[bool]] | None = None,
+    context: list[str] | None = None,
 ) -> AsyncIterator[Event]:
     yield "meta", {"conversation_id": str(conv.public_id), "lang": lang}
 
@@ -161,7 +192,8 @@ async def run_turn(
         else None
     )
     # ④ 안내문 찾기 — 없으면 AI 를 부르지 않는다 (지어낼 틈 0 · 비용 0)
-    found = [] if key else await _find_docs(conv, question, first_turn)
+    context = clean_context(context)
+    found = [] if key else await _find_docs(conv, question, first_turn, context)
     if key or not found:
         async for ev in _fixed(conv, key or "no_doc", lang):
             yield ev
@@ -170,7 +202,7 @@ async def run_turn(
     yield _sources_event(found, lang)
 
     # ⑤ 캐시 (첫 질문만 · 사용자마다 따로) — 키에 안내문 버전·id 를 넣어 안내문이 바뀌면 새로
-    cache_q = f"{docs.store().version}|{','.join(source_ids)}|{question}"
+    cache_q = f"{docs.store().version}|{','.join(source_ids)}|{','.join(context)}|{question}"
     if first_turn and (cached := answer_cache.get(conv.user_id, lang, cache_q)) is not None:
         sentences, tail = safety.split_complete_sentences(cached)
         for s in [*sentences, tail]:
@@ -182,7 +214,7 @@ async def run_turn(
         return
 
     # ⑥ LLM — 질문 1개당 1번 (반복문 안에서 부르지 않는다 — 테스트가 calls == 1 을 확인)
-    messages = build_messages(lang, question, await _history(conv, history_rows), found)
+    messages = build_messages(lang, question, await _history(conv, history_rows), found, context)
     st = _TurnState()
     try:
         async for ev in _stream_checked(llm, messages, lang, is_disconnected, st):

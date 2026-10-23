@@ -186,3 +186,22 @@ Object.assign(window.I18N.zh, { fb_question: "对您有帮助吗？", fb_thanks:
   fb_hard_to_understand: "难以理解", fb_not_relevant: "与我的情况无关", fb_other: "其他" });
 Object.assign(window.I18N.en, { fb_question: "Was this helpful?", fb_thanks: "Thanks for the feedback!", fb_wrong_info: "Seems incorrect",
   fb_hard_to_understand: "Hard to understand", fb_not_relevant: "Not relevant to me", fb_other: "Other" });
+
+// 서버 에러 (상태코드별) — 한국어는 서버 문구를 그대로 보여준다
+Object.assign(window.I18N.ko, { err_exists: "이미 사용 중이에요.", err_too_big: "파일이 너무 커요.", err_file_type: "JPG·PNG 사진만 올릴 수 있어요.",
+  err_input: "입력한 내용을 확인해 주세요.", err_limit: "오늘 사용할 수 있는 횟수를 모두 썼어요." });
+Object.assign(window.I18N.ja, { err_exists: "メールアドレス・電話番号がすでに使われているか、すでに保存済みです。", err_too_big: "ファイルが大きすぎます（5MBまで）。",
+  err_file_type: "JPG・PNGの写真のみアップロードできます。", err_input: "入力内容を確認してください（パスワードは大文字・小文字・数字・記号を含む8文字以上）。",
+  err_limit: "本日の利用回数の上限に達しました。" });
+Object.assign(window.I18N.zh, { err_exists: "邮箱或手机号已被使用，或该内容已保存。", err_too_big: "文件太大（最大5MB）。",
+  err_file_type: "只能上传JPG或PNG照片。", err_input: "请检查填写内容（密码需8位以上，包含大写、小写字母、数字和符号）。",
+  err_limit: "今日使用次数已达上限。" });
+Object.assign(window.I18N.en, { err_exists: "This email or phone number is already in use, or it was already saved.", err_too_big: "The file is too large (max 5MB).",
+  err_file_type: "Only JPG or PNG photos can be uploaded.", err_input: "Please check your input (password: 8+ characters with upper, lower, number and symbol).",
+  err_limit: "You've reached today's limit." });
+
+// 챗봇이 참고하는 내 기록
+Object.assign(window.I18N.ko, { chat_context: "최근 진료기록 참고:" });
+Object.assign(window.I18N.ja, { chat_context: "最近の診療記録を参照:" });
+Object.assign(window.I18N.zh, { chat_context: "参考最近的就诊记录：" });
+Object.assign(window.I18N.en, { chat_context: "Using your latest record:" });
