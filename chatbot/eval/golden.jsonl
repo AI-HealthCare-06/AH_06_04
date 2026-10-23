@@ -66,3 +66,14 @@
 {"id": "g78", "lang": "zh-Hans", "q": "韩国地铁怎么坐？", "expect": "no_doc", "doc": null}
 {"id": "g79", "lang": "en", "q": "How much is a taxi from Incheon airport?", "expect": "no_doc", "doc": null}
 {"id": "g80", "lang": "ja", "q": "免税の手続きはどうすればいい？", "expect": "no_doc", "doc": null}
+{"id": "g81", "lang": "ko", "q": "보톡스 맞기 전에 의사에게 뭘 알려야 해요?", "expect": "ok", "doc": "botox-fda"}
+{"id": "g82", "lang": "zh-Hans", "q": "打肉毒素之前要告诉医生什么？", "expect": "ok", "doc": "botox-fda"}
+{"id": "g83", "lang": "ko", "q": "더마펜 받고 햇빛 언제까지 피해야 해요?", "expect": "ok", "doc": "microneedling-fda"}
+{"id": "g84", "lang": "ja", "q": "ダーマペンの後の注意点は？", "expect": "ok", "doc": "microneedling-fda"}
+{"id": "g85", "lang": "ko", "q": "포텐자 시술 위험한가요?", "expect": "ok", "doc": "rf-microneedling-fda"}
+{"id": "g86", "lang": "zh-Hans", "q": "黄金微针有什么风险？", "expect": "ok", "doc": "rf-microneedling-fda"}
+{"id": "g87", "lang": "ko", "q": "시술 받고 언제 비행기 타도 돼요?", "expect": "ok", "doc": "procedure-abroad-nhs"}
+{"id": "g88", "lang": "zh-Hans", "q": "做完项目回国后出问题找谁？", "expect": "ok", "doc": "procedure-abroad-nhs"}
+{"id": "g89", "lang": "en", "q": "Does travel insurance cover problems after a procedure abroad?", "expect": "ok", "doc": "procedure-abroad-nhs"}
+{"id": "g90", "lang": "ko", "q": "보톡스 맞고 삼키기가 힘들어요", "expect": "emergency", "doc": null}
+{"id": "g91", "lang": "zh-Hans", "q": "打完肉毒素后看东西重影", "expect": "emergency", "doc": null}

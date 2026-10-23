@@ -64,6 +64,36 @@ _EMERGENCY = [
     r"視力模糊",
     r"视线模糊",
     r"看不清",
+    # 보툴리눔 톡신 확산 신호 (FDA 환자 안내서: 삼키기·말하기 어려움, 겹쳐 보임) — botox-fda 안내문
+    # 삼키기 어려움은 그 자체로 위험 → 항상 응급
+    r"삼키(기|는\s*게)?\s*(가|이)?\s*(힘들|어렵|안\s*돼|못)",
+    r"(trouble|difficulty|hard\s+to)\s+swallow(ing)?",
+    r"can'?t\s+swallow",
+    r"slurred\s+speech",
+    r"double\s+vision",
+    r"吞咽困难",
+    r"吞咽困難",
+    r"复视",
+    r"複視",
+    r"飲み込(みにく|めな)",
+    r"ろれつが回らな",
+]
+
+# [PR #10 리뷰] 일상 표현과 겹치는 신호 — 시술·주사 낱말이 같은 질문에 있을 때만 응급
+#   ("한국어 말하기가 어려워요" · "주말이 안 나와요" · "아이섀도 겹쳐 보이게" · "重影眼妆" 같은 오탐 방지)
+_PROCEDURE_CONTEXT = (
+    r"보톡스|보툴리눔|톡신|필러|주사|시술|맞(고|은|았)"
+    r"|botox|botulinum|toxin|filler|inject|procedure|treatment"
+    r"|ボトックス|ボツリヌス|フィラー|注射|施術|肉毒|玻尿酸|填充|打完|做完"
+)
+_EMERGENCY_IF_PROCEDURE = [
+    r"(?<![가-힣])말(이|하기가?)?\s*(어눌|안\s*나와|꼬여)",  # '주말' 제외
+    r"(둘로|겹쳐)\s*보",
+    r"(trouble|difficulty|hard\s+to)\s+speak(ing)?",
+    r"说话含糊",
+    r"說話含糊",
+    r"重影",
+    r"二重に見え",
 ]
 
 # ① 질문이 '진단·처방·용량' 을 직접 요구 — LLM 에 보내지 않는다
@@ -134,6 +164,8 @@ _FREQUENCY = (
 _MED_ORDER = r"(드세요|복용하세요|드십시오|바르세요|끊으세요|중단하세요|飲んでください|塗ってください|请吃|請吃)"
 
 _EMERGENCY_RE = re.compile("|".join(_EMERGENCY), re.IGNORECASE)
+_PROCEDURE_CONTEXT_RE = re.compile(_PROCEDURE_CONTEXT, re.IGNORECASE)
+_EMERGENCY_IF_PROCEDURE_RE = re.compile("|".join(_EMERGENCY_IF_PROCEDURE), re.IGNORECASE)
 _ASK_MEDICAL_RE = re.compile("|".join(_ASK_MEDICAL), re.IGNORECASE)
 _BAD_OUTPUT_RE = re.compile("|".join(_BAD_OUTPUT), re.IGNORECASE)
 _MED_WORD_RE = re.compile(_MED_WORD, re.IGNORECASE)
@@ -145,7 +177,10 @@ _SENTENCE_END = re.compile(r"(?<=[.!?])\s+|(?<=[。！？])|\n+")
 
 
 def is_emergency(text: str) -> bool:
-    return bool(_EMERGENCY_RE.search(text))
+    if _EMERGENCY_RE.search(text):
+        return True
+    # 일상 표현과 겹치는 신호는 시술·주사 이야기와 함께일 때만
+    return bool(_EMERGENCY_IF_PROCEDURE_RE.search(text) and _PROCEDURE_CONTEXT_RE.search(text))
 
 
 def asks_for_medical_decision(text: str) -> bool:
