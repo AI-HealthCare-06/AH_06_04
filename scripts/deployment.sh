@@ -147,6 +147,12 @@ ssh -i ~/.ssh/${ssh_key_file} ubuntu@${ec2_ip} \
   echo "Deploying services: $DEPLOY_SERVICES"
   docker compose up -d --pull always --no-deps $DEPLOY_SERVICES
 
+  # 새 DB 테이블·칼럼 반영 (아직 안 한 마이그레이션만 실행 — 여러 번 돌려도 안전)
+  if [[ " $DEPLOY_SERVICES " == *" fastapi "* ]]; then
+    echo "DB migration (aerich upgrade)"
+    docker compose exec -T fastapi uv run --no-sync aerich upgrade
+  fi
+
   docker image prune -af
 EOF
 
