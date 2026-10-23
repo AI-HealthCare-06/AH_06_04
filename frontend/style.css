@@ -67,3 +67,5 @@ a { color: var(--brand); }
   padding: 14px; font: inherit; font-size: 17px; line-height: 1.6; margin: 8px 0 0; }
 .staff-card.mine { border-style: dashed; font-size: 14px; }
 details summary { cursor: pointer; color: var(--brand); margin-top: 10px; }
+.warn-box { border: 1px solid #f3b4b4; margin-bottom: 12px; }
+.warn-box .btn { margin-top: 8px; }

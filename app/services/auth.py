@@ -21,11 +21,9 @@ class AuthService:
         # 이메일 중복 체크
         await self.check_email_exists(data.email)
 
-        # 휴대폰 번호는 선택 — 입력했을 때만 정리하고 중복 체크
-        normalized_phone_number = None
-        if data.phone_number:
-            normalized_phone_number = normalize_phone_number(data.phone_number)
-            await self.check_phone_number_exists(normalized_phone_number)
+        # 휴대폰 번호 정리(한국 010… / 해외 +86…) 후 중복 체크
+        normalized_phone_number = normalize_phone_number(data.phone_number)
+        await self.check_phone_number_exists(normalized_phone_number)
 
         # 유저 생성
         async with in_transaction():
@@ -38,6 +36,8 @@ class AuthService:
                 birthday=data.birth_date,
                 nationality=data.nationality,
                 preferred_language=data.preferred_language,
+                messenger_type=data.messenger_type,
+                messenger_id=data.messenger_id,
             )
 
             return user

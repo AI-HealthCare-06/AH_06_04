@@ -83,7 +83,7 @@ async def purge_expired(now: datetime | None = None) -> int:
 async def _save_answer(
     conv: Conversation, text: str, lang: str, outcome: str, model: str | None = None, usage=None, sources=None
 ) -> None:
-    await Message.create(
+    msg = await Message.create(
         conversation=conv,
         role="assistant",
         content=text,
@@ -94,6 +94,9 @@ async def _save_answer(
         input_tokens=getattr(usage, "input_tokens", None),
         output_tokens=getattr(usage, "output_tokens", None),
     )
+    # [리뷰 #16] 방금 저장한 답 번호를 이 요청의 대화 객체에 남긴다 → done 이벤트가 '마지막 답' 을 다시 찾지 않게
+    #   (요청마다 대화 객체를 새로 읽으므로, 같은 대화에 요청이 겹쳐도 서로 섞이지 않는다)
+    conv.last_answer_id = msg.id
     conv.last_message_at = datetime.now(KST)
     await conv.save(update_fields=["last_message_at"])
 
@@ -118,7 +121,8 @@ _FOLLOW_UP = re.compile(
 # '내 약' 을 가리키는 질문 — 이럴 때만 진료기록의 약·시술 이름으로 안내문을 찾는다
 # (아무 질문에나 기록을 붙이면 "주차는 어디예요?" 에도 약 안내문으로 답하게 된다)
 _MY_RECORD = re.compile(
-    r"(이|그|내|제|먹는|처방\s*받은|바르는)\s*(약|연고|크림)|(약|연고)(을|를|은|는|이|가)?\s*(먹|바르|복용)"
+    r"(?<![가-힣])(이|그|내|제|먹는|처방\s*받은|바르는)\s*(약|연고|크림)(?![속국사품학회])"  # '약속·약국·제약회사' 제외
+    r"|(?<![가-힣])(약|연고)(을|를|은|는|이|가)?\s*(먹|바르|복용)"
     r"|\b(my|this|these|the)\s+(medicine|medication|meds|pills?|cream|ointment|prescription)"
     r"|(这个|那个|我的|我吃的)\s*(药|药膏)|(この|その|私の|飲んでいる)\s*(薬|軟膏)",
     re.IGNORECASE,

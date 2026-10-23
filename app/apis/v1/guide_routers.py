@@ -22,6 +22,7 @@ from app.dtos.guides import (
     GuideResponse,
     GuideSourceResponse,
 )
+from app.models.guides import GuideStatus
 from app.models.users import User
 from app.services.guides import GuideService
 
@@ -37,7 +38,9 @@ async def create_guide(
 ) -> ORJSONResponse:
     guide = await service.request_guide(user=user, data=request)
     # AI 생성은 수 초 걸리므로 응답을 먼저 주고 뒤에서 만든다 (P95 3초 · 비동기)
-    background_tasks.add_task(service.generate, guide.id)
+    # 이미 만든 가이드를 그대로 돌려준 경우(DONE)는 다시 만들지 않는다
+    if guide.status == GuideStatus.PENDING:
+        background_tasks.add_task(service.generate, guide.id)
     body = GuideAcceptedResponse(guide_id=guide.id, status=guide.status)
     return ORJSONResponse(body.model_dump(), status_code=status.HTTP_202_ACCEPTED)
 

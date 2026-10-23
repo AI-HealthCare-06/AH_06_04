@@ -6,28 +6,31 @@ from pydantic import AfterValidator, BaseModel, EmailStr, Field
 from app.core.validators import (
     optional_after_validator,
     validate_birthday,
+    validate_messenger_id,
     validate_nationality,
     validate_password,
     validate_phone_number,
 )
-from app.models.users import Gender, Language
+from app.models.users import Gender, Language, Messenger
 
 
 class SignUpRequest(BaseModel):
     email: Annotated[
         EmailStr,
-        Field(None, max_length=40),
+        Field(None, max_length=100),
     ]
     password: Annotated[str, Field(min_length=8), AfterValidator(validate_password)]
-    name: Annotated[str, Field(max_length=20)]
+    name: Annotated[str, Field(min_length=1, max_length=50)]
     gender: Gender
     birth_date: Annotated[date, AfterValidator(validate_birthday)]
-    # 외국인은 한국 번호가 없을 수 있어 선택. 해외 번호(+86 …)도 받는다
+    # 연락처: 전화번호(해외 번호 가능) + 메신저 1개 — 사후관리·병원 연락 때 연락이 닿게 (팀 결정, PR #15 코멘트)
     phone_number: Annotated[
-        str | None,
-        Field(None, description="010-1234-5678 / 01012345678 / +821012345678 / +8613812345678"),
-        optional_after_validator(validate_phone_number),
+        str,
+        Field(description="010-1234-5678 / 01012345678 / +821012345678 / +86 138 1234 5678"),
+        AfterValidator(validate_phone_number),
     ]
+    messenger_type: Messenger
+    messenger_id: Annotated[str, Field(examples=["wxid_glowpass"]), AfterValidator(validate_messenger_id)]
     nationality: Annotated[str | None, Field(None, examples=["CN"]), optional_after_validator(validate_nationality)]
     preferred_language: Language = Language.KO
 

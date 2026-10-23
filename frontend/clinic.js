@@ -54,21 +54,26 @@ function eulReul(word) {
 const CARD = {
   ko: { hello: "안녕하세요. 외국인 환자입니다. 한국어가 서툴러 이 메시지로 문의드립니다.",
     visit: (r) => { const what = r.procedure_name || "진료"; return `${r.visit_date}에 ${r.hospital_name}에서 ${what}${eulReul(what)} 받았습니다.`; },
-    meds: "처방약", now: (since) => `${since} 아래 증상이 있습니다.`, ask: "진료가 필요한지 확인 부탁드립니다. 감사합니다." },
+    meds: "처방약", now: (since) => `${since} 아래 증상이 있습니다.`, ask: "진료가 필요한지 확인 부탁드립니다. 감사합니다.",
+    contact: "회신 연락처" },
   ja: { hello: "こんにちは。外国人の患者です。韓国語が苦手なため、このメッセージでお問い合わせします。",
     visit: (r) => `${r.visit_date}に${r.hospital_name}で${r.procedure_name || "診療"}を受けました。`,
-    meds: "処方薬", now: (since) => `${since}、次の症状があります。`, ask: "受診が必要かどうか確認をお願いします。ありがとうございます。" },
+    meds: "処方薬", now: (since) => `${since}、次の症状があります。`, ask: "受診が必要かどうか確認をお願いします。ありがとうございます。",
+    contact: "ご返信先" },
   zh: { hello: "您好，我是外国患者。因为不太会说韩语，所以用这条信息咨询。",
     visit: (r) => `我于${r.visit_date}在${r.hospital_name}接受了${r.procedure_name || "诊疗"}。`,
-    meds: "处方药", now: (since) => `${since}，出现以下症状：`, ask: "请帮我确认是否需要就诊。谢谢。" },
+    meds: "处方药", now: (since) => `${since}，出现以下症状：`, ask: "请帮我确认是否需要就诊。谢谢。",
+    contact: "回复联系方式" },
   en: { hello: "Hello, I am a foreign patient. My Korean is limited, so I am contacting you with this message.",
     visit: (r) => `I had ${r.procedure_name || "a consultation"} at ${r.hospital_name} on ${r.visit_date}.`,
     meds: "Prescribed medicines", now: (since) => `${since}, I have the following symptoms:`,
-    ask: "Could you please check whether I need to see a doctor? Thank you." },
+    ask: "Could you please check whether I need to see a doctor? Thank you.", contact: "Please reply to" },
 };
 
-// 고른 내용 → 카드 글 (lang = 카드 언어)
-function clinicCardText(lang, record, picked, sinceKey) {
+const MESSENGER_NAME = { WECHAT: "WeChat", LINE: "LINE", WHATSAPP: "WhatsApp", KAKAOTALK: "KakaoTalk", TELEGRAM: "Telegram" };
+
+// 고른 내용 → 카드 글 (lang = 카드 언어, me = 내 정보 — 병원이 답장할 연락처)
+function clinicCardText(lang, record, picked, sinceKey, me = null) {
   const c = CARD[lang];
   const since = SINCE.find((s) => s.key === sinceKey).label[lang];
   const drugs = record.items.map((i) => i.drug_name);
@@ -79,12 +84,13 @@ function clinicCardText(lang, record, picked, sinceKey) {
     picked.length ? c.now(since) : null,
     ...picked.map((s) => `- ${s.line[lang]}`),
     c.ask,
+    me ? `${c.contact}: ${[me.phone_number, me.messenger_type ? `${MESSENGER_NAME[me.messenger_type]} ${me.messenger_id}` : null].filter(Boolean).join(" / ")}` : null,
   ].filter(Boolean).join("\n");
 }
 
 async function clinicCardView(recordId) {
   if (!store.token) return (location.hash = "#/login");
-  const record = await api("GET", `/medical-records/${recordId}`);
+  const [record, me] = await Promise.all([api("GET", `/medical-records/${recordId}`), api("GET", "/users/me").catch(() => null)]);
   const lang = store.lang;
   const picked = new Set();
   let sinceKey = "today";
@@ -96,7 +102,7 @@ async function clinicCardView(recordId) {
     if (chosen.some((s) => s.emergency)) showEmergency(emergencyBox);  // 응급 증상이면 119 안내 먼저
     else emergencyBox.replaceChildren();
     if (!chosen.length) return out.replaceChildren(h("p", { class: "muted" }, t("card_pick")));
-    const ko = clinicCardText("ko", record, chosen, sinceKey);
+    const ko = clinicCardText("ko", record, chosen, sinceKey, me);
     out.replaceChildren(
       h("h2", {}, t("card_show_staff")),
       h("pre", { class: "staff-card", lang: "ko" }, ko),  // 병원 직원이 읽을 한국어
@@ -105,7 +111,7 @@ async function clinicCardView(recordId) {
         catch { e.target.textContent = t("card_copy_fail"); }
       } }, t("card_copy")),
       lang !== "ko" ? h("details", {}, h("summary", {}, t("card_my_lang")),
-        h("pre", { class: "staff-card mine" }, clinicCardText(lang, record, chosen, sinceKey))) : null,
+        h("pre", { class: "staff-card mine" }, clinicCardText(lang, record, chosen, sinceKey, me))) : null,
       h("p", { class: "muted small" }, t("card_note")),
     );
   };

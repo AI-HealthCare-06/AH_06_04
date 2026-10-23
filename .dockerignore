@@ -1,0 +1,23 @@
+# 빌드 컨텍스트(레포 루트)에서 빼는 것 — 빌드가 빨라지고, 로컬 비밀 파일이 실수로 들어가지 않게 [리뷰 #20]
+# (app/Dockerfile 이 COPY 하는 app/ · frontend/ · chatbot/data/docs · chatbot/app/safety.py 는 빼면 안 된다)
+.git
+.github
+.venv
+**/.venv
+**/__pycache__
+**/*.pyc
+.env
+*.env
+envs/
+.idea
+.vscode
+infra/
+login/
+docs/
+scripts/
+data/
+chatbot/tests
+chatbot/eval
+chatbot/static
+chatbot/*.sqlite3*
+**/* 2.*

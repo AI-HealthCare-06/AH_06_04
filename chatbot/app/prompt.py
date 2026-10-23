@@ -22,13 +22,14 @@ def build_messages(
     """OpenAI chat 형식. history = [(role, content), ...] 오래된 것부터, 이미 개수 제한된 것."""
     doc_text = "\n".join(f'<doc id="{d.id}" lang="{d.body(lang)[0]}">{d.body(lang)[1]}</doc>' for d in docs)
     system = SYSTEM_TEMPLATE.format(lang_name=LANG_FOR_PROMPT[lang]) + "\n\n" + doc_text
-    if context:  # 사용자가 저장한 진료기록의 약·시술 이름 (FR-01 → 챗봇)
-        system += "\n<my_records>" + ", ".join(context) + "</my_records>"
+
     msgs: list[dict] = [{"role": "system", "content": system}]
     for role, content in history:
         if role == "user":
             msgs.append({"role": "user", "content": f"<history>{content}</history>"})
         else:
             msgs.append({"role": "assistant", "content": content})
-    msgs.append({"role": "user", "content": f"<user_question>{question}</user_question>"})
+    # [리뷰 #19] 내 기록(화면이 보낸 값 = 누구나 바꿀 수 있음)은 system 이 아니라 user 메시지의 '데이터' 칸으로
+    records = f"<my_records>{', '.join(context)}</my_records>\n" if context else ""
+    msgs.append({"role": "user", "content": f"{records}<user_question>{question}</user_question>"})
     return msgs
