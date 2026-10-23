@@ -315,3 +315,9 @@ Object.assign(window.I18N.ko, { hc_about_alert: "위험 신호 안내에서 왔�
 Object.assign(window.I18N.ja, { hc_about_alert: "危険サインの案内から来ました。症状が重い場合は病院の連絡を待たずに、まず119に電話してください。" });
 Object.assign(window.I18N.zh, { hc_about_alert: "您是从危险信号提示进入的。症状严重时请不要等待医院联系，先拨打119。" });
 Object.assign(window.I18N.en, { hc_about_alert: "You came from a warning-sign alert. If symptoms are severe, call 119 first instead of waiting for the clinic." });
+
+// 가이드 음성·카드 (선택기능 FR-08)
+Object.assign(window.I18N.ko, { tts_play: "🔊 음성으로 듣기", tts_stop: "⏹ 멈추기", tts_unsupported: "이 브라우저는 음성 읽기를 지원하지 않아요.", card_save: "🖼 카드 이미지로 저장" });
+Object.assign(window.I18N.ja, { tts_play: "🔊 音声で聞く", tts_stop: "⏹ 停止", tts_unsupported: "このブラウザは音声読み上げに対応していません。", card_save: "🖼 カード画像で保存" });
+Object.assign(window.I18N.zh, { tts_play: "🔊 语音朗读", tts_stop: "⏹ 停止", tts_unsupported: "此浏览器不支持语音朗读。", card_save: "🖼 保存为卡片图片" });
+Object.assign(window.I18N.en, { tts_play: "🔊 Listen", tts_stop: "⏹ Stop", tts_unsupported: "This browser can't read text aloud.", card_save: "🖼 Save as card image" });

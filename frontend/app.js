@@ -331,6 +331,8 @@ function guideResult(g) {
     // [리뷰 #11·#12] 가이드를 만든 뒤 기록이 바뀌었으면 맨 위에 알리고 다시 만들기 버튼
     g.record_changed ? h("div", { class: "notice warn-box" }, h("strong", {}, t("record_changed")), remakeButton(g)) : null,
     h("div", { class: "card" }, h("h1", {}, t("guide_title")), tabs, body, disclaimer(g),
+      // 선택기능 FR-08: 음성으로 듣기 · 카드 이미지 저장 (브라우저 안에서, 비용 0)
+      h("div", { class: "row" }, speakButton(g), cardButton(g)),
       // 가이드 평가: 서버 값은 대문자(UP/DOWN · WRONG_INFO …)
       feedbackBar(g.my_feedback ? g.my_feedback.toLowerCase() : null, (rating, reason) =>
         api("PUT", `/guides/${g.guide_id}/feedback`, { rating: rating.toUpperCase(), reason: reason ? reason.toUpperCase() : null }))),
