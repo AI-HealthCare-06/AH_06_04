@@ -25,6 +25,10 @@ BASE_URL = os.environ.get("BASE_URL", "http://localhost:8000")
 PASSWORD = os.environ.get("DEMO_PASSWORD", "")
 
 
+LANG_BY_COUNTRY = {"cn": "zh", "jp": "ja", "us": "en", "kr": "ko"}
+MESSENGER_BY_COUNTRY = {"cn": "WECHAT", "jp": "LINE", "us": "WHATSAPP", "kr": "KAKAOTALK"}
+
+
 def patient_of(bundle: dict) -> dict:
     return next(e["resource"] for e in bundle["entry"] if e["resource"]["resourceType"] == "Patient")
 
@@ -47,7 +51,12 @@ def main() -> None:
                 "name": f"데모 {key.upper()}",
                 "gender": patient["gender"].upper(),  # female → FEMALE
                 "birth_date": patient["birthDate"],
-                "phone_number": f"0100000000{n}",  # 가짜 번호 (팀 회원가입이 010 번호를 요구함)
+                "phone_number": f"0100000000{n}",  # 가짜 번호
+                # [PR #9 리뷰] 외국인 데모 계정은 그 나라 언어 화면으로 (회원가입 PR #15 이후 반영되는 칸)
+                "nationality": key[:2].upper(),  # cn01 → CN
+                "preferred_language": LANG_BY_COUNTRY.get(key[:2], "ko"),
+                "messenger_type": MESSENGER_BY_COUNTRY.get(key[:2], "OTHER"),  # 연락용 메신저 (가짜 아이디)
+                "messenger_id": f"glowpass_demo_{key}",
             }
             res = client.post("/api/v1/auth/signup", json=signup)
             if res.status_code not in (201, 409):  # 409 = 이미 있음 → 그대로 로그인

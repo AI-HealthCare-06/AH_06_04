@@ -44,3 +44,32 @@ def test_same_day_two_procedures_stay_separate_records():
     cn02 = next(b for b in _bundles() if b["id"] == "bundle-cn02")
     records = bundle_to_records(cn02)
     assert [r.procedure_name for r in records] == ["보톡스 (이마·미간)", "스킨부스터 (물광주사)"]
+
+
+def test_missing_fields_skip_only_that_resource():
+    # [PR #9 리뷰] 실제 FHIR 처럼 칸이 빠져도 묶음 전체가 실패하지 않는다
+    bundle = {
+        "entry": [
+            {"resource": {"resourceType": "Encounter", "id": "e1", "period": {"start": "2026-10-01T10:00:00+09:00"}}},
+            {"resource": {"resourceType": "Encounter", "id": "e2"}},  # 진료일 없음 → 건너뜀
+            {
+                "resource": {
+                    "resourceType": "MedicationRequest",
+                    "encounter": {"reference": "Encounter/e1"},
+                    "medicationCodeableConcept": {"coding": [{"display": "Cetirizine 10 MG"}]},
+                }
+            },
+            {
+                "resource": {
+                    "resourceType": "MedicationRequest",
+                    "encounter": {"reference": "Encounter/e1"},
+                    "medicationReference": {"reference": "Medication/m1"},
+                }
+            },  # 이름 없음 → 건너뜀
+            {"resource": {"resourceType": "Procedure", "encounter": {"reference": "Encounter/e1"}}},  # code 없음
+        ]
+    }
+    records = bundle_to_records(bundle)
+    assert len(records) == 1
+    assert [i.drug_name for i in records[0].items] == ["Cetirizine 10 MG"]
+    assert records[0].procedure_name is None and records[0].hospital_name == "병원 정보 없음"

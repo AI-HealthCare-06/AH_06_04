@@ -8,6 +8,8 @@
 #
 # 쓰는 곳: 데모용 가짜 진료기록(data/samples/fr01_fake_patients_fhir.json) 넣기,
 #          나중에 병원 연동·OCR 결과를 같은 모양으로 맞출 때.
+# ⚠ 우리 샘플 형식 기준으로 만든 변환기다. 실제 병원 FHIR 은 칸이 빠지거나 다르게 올 수 있어서
+#   필요한 칸이 없는 자원(진료일 없는 방문 · 이름 없는 약)은 통째로 실패하지 않고 그 자원만 건너뛴다.
 # ─────────────────────────────────────────────
 from typing import Any
 
@@ -28,8 +30,20 @@ def _ref_id(reference: dict[str, Any] | None) -> str | None:
     return reference["reference"].split("/", 1)[-1]
 
 
-def _to_item(med: dict[str, Any]) -> PrescriptionItemRequest:
-    """MedicationRequest 1개 → 약 한 줄"""
+def _drug_name(med: dict[str, Any]) -> str | None:
+    """약 이름: text → coding[0].display 순서로 찾고, 없으면 None (medicationReference 만 있는 경우 등)"""
+    concept = med.get("medicationCodeableConcept") or {}
+    if concept.get("text"):
+        return str(concept["text"])
+    coding = concept.get("coding") or [{}]
+    return str(coding[0]["display"]) if coding[0].get("display") else None
+
+
+def _to_item(med: dict[str, Any]) -> PrescriptionItemRequest | None:
+    """MedicationRequest 1개 → 약 한 줄 (이름을 모르면 None = 건너뜀)"""
+    name = _drug_name(med)
+    if not name:
+        return None
     dosage = (med.get("dosageInstruction") or [{}])[0]
     dose_text = None
     dose_rate = (dosage.get("doseAndRate") or [{}])[0].get("doseQuantity")
@@ -43,7 +57,7 @@ def _to_item(med: dict[str, Any]) -> PrescriptionItemRequest:
     supply = med.get("dispenseRequest", {}).get("expectedSupplyDuration", {})
     days = int(supply["value"]) if supply.get("code") == "d" and supply.get("value") else None
     return PrescriptionItemRequest(
-        drug_name=med["medicationCodeableConcept"]["text"],
+        drug_name=name[:100],
         dose=dose_text,
         times_per_day=times_per_day,
         days=days,
@@ -58,17 +72,20 @@ def bundle_to_records(bundle: dict[str, Any]) -> list[MedicalRecordCreateRequest
 
     records = []
     for enc in _resources(bundle, "Encounter"):
-        enc_id = enc["id"]
+        enc_id = enc.get("id")
+        start = (enc.get("period") or {}).get("start")
+        if not enc_id or not start:  # 진료일을 모르는 방문은 기록으로 만들 수 없다 → 건너뜀
+            continue
         my_procs = [p for p in procedures if _ref_id(p.get("encounter")) == enc_id]  # 이 방문에서 받은 시술
         my_meds = [m for m in meds if _ref_id(m.get("encounter")) == enc_id]  # 이 방문에서 받은 처방
         notes = [n["text"] for p in my_procs for n in p.get("note", []) if n.get("text")]
         records.append(
             MedicalRecordCreateRequest(
                 hospital_name=orgs.get(_ref_id(enc.get("serviceProvider")) or "", "") or "병원 정보 없음",
-                visit_date=enc["period"]["start"][:10],  # '2026-10-02T14:00:00+09:00' → '2026-10-02'
-                procedure_name=", ".join(p["code"]["text"] for p in my_procs) or None,
+                visit_date=start[:10],  # '2026-10-02T14:00:00+09:00' → '2026-10-02'
+                procedure_name=", ".join(t for p in my_procs if (t := (p.get("code") or {}).get("text"))) or None,
                 doctor_note=" ".join(notes) or None,
-                items=[_to_item(m) for m in my_meds],
+                items=[item for m in my_meds if (item := _to_item(m)) is not None],
             )
         )
     return sorted(records, key=lambda r: r.visit_date)
