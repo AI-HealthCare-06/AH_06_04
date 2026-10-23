@@ -468,7 +468,8 @@ async function ask(convId, message, lang, bubble, emergencyBox, context = []) {
       else if (event === "sources") sources = d.docs || [];
       else if (event === "notice") box.after(h("div", { class: "muted small" }, d.text));
       else if (event === "done") {
-        if (d.outcome === "emergency") showEmergency(emergencyBox);
+        // 응급이면 위험 신호 기록 번호(safety_alert_id)를 붙여 '병원에 연락 요청' 까지 이어 준다
+        if (d.outcome === "emergency") showEmergency(emergencyBox, d.safety_alert_id);
         // AI 가 만든 답에만 👍/👎 (응급·차단 같은 고정 문구에는 달지 않는다)
         if (d.message_id && ["ok", "cached"].includes(d.outcome)) {
           const bar = feedbackBar(null, (rating, reason) =>
@@ -487,12 +488,14 @@ async function ask(convId, message, lang, bubble, emergencyBox, context = []) {
 }
 
 // 응급 신호가 보이면 맨 위에 빨간 안내 (디자인 시안 8번 화면)
-function showEmergency(box) {
+function showEmergency(box, alertId = null) {
   box.replaceChildren(h("div", { class: "emergency", role: "alert" },
     h("strong", {}, t("emergency_title")), h("p", {}, t("emergency_body")),
     h("a", { class: "btn danger", href: "tel:119" }, t("call_119")),
     h("a", { class: "btn secondary", href: "https://www.google.com/maps/search/emergency+room", target: "_blank", rel: "noopener noreferrer" }, t("find_er")),
-    h("a", { class: "btn secondary", href: "tel:1330" }, t("call_1330"))));
+    h("a", { class: "btn secondary", href: "tel:1330" }, t("call_1330")),
+    // 119 가 먼저, 그다음 시술 병원에 알리기 (기획서 §4 ③ 위험 신호 → 병원 연결)
+    alertId ? h("a", { class: "btn secondary", href: `#/hospitals?alert=${alertId}` }, t("hc_after_emergency")) : null));
   box.scrollIntoView({ block: "start" });
 }
 

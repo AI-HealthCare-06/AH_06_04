@@ -307,3 +307,11 @@ Object.assign(window.I18N.en, { hc_request: "Request contact", hc_request_from_c
   hc_cancel: "Cancel request", hc_status_requested: "Received", hc_status_in_progress: "Clinic checking", hc_status_completed: "Contacted", hc_status_cancelled: "Cancelled",
   hc_login_needed: "Log in to request contact.", hc_about_record: "This is sent to the clinic you choose as a question about your treatment record.",
   hc_demo: "※ In the demo, requests are not delivered to real clinics." });
+Object.assign(window.I18N.ko, { hc_after_emergency: "시술 병원에도 알리기 (연락 요청)" });
+Object.assign(window.I18N.ja, { hc_after_emergency: "施術した病院にも知らせる（連絡リクエスト）" });
+Object.assign(window.I18N.zh, { hc_after_emergency: "同时通知做治疗的医院（请求联系）" });
+Object.assign(window.I18N.en, { hc_after_emergency: "Also tell your clinic (request contact)" });
+Object.assign(window.I18N.ko, { hc_about_alert: "위험 신호 안내에서 왔어요. 증상이 심하면 병원 연락을 기다리지 말고 119에 먼저 전화하세요." });
+Object.assign(window.I18N.ja, { hc_about_alert: "危険サインの案内から来ました。症状が重い場合は病院の連絡を待たずに、まず119に電話してください。" });
+Object.assign(window.I18N.zh, { hc_about_alert: "您是从危险信号提示进入的。症状严重时请不要等待医院联系，先拨打119。" });
+Object.assign(window.I18N.en, { hc_about_alert: "You came from a warning-sign alert. If symptoms are severe, call 119 first instead of waiting for the clinic." });

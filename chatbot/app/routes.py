@@ -20,7 +20,7 @@ import json
 import uuid
 from typing import Annotated, Literal
 
-from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field, field_validator
 from tortoise.exceptions import IntegrityError
@@ -29,7 +29,7 @@ from app import i18n
 from app.auth import current_user_id
 from app.config import settings
 from app.llm import make_llm
-from app.models import Conversation, Feedback, Message
+from app.models import Conversation, Feedback, Message, SafetyAlert
 from app.service import questions_today, run_turn
 
 router = APIRouter(prefix="/api/v1/chat", tags=["chat"])
@@ -167,3 +167,46 @@ async def feedback(conversation_id: str, message_id: int, body: FeedbackIn, user
     except IntegrityError:  # [리뷰 #16] 거의 동시에 두 번 누름 → 먼저 만든 줄을 고친다
         await Feedback.filter(message_id=msg.id).update(**values)
     return {"message_id": msg.id, "rating": body.rating, "reason": reason}
+
+
+# ── 위험 신호 감지 기록 (API 명세서 20·21번) ───────────────────────────
+#   챗봇 서비스 안에 있어서 주소는 /api/v1/chat/safety-alerts (nginx 가 /api/v1/chat/ 을 챗봇으로 보냄)
+def _alert_out(a: SafetyAlert) -> dict:
+    return {
+        "alert_id": a.id,
+        "message_id": a.message_id,
+        "trigger_keyword": a.trigger_keyword,
+        "severity": a.severity,
+        "action_taken": a.action_taken,
+        "detected_at": a.detected_at.isoformat(),
+    }
+
+
+@router.get("/safety-alerts")
+async def my_safety_alerts(
+    user_id: UserId,
+    limit: Annotated[int, Query(ge=1, le=100)] = 20,
+    offset: Annotated[int, Query(ge=0)] = 0,
+    severity: Literal["high", "medium"] | None = None,
+):
+    """내 감지 이력 (최신순)"""
+    q = SafetyAlert.filter(user_id=user_id)
+    if severity:
+        q = q.filter(severity=severity)
+    total = await q.count()
+    rows = await q.order_by("-id").offset(offset).limit(limit)
+    return {
+        "message": "감지 이력 조회에 성공했습니다.",
+        "data": {"total": total, "limit": limit, "offset": offset, "items": [_alert_out(a) for a in rows]},
+    }
+
+
+@router.get("/safety-alerts/{alert_id}")
+async def safety_alert(alert_id: int, user_id: UserId):
+    """감지 1건 상세 — 본인 것만"""
+    a = await SafetyAlert.get_or_none(id=alert_id)
+    if a is None:
+        raise HTTPException(404, detail="해당 alert_id를 찾을 수 없습니다.")
+    if a.user_id != user_id:
+        raise HTTPException(403, detail="본인의 안전장치 감지 내역만 조회할 수 있습니다.")
+    return {"message": "안전장치 감지 내역 조회에 성공했습니다.", "data": _alert_out(a)}

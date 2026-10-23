@@ -39,6 +39,7 @@ async function hospitalsView(params = new URLSearchParams()) {
     h("div", { class: "card" }, h("h1", {}, t("hosp_title")),
       h("p", { class: "notice" }, t("hosp_principle")),
       recordId ? h("p", { class: "notice" }, t("hc_about_record")) : null,
+      alertId ? h("p", { class: "notice warn-box" }, t("hc_about_alert")) : null,
       h("div", { class: "row" }, h("div", {}, field("hosp_region", region)), h("div", {}, field("hosp_dept", dept))),
       lang !== "ko" ? h("label", { class: "check" }, onlyMine, " ", t("hosp_only_my_lang")) : null,
       list,

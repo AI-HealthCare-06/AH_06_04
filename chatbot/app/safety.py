@@ -223,11 +223,25 @@ _MED_ORDER_RE = re.compile(_MED_ORDER)
 _SENTENCE_END = re.compile(r"(?<=[.!?])\s+|(?<=[。！？])|\n+")
 
 
+def emergency_match(text: str) -> str | None:
+    """응급으로 본 근거 낱말 (위험 신호 기록용). 질문 전체가 아니라 걸린 부분만 — 민감정보 최소 보관"""
+    m = _EMERGENCY_RE.search(text)
+    if m is None and _PROCEDURE_CONTEXT_RE.search(text):
+        m = _EMERGENCY_IF_PROCEDURE_RE.search(text)
+    return m.group(0)[:50] if m else None
+
+
 def is_emergency(text: str) -> bool:
     if _EMERGENCY_RE.search(text):
         return True
     # 일상 표현과 겹치는 신호는 시술·주사 이야기와 함께일 때만
     return bool(_EMERGENCY_IF_PROCEDURE_RE.search(text) and _PROCEDURE_CONTEXT_RE.search(text))
+
+
+def medical_request_match(text: str) -> str | None:
+    """진단·처방·용량 요청으로 본 근거 낱말 (위험 신호 기록용)"""
+    m = _ASK_MEDICAL_RE.search(text)
+    return m.group(0)[:50] if m else None
 
 
 def asks_for_medical_decision(text: str) -> bool:

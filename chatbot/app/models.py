@@ -67,3 +67,22 @@ class Feedback(Model):
 
     class Meta:
         table = "chat_feedback"
+
+
+class SafetyAlert(Model):
+    """위험 신호 감지 기록 (API 명세서 20·21번).
+    응급 신호 → severity=high · 응급 안내(emergency_guide) / 진단·처방 요청 → medium · 답 막음(answer_blocked).
+    질문 전체는 여기 남기지 않고 걸린 낱말만 (민감정보 최소). 대화를 지우면 같이 지워진다.
+    새 표라서 서버가 켜질 때 generate_schemas 가 만든다."""
+
+    id = fields.IntField(primary_key=True)
+    user_id = fields.BigIntField(db_index=True)
+    conversation = fields.ForeignKeyField("models.Conversation", related_name="safety_alerts", on_delete=fields.CASCADE)
+    message_id = fields.IntField(null=True)  # 그때 남긴 고정 안내 답 번호
+    trigger_keyword = fields.CharField(max_length=50)
+    severity = fields.CharField(max_length=10)  # high | medium
+    action_taken = fields.CharField(max_length=30)  # emergency_guide | answer_blocked
+    detected_at = fields.DatetimeField(auto_now_add=True)
+
+    class Meta:
+        table = "chat_safety_alerts"
