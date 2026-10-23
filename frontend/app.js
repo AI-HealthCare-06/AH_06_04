@@ -160,6 +160,7 @@ async function home() {
     h("a", { class: "btn secondary", href: "#/chat" }, t("chat_open")),
     h("a", { class: "btn secondary", href: "#/hospitals" }, t("hosp_title")),
     h("a", { class: "btn secondary", href: "#/contacts" }, t("hc_mine")),
+    h("a", { class: "btn secondary", href: "#/reminders" }, t("rm_title")),
     h("div", { class: "card" }, h("h2", {}, t("my_records")), recordList),
     guides.length ? h("div", { class: "card" }, h("h2", {}, t("my_guides")), guideList) : null,
     h("button", { class: "btn secondary", onclick: () => { store.token = null; location.hash = "#/"; } }, t("logout")),
@@ -522,6 +523,7 @@ async function route() {
     if (hash === "#/chat") return chatView();
     if (hash.startsWith("#/hospitals")) return hospitalsView(new URLSearchParams(hash.split("?")[1] || ""));
     if (hash === "#/contacts") return contactsView();
+    if (hash === "#/reminders") return remindersView();
     const m = hash.match(/^#\/guide\/(\d+)$/);
     if (m) return guideView(m[1]);
     const c = hash.match(/^#\/contact\/(\d+)$/);

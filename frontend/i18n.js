@@ -321,3 +321,21 @@ Object.assign(window.I18N.ko, { tts_play: "🔊 음성으로 듣기", tts_stop: 
 Object.assign(window.I18N.ja, { tts_play: "🔊 音声で聞く", tts_stop: "⏹ 停止", tts_unsupported: "このブラウザは音声読み上げに対応していません。", card_save: "🖼 カード画像で保存" });
 Object.assign(window.I18N.zh, { tts_play: "🔊 语音朗读", tts_stop: "⏹ 停止", tts_unsupported: "此浏览器不支持语音朗读。", card_save: "🖼 保存为卡片图片" });
 Object.assign(window.I18N.en, { tts_play: "🔊 Listen", tts_stop: "⏹ Stop", tts_unsupported: "This browser can't read text aloud.", card_save: "🖼 Save as card image" });
+
+// 복약·가이드 확인 알림 (선택기능 FR-10)
+Object.assign(window.I18N.ko, { rm_title: "복약 알림", rm_intro: "약 먹을 시간이나 관리 안내를 확인할 시간을 정해 두세요.", rm_type: "무엇을 알릴까요", rm_time: "시각", rm_repeat: "반복",
+  rm_MEDICATION: "약 먹을 시간", rm_GUIDE_CHECK: "관리 안내 확인", rm_repeat_daily: "매일", rm_repeat_none: "한 번만", rm_add: "알림 추가", rm_list: "내 알림",
+  rm_none: "아직 알림이 없어요.", rm_on: "켜기", rm_delete: "삭제", rm_alert_MEDICATION: "💊 약 먹을 시간이에요. 처방전에 적힌 대로 드세요.",
+  rm_alert_GUIDE_CHECK: "📋 시술 후 관리 안내를 확인할 시간이에요.", rm_demo_note: "※ 데모 버전에서는 GlowPass 화면이 열려 있을 때만 알려요." });
+Object.assign(window.I18N.ja, { rm_title: "服薬リマインダー", rm_intro: "お薬の時間やケア案内を確認する時間を設定しましょう。", rm_type: "通知の種類", rm_time: "時刻", rm_repeat: "繰り返し",
+  rm_MEDICATION: "お薬の時間", rm_GUIDE_CHECK: "ケア案内の確認", rm_repeat_daily: "毎日", rm_repeat_none: "1回のみ", rm_add: "追加", rm_list: "マイ通知",
+  rm_none: "まだ通知はありません。", rm_on: "オン", rm_delete: "削除", rm_alert_MEDICATION: "💊 お薬の時間です。処方どおりに服用してください。",
+  rm_alert_GUIDE_CHECK: "📋 施術後のケア案内を確認する時間です。", rm_demo_note: "※ デモ版では GlowPass の画面を開いているときだけ通知します。" });
+Object.assign(window.I18N.zh, { rm_title: "用药提醒", rm_intro: "设置吃药时间或查看护理说明的时间。", rm_type: "提醒内容", rm_time: "时间", rm_repeat: "重复",
+  rm_MEDICATION: "吃药时间", rm_GUIDE_CHECK: "查看护理说明", rm_repeat_daily: "每天", rm_repeat_none: "仅一次", rm_add: "添加提醒", rm_list: "我的提醒",
+  rm_none: "还没有提醒。", rm_on: "开启", rm_delete: "删除", rm_alert_MEDICATION: "💊 该吃药了。请按处方服用。",
+  rm_alert_GUIDE_CHECK: "📋 该查看术后护理说明了。", rm_demo_note: "※ 演示版仅在 GlowPass 页面打开时提醒。" });
+Object.assign(window.I18N.en, { rm_title: "Medication reminders", rm_intro: "Set times to take your medicine or check your care guide.", rm_type: "Remind me to", rm_time: "Time", rm_repeat: "Repeat",
+  rm_MEDICATION: "Take medicine", rm_GUIDE_CHECK: "Check care guide", rm_repeat_daily: "Every day", rm_repeat_none: "Once", rm_add: "Add reminder", rm_list: "My reminders",
+  rm_none: "No reminders yet.", rm_on: "On", rm_delete: "Delete", rm_alert_MEDICATION: "💊 Time for your medicine. Take it as prescribed.",
+  rm_alert_GUIDE_CHECK: "📋 Time to check your aftercare guide.", rm_demo_note: "※ In the demo, reminders only appear while GlowPass is open." });
