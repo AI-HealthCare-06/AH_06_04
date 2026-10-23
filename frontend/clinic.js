@@ -136,6 +136,7 @@ async function clinicCardView(recordId) {
       h("h2", { style: "margin-top:12px" }, t("card_urgent")),
       h("div", { class: "chips" }, SYMPTOMS.filter((s) => s.emergency).map(chip)),
       field("card_since", sinceSel),
-      out));
+      out,
+      h("a", { class: "btn secondary", href: "#/hospitals" }, t("hosp_title"))));
   draw();
 }

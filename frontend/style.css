@@ -69,3 +69,5 @@ a { color: var(--brand); }
 details summary { cursor: pointer; color: var(--brand); margin-top: 10px; }
 .warn-box { border: 1px solid #f3b4b4; margin-bottom: 12px; }
 .warn-box .btn { margin-top: 8px; }
+.check { display: flex; align-items: center; gap: 6px; font-weight: 400; }
+.check input { width: auto; }
