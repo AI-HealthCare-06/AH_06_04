@@ -46,7 +46,7 @@ async def test_p0_reviewed_doc_is_used(client, llm, monkeypatch):
 
 async def test_p0_follow_up_also_respects_review(client, llm, monkeypatch):
     cid = await new_conv(client, "ko")
-    await ask(client, cid, "보톡스 맞았어요")  # 데모 설정에서 답함
+    await ask(client, cid, "레이저토닝 받았어요")  # 감수 전 예시 안내문(laser-toning)으로 답함 — 데모 설정
     monkeypatch.setattr(settings, "allow_unreviewed_docs", False)
     events = await ask(client, cid, "그럼 언제부터 효과가 나와요?")  # 앞 안내문을 다시 쓰려 해도
     assert done(events)["outcome"] == "no_doc"
