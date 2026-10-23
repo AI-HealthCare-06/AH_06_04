@@ -7,7 +7,7 @@ window.I18N = {
     choose_lang: "언어 선택", login: "로그인", signup: "회원가입", logout: "로그아웃",
     email: "이메일", password: "비밀번호", password_hint: "8자 이상, 대·소문자·숫자·특수문자 포함",
     name: "이름", gender: "성별", female: "여성", male: "남성", birth: "생년월일",
-    phone: "휴대폰 번호", phone_hint: "예: 01012345678",
+    phone: "휴대폰 번호", phone_hint: "선택 · 예: 01012345678 또는 +86 138 1234 5678",
     no_account: "계정이 없으신가요?", have_account: "이미 계정이 있으신가요?",
     home_title: "내 피부 관리", my_records: "내 진료기록", no_records: "아직 진료기록이 없어요.",
     add_record: "진료기록 입력하기", make_guide: "AI 가이드 만들기", my_guides: "내 AI 가이드",
@@ -33,7 +33,7 @@ window.I18N = {
     choose_lang: "言語を選択", login: "ログイン", signup: "新規登録", logout: "ログアウト",
     email: "メールアドレス", password: "パスワード", password_hint: "8文字以上・大文字・小文字・数字・記号を含む",
     name: "お名前", gender: "性別", female: "女性", male: "男性", birth: "生年月日",
-    phone: "携帯電話番号", phone_hint: "例: 01012345678",
+    phone: "携帯電話番号", phone_hint: "任意 · 例: +81 90 1234 5678",
     no_account: "アカウントをお持ちでないですか？", have_account: "すでにアカウントをお持ちですか？",
     home_title: "わたしの肌ケア", my_records: "診療記録", no_records: "まだ診療記録がありません。",
     add_record: "診療記録を入力", make_guide: "AIガイドを作る", my_guides: "AIガイド",
@@ -59,7 +59,7 @@ window.I18N = {
     choose_lang: "选择语言", login: "登录", signup: "注册", logout: "退出",
     email: "邮箱", password: "密码", password_hint: "至少8位，包含大小写字母、数字和符号",
     name: "姓名", gender: "性别", female: "女", male: "男", birth: "出生日期",
-    phone: "手机号码", phone_hint: "例如: 01012345678",
+    phone: "手机号码", phone_hint: "选填 · 例如: +86 138 1234 5678",
     no_account: "还没有账号？", have_account: "已有账号？",
     home_title: "我的皮肤管理", my_records: "我的就诊记录", no_records: "还没有就诊记录。",
     add_record: "填写就诊记录", make_guide: "生成 AI 指南", my_guides: "我的 AI 指南",
@@ -85,7 +85,7 @@ window.I18N = {
     choose_lang: "Choose language", login: "Log in", signup: "Sign up", logout: "Log out",
     email: "Email", password: "Password", password_hint: "8+ characters with upper, lower, number and symbol",
     name: "Name", gender: "Gender", female: "Female", male: "Male", birth: "Date of birth",
-    phone: "Mobile number", phone_hint: "e.g. 01012345678",
+    phone: "Mobile number", phone_hint: "Optional · e.g. +1 415 555 0100",
     no_account: "No account yet?", have_account: "Already have an account?",
     home_title: "My skin care", my_records: "My clinic records", no_records: "No clinic records yet.",
     add_record: "Add a clinic record", make_guide: "Create AI guide", my_guides: "My AI guides",
@@ -170,3 +170,9 @@ Object.assign(window.I18N.en, {
   ocr_items_not_read: "We couldn't read the medicine list. Please enter it yourself.", ocr_fake: "(Demo: simulated result)",
   ocr_failed: "We couldn't read the photo. Retake it bright and sharp, or enter the details yourself.", ocr_badge: "From photo",
 });
+
+// 외국인 가입 문구
+Object.assign(window.I18N.ko, { nationality: "국적", nat_cn: "중국", nat_jp: "일본", nat_us: "미국", nat_kr: "한국", nat_other: "기타" });
+Object.assign(window.I18N.ja, { nationality: "国籍", nat_cn: "中国", nat_jp: "日本", nat_us: "アメリカ", nat_kr: "韓国", nat_other: "その他" });
+Object.assign(window.I18N.zh, { nationality: "国籍", nat_cn: "中国", nat_jp: "日本", nat_us: "美国", nat_kr: "韩国", nat_other: "其他" });
+Object.assign(window.I18N.en, { nationality: "Nationality", nat_cn: "China", nat_jp: "Japan", nat_us: "USA", nat_kr: "Korea", nat_other: "Other" });

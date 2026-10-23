@@ -4,9 +4,9 @@ from typing import Any
 from pydantic import EmailStr
 
 from app.core import config
-from app.models.users import Gender, User
+from app.models.users import Gender, Language, User
 
-ALLOWED_UPDATE_FIELDS = ["name", "phone_number", "gender", "birthday"]
+ALLOWED_UPDATE_FIELDS = ["name", "phone_number", "gender", "birthday", "nationality", "preferred_language"]
 UPDATED_AT_FIELD = "updated_at"
 
 
@@ -25,10 +25,12 @@ class UserRepository:
         email: str | EmailStr,
         hashed_password: str,
         name: str,
-        phone_number: str,
+        phone_number: str | None,
         gender: Gender,
         birthday: date,
         *,
+        nationality: str | None = None,
+        preferred_language: Language = Language.KO,
         is_active: bool = True,
         is_admin: bool = False,
     ) -> User:
@@ -39,6 +41,8 @@ class UserRepository:
             phone_number=phone_number,
             gender=gender,
             birthday=birthday,
+            nationality=nationality,
+            preferred_language=preferred_language,
             is_active=is_active,
             is_admin=is_admin,
         )

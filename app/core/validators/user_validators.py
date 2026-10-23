@@ -35,11 +35,23 @@ def validate_phone_number(phone_number: str) -> str:
         r"010\d{8}",  # 01012345678
         r"\+8210\d{8}",  # +821012345678
     ]
+    # 해외 번호: +86 138 1234 5678 처럼 + 로 시작 (한국 +82 는 위 형식만)
+    digits = re.sub(r"[\s-]", "", phone_number)
+    if digits.startswith("+") and not digits.startswith("+82") and re.fullmatch(r"\+[1-9]\d{7,14}", digits):
+        return phone_number
 
     if not any(re.fullmatch(p, phone_number) for p in patterns):
         raise ValueError("유효하지 않은 휴대폰 번호 형식입니다.")
 
     return phone_number
+
+
+def validate_nationality(code: str) -> str:
+    """국적 코드 — 영문 2글자(ISO 3166-1 alpha-2)만, 대문자로 맞춘다"""
+    code = code.strip().upper()
+    if not re.fullmatch(r"[A-Z]{2}", code):
+        raise ValueError("국적은 영문 2글자 코드로 입력해 주세요. (예: CN, JP, US, KR)")
+    return code
 
 
 def validate_birthday(birthday: date | str) -> date:
