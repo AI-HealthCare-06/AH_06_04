@@ -20,6 +20,10 @@ RUN uv sync --group app --no-dev --frozen
 # 4. 로컬 소스 코드를 컨테이너 내부로 복사합니다.
 COPY ./app ./app
 
+# 4-1. FR-03 AI 가이드가 쓰는 근거 안내문과 안전 규칙 (챗봇과 같은 파일을 함께 쓴다)
+COPY ./chatbot/data/docs ./chatbot/data/docs
+COPY ./chatbot/app/safety.py ./chatbot/app/safety.py
+
 # 5. 해당 이미지를 활용하여 도커컨테이너 실행시 실행되는 명령어입니다.
 # FastAPI를 uvicorn을 활용하여 비동기 환경으로 서버를 실행합니다.
 # --no-sync 옵션은 uv run시 uv.lock파일과 환경에 설치된 패키지들을 비교하여 없는 패키지를 설치하기 때문에
