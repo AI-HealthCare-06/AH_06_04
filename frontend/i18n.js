@@ -253,3 +253,25 @@ Object.assign(window.I18N.en, {
   record_changed: "Your record changed after this guide was made. Prescriptions show the current record; the guide text is based on the old one.",
   remake_guide: "Make the guide again", record_saved_guide_failed: "Your record was saved, but the guide couldn't be created.",
 });
+
+// 병원 찾기
+Object.assign(window.I18N.ko, { hosp_title: "병원 찾기", hosp_region: "지역", hosp_dept: "진료과", hosp_all_regions: "전체 지역", hosp_all_depts: "전체",
+  hosp_gangnam: "강남구", hosp_seocho: "서초구", hosp_junggu: "중구(명동)", hosp_mapo: "마포구", hosp_songpa: "송파구", hosp_busan: "부산",
+  hosp_derm: "피부과", hosp_plastic: "성형외과", hosp_only_my_lang: "내 언어로 상담 가능한 곳만", hosp_none: "조건에 맞는 병원이 없어요.",
+  hosp_count: "{n}곳 (이름 순)", hosp_principle: "GlowPass 는 병원을 추천하거나 순위를 매기지 않아요. 목록을 보고 직접 선택하세요. 병원 연결 수수료도 받지 않아요.",
+  hosp_demo_note: "※ 지금 목록은 데모용 가짜 병원이에요. 실제 공공데이터로 바꿀 예정이에요." });
+Object.assign(window.I18N.ja, { hosp_title: "病院を探す", hosp_region: "地域", hosp_dept: "診療科", hosp_all_regions: "すべての地域", hosp_all_depts: "すべて",
+  hosp_gangnam: "江南区", hosp_seocho: "瑞草区", hosp_junggu: "中区（明洞）", hosp_mapo: "麻浦区", hosp_songpa: "松坡区", hosp_busan: "釜山",
+  hosp_derm: "皮膚科", hosp_plastic: "形成外科", hosp_only_my_lang: "日本語で相談できる病院のみ", hosp_none: "条件に合う病院がありません。",
+  hosp_count: "{n}件（名前順）", hosp_principle: "GlowPassは病院を推薦したり順位を付けたりしません。一覧を見てご自身で選んでください。紹介手数料も受け取りません。",
+  hosp_demo_note: "※ 現在の一覧はデモ用の架空の病院です。実際の公共データに置き換える予定です。" });
+Object.assign(window.I18N.zh, { hosp_title: "查找医院", hosp_region: "地区", hosp_dept: "科室", hosp_all_regions: "全部地区", hosp_all_depts: "全部",
+  hosp_gangnam: "江南区", hosp_seocho: "瑞草区", hosp_junggu: "中区（明洞）", hosp_mapo: "麻浦区", hosp_songpa: "松坡区", hosp_busan: "釜山",
+  hosp_derm: "皮肤科", hosp_plastic: "整形外科", hosp_only_my_lang: "只看可用中文咨询的医院", hosp_none: "没有符合条件的医院。",
+  hosp_count: "{n}家（按名称排序）", hosp_principle: "GlowPass不推荐医院，也不进行排名。请查看列表自行选择。我们也不收取任何转介费用。",
+  hosp_demo_note: "※ 当前列表为演示用的虚拟医院，之后将替换为真实的公共数据。" });
+Object.assign(window.I18N.en, { hosp_title: "Find a clinic", hosp_region: "Area", hosp_dept: "Department", hosp_all_regions: "All areas", hosp_all_depts: "All",
+  hosp_gangnam: "Gangnam-gu", hosp_seocho: "Seocho-gu", hosp_junggu: "Jung-gu (Myeongdong)", hosp_mapo: "Mapo-gu", hosp_songpa: "Songpa-gu", hosp_busan: "Busan",
+  hosp_derm: "Dermatology", hosp_plastic: "Plastic surgery", hosp_only_my_lang: "Only clinics that speak English", hosp_none: "No clinics match.",
+  hosp_count: "{n} clinics (by name)", hosp_principle: "GlowPass does not recommend or rank clinics. Look at the list and choose yourself. We take no referral fees.",
+  hosp_demo_note: "※ This list shows fictional demo clinics. It will be replaced with real public data." });

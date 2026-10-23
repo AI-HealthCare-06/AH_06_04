@@ -3,6 +3,7 @@ from fastapi import APIRouter
 from app.apis.v1.auth_routers import auth_router
 from app.apis.v1.content_asset_routers import content_asset_router
 from app.apis.v1.guide_routers import guide_router
+from app.apis.v1.hospital_routers import hospital_router
 from app.apis.v1.medical_record_routers import medical_record_router
 from app.apis.v1.ocr_routers import ocr_router
 from app.apis.v1.reminder_routers import reminder_router
@@ -16,3 +17,4 @@ v1_routers.include_router(content_asset_router)
 v1_routers.include_router(medical_record_router)
 v1_routers.include_router(guide_router)
 v1_routers.include_router(ocr_router)
+v1_routers.include_router(hospital_router)

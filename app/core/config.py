@@ -55,6 +55,9 @@ class Config(BaseSettings):
     # 서비스 전체 하루 AI 호출 상한 (가이드 + OCR 합계) — 계정을 여러 개 만들어 우회하는 것까지 막는다
     AI_DAILY_GLOBAL_LIMIT: int = 300
 
+    # ── 병원 검색 (파트 B) — 비우면 app/data/hospitals_demo.json (데모용 가짜 병원)
+    HOSPITAL_DATA_FILE: str = ""
+
     # ── FR-05 처방전·약봉투 사진 인식 (OCR) ─────────────
     # fake   = 가짜 결과(키·비용 0, 테스트·데모용)
     # openai = 팀 키로 사진을 직접 읽어 칸별로 정리 (gpt-4o-mini 비전)
