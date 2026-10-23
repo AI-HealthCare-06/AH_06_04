@@ -77,6 +77,23 @@ services:
       redis:
         condition: service_healthy
 
+  # 4-1. 챗봇 (FR-04) — 팀 로그인 토큰을 그대로 쓴다 (LOGIN_SECRET_KEY = 팀 SECRET_KEY)
+  chatbot:
+    container_name: chatbot
+    image: ${DOCKER_USER}/${DOCKER_REPOSITORY}:chatbot-${CHATBOT_VERSION}
+    env_file: .env
+    environment:
+      LOGIN_SECRET_KEY: ${SECRET_KEY}
+      DB_URL: sqlite:///chatbot/var/chat.sqlite3
+      APP_ENV: ${CHAT_APP_ENV:-dev}
+      LLM_MODE: ${CHAT_LLM_MODE:-fake}
+      ALLOW_UNREVIEWED_DOCS: ${CHAT_ALLOW_UNREVIEWED_DOCS:-true}
+    volumes:
+      - chat_data:/chatbot/var
+    restart: always
+    networks:
+      - ws
+
   # 5. Nginx (웹 서버 - 요청 리버스 프록시로 전달)
   nginx:
     container_name: nginx
@@ -94,6 +111,7 @@ services:
       - ws
     depends_on:
       - fastapi
+      - chatbot
 
   # 6. certbot: SSL 인증서 발급담당
   certbot:
@@ -117,6 +135,8 @@ volumes:
     name: certbot-conf
   certbot-www:
     name: certbot-www
+  chat_data:
+    name: chat_data
 
 networks:
   ws:

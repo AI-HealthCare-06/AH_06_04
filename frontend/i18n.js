@@ -106,3 +106,37 @@ window.I18N = {
     err_login: "Please check your email or password.", err_generic: "We couldn't process the request.", signup_done: "Signed up. Please log in.",
   },
 };
+
+// 챗봇 (FR-04) 문구
+Object.assign(window.I18N.ko, {
+  chat_open: "AI 챗봇에게 물어보기", chat_title: "AI 상담 챗봇",
+  chat_intro: "검증된 자료를 바탕으로 일반적인 정보만 안내해요. 내 몸에 맞는지는 꼭 의료진과 상담하세요.",
+  chat_ph: "궁금한 점을 입력하세요 (Enter = 보내기)", send: "보내기", chat_new: "새 대화 시작",
+  chat_error: "답을 받지 못했어요. 잠시 후 다시 시도해 주세요.", chat_sources: "근거:",
+  emergency_title: "⚠ 응급일 수 있어요", emergency_body: "말씀하신 증상은 바로 진료가 필요할 수 있어요. 지금 119에 전화하거나 가까운 응급실로 가세요.",
+  call_119: "119 전화하기", find_er: "가까운 응급실 찾기", call_1330: "외국어 관광안내 1330 전화",
+});
+Object.assign(window.I18N.ja, {
+  chat_open: "AIチャットボットに質問", chat_title: "AI相談チャットボット",
+  chat_intro: "確認済みの資料をもとに一般的な情報のみご案内します。ご自身に合うかは必ず医療スタッフにご相談ください。",
+  chat_ph: "質問を入力してください（Enterで送信）", send: "送信", chat_new: "新しい会話",
+  chat_error: "回答を受け取れませんでした。しばらくしてからもう一度お試しください。", chat_sources: "根拠:",
+  emergency_title: "⚠ 緊急の可能性があります", emergency_body: "その症状はすぐに診察が必要な場合があります。今すぐ119に電話するか、近くの救急外来へ行ってください。",
+  call_119: "119に電話する", find_er: "近くの救急外来を探す", call_1330: "多言語観光案内 1330 に電話",
+});
+Object.assign(window.I18N.zh, {
+  chat_open: "向AI聊天机器人提问", chat_title: "AI咨询聊天机器人",
+  chat_intro: "仅根据经过核实的资料提供一般性信息。是否适合您，请务必咨询医护人员。",
+  chat_ph: "请输入您的问题（按Enter发送）", send: "发送", chat_new: "开始新对话",
+  chat_error: "未能获得回答，请稍后再试。", chat_sources: "依据：",
+  emergency_title: "⚠ 可能是紧急情况", emergency_body: "您描述的症状可能需要立即就医。请立即拨打119或前往最近的急诊室。",
+  call_119: "拨打119", find_er: "查找附近的急诊室", call_1330: "拨打多语种旅游热线 1330",
+});
+Object.assign(window.I18N.en, {
+  chat_open: "Ask the AI chatbot", chat_title: "AI Chatbot",
+  chat_intro: "General information only, based on verified sources. Always ask your medical team whether it applies to you.",
+  chat_ph: "Type your question (Enter to send)", send: "Send", chat_new: "New conversation",
+  chat_error: "We couldn't get an answer. Please try again shortly.", chat_sources: "Sources:",
+  emergency_title: "⚠ This may be an emergency", emergency_body: "The symptoms you describe may need immediate care. Call 119 now or go to the nearest emergency room.",
+  call_119: "Call 119", find_er: "Find the nearest ER", call_1330: "Call 1330 (multilingual travel hotline)",
+});
