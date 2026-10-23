@@ -205,3 +205,21 @@ Object.assign(window.I18N.ko, { chat_context: "최근 진료기록 참고:" });
 Object.assign(window.I18N.ja, { chat_context: "最近の診療記録を参照:" });
 Object.assign(window.I18N.zh, { chat_context: "参考最近的就诊记录：" });
 Object.assign(window.I18N.en, { chat_context: "Using your latest record:" });
+
+// 병원 문의 카드
+Object.assign(window.I18N.ko, { card_symptoms: "지금 어떤 증상이 있나요?", card_urgent: "이런 증상은 바로 응급", card_since: "언제부터",
+  card_pick: "증상을 고르면 병원에 보여줄 문장이 만들어져요.", card_show_staff: "병원 직원에게 보여주거나 메시지로 보내세요",
+  card_copy: "문장 복사하기", card_copied: "복사했어요", card_copy_fail: "복사하지 못했어요. 길게 눌러 복사해 주세요.",
+  card_my_lang: "내 언어로 내용 보기", card_note: "증상을 정리한 문장일 뿐 진단이 아니에요. 진료가 필요한지는 병원이 판단해요." });
+Object.assign(window.I18N.ja, { card_symptoms: "今どんな症状がありますか？", card_urgent: "これらはすぐに救急へ", card_since: "いつから",
+  card_pick: "症状を選ぶと、病院に見せる韓国語の文が作られます。", card_show_staff: "病院のスタッフに見せるか、メッセージで送ってください",
+  card_copy: "文をコピー", card_copied: "コピーしました", card_copy_fail: "コピーできませんでした。長押ししてコピーしてください。",
+  card_my_lang: "日本語で内容を見る", card_note: "症状をまとめた文で、診断ではありません。受診が必要かは病院が判断します。" });
+Object.assign(window.I18N.zh, { card_symptoms: "现在有什么症状？", card_urgent: "以下症状请立即急救", card_since: "从什么时候开始",
+  card_pick: "选择症状后，会生成给医院看的韩语句子。", card_show_staff: "请出示给医院工作人员，或通过消息发送",
+  card_copy: "复制句子", card_copied: "已复制", card_copy_fail: "复制失败，请长按复制。",
+  card_my_lang: "用中文查看内容", card_note: "这只是整理症状的句子，不是诊断。是否需要就诊由医院判断。" });
+Object.assign(window.I18N.en, { card_symptoms: "What symptoms do you have now?", card_urgent: "These need emergency care now", card_since: "Since when",
+  card_pick: "Pick your symptoms to create a Korean message for the clinic.", card_show_staff: "Show this to clinic staff or send it as a message",
+  card_copy: "Copy message", card_copied: "Copied", card_copy_fail: "Couldn't copy. Press and hold to copy.",
+  card_my_lang: "See it in English", card_note: "This only describes your symptoms; it is not a diagnosis. The clinic decides whether you need care." });

@@ -135,7 +135,9 @@ async function home() {
     ? records.map((r) => h("div", { class: "item" },
         h("strong", {}, `${r.visit_date} · ${r.hospital_name}`), r.source === "OCR" ? h("span", { class: "badge" }, t("ocr_badge")) : null,
         h("div", { class: "muted" }, [r.procedure_name, r.items.map((i) => i.drug_name).join(", ")].filter(Boolean).join(" / ")),
-        h("button", { class: "btn secondary", onclick: () => makeGuide(r.id) }, t("make_guide"))))
+        h("div", { class: "row" },
+          h("button", { class: "btn secondary", onclick: () => makeGuide(r.id) }, t("make_guide")),
+          h("a", { class: "btn secondary", href: `#/contact/${r.id}` }, t("contact_hospital")))))
     : [h("p", { class: "muted" }, t("no_records"))];
   const guideList = guides.map((g) => h("div", { class: "item" },
     h("a", { href: `#/guide/${g.guide_id}` }, `#${g.guide_id} · ${g.created_at.slice(0, 10)}`), " ",
@@ -300,7 +302,8 @@ function guideResult(g) {
       feedbackBar(g.my_feedback ? g.my_feedback.toLowerCase() : null, (rating, reason) =>
         api("PUT", `/guides/${g.guide_id}/feedback`, { rating: rating.toUpperCase(), reason: reason ? reason.toUpperCase() : null }))),
     h("a", { class: "btn", href: "#/chat" }, t("ask_ai")),
-    h("button", { class: "btn secondary", onclick: (e) => (e.target.textContent = t("coming_soon")) }, t("contact_hospital")));
+    // 병원에 보여줄 한국어 문의 카드 (진료기록이 있는 가이드만)
+    g.record_id ? h("a", { class: "btn secondary", href: `#/contact/${g.record_id}` }, t("contact_hospital")) : null);
 }
 
 // ── 👍/👎 피드백 (평가 3-4) — 👎 이면 이유를 고르게 한다 ──
@@ -473,6 +476,8 @@ async function route() {
     if (hash === "#/chat") return chatView();
     const m = hash.match(/^#\/guide\/(\d+)$/);
     if (m) return guideView(m[1]);
+    const c = hash.match(/^#\/contact\/(\d+)$/);
+    if (c) return clinicCardView(c[1]);
     location.hash = "#/";
   } catch (ex) {
     render(h("div", { class: "card" }, h("p", { class: "error" }, ex.message), h("a", { href: "#/" }, t("back"))));
