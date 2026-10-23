@@ -5,7 +5,13 @@ from fastapi.responses import FileResponse, ORJSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.apis.v1 import v1_routers
+from app.core import config
+from app.core.config import prod_setting_problems
 from app.core.db.databases import initialize_tortoise
+
+# [리뷰 #20] 운영(ENV=prod)인데 공개된 예시 비밀값이면 켜지지 않는다 — 켜진 뒤에 뚫리는 것보다 낫다
+if problems := prod_setting_problems(config):
+    raise RuntimeError("운영 설정 문제:\n- " + "\n- ".join(problems))
 
 app = FastAPI(
     default_response_class=ORJSONResponse, docs_url="/api/docs", redoc_url="/api/redoc", openapi_url="/api/openapi.json"

@@ -44,7 +44,7 @@ async function api(method, path, body) {
     throw new Error(t("err_login"));
   }
   const data = res.status === 204 ? null : await res.json().catch(() => null);
-  if (!res.ok) throw new Error(errorText(data, res.status));
+  if (!res.ok) throw Object.assign(new Error(errorText(data, res.status)), { status: res.status });
   return data;
 }
 
@@ -93,7 +93,10 @@ function loginView(message) {
       const me = await api("GET", "/users/me").catch(() => null);
       if (me && me.preferred_language && me.preferred_language !== store.lang) setLang(me.preferred_language);
       location.hash = "#/home";
-    } catch { err.textContent = t("err_login"); }
+    } catch (ex) {
+      // [리뷰 #12] 비밀번호 틀림 / 입력 형식 / 서버 문제를 나눠 보여준다
+      err.textContent = [400, 401, 404].includes(ex.status) ? t("err_login") : ex.status === 422 ? t("err_input") : t("err_generic");
+    }
   } }, field("email", email), field("password", pw), h("button", { class: "btn", type: "submit" }, t("login")), err);
   render(h("div", { class: "card" }, h("h1", {}, t("login")),
     message ? h("p", { class: "notice" }, message) : null, form,
@@ -104,13 +107,20 @@ function signupView() {
   const inputs = {
     email: h("input", { type: "email", required: true }),
     password: h("input", { type: "password", autocomplete: "new-password", required: true, placeholder: t("password_hint") }),
-    name: h("input", { required: true, maxlength: 20 }),
+    name: h("input", { required: true, maxlength: 50 }),
     gender: h("select", {}, h("option", { value: "FEMALE" }, t("female")), h("option", { value: "MALE" }, t("male"))),
     birth_date: h("input", { type: "date", required: true }),
-    phone_number: h("input", { type: "tel", placeholder: t("phone_hint") }),  // 선택 (외국인은 해외 번호 가능)
+    phone_number: h("input", { type: "tel", required: true, placeholder: t("phone_hint") }),  // 해외 번호 가능
+    // 연락용 메신저 1개 (팀 결정: 전화 + 메신저) — 나라별로 많이 쓰는 것을 먼저
+    messenger_type: h("select", { required: true }, [["WECHAT", "WeChat 微信"], ["LINE", "LINE"], ["WHATSAPP", "WhatsApp"],
+      ["KAKAOTALK", "KakaoTalk 카카오톡"], ["TELEGRAM", "Telegram"]].map(([v, label]) => h("option", { value: v }, label))),
+    messenger_id: h("input", { required: true, maxlength: 50, autocomplete: "off", placeholder: t("messenger_id_hint") }),
     nationality: h("select", {}, [["CN", "nat_cn"], ["JP", "nat_jp"], ["US", "nat_us"], ["KR", "nat_kr"], ["", "nat_other"]]
       .map(([code, key]) => h("option", { value: code }, t(key)))),
   };
+  const MESSENGER_BY_COUNTRY = { CN: "WECHAT", JP: "LINE", US: "WHATSAPP", KR: "KAKAOTALK" };
+  inputs.nationality.addEventListener("change", () => { inputs.messenger_type.value = MESSENGER_BY_COUNTRY[inputs.nationality.value] || "WHATSAPP"; });
+  inputs.messenger_type.value = MESSENGER_BY_COUNTRY[inputs.nationality.value] || "WHATSAPP";
   const err = errorBox();
   const form = h("form", { onsubmit: async (e) => {
     e.preventDefault();
@@ -122,6 +132,8 @@ function signupView() {
   field("email", inputs.email), field("password", inputs.password), field("name", inputs.name),
   h("div", { class: "row" }, h("div", {}, field("gender", inputs.gender)), h("div", {}, field("birth", inputs.birth_date))),
   field("nationality", inputs.nationality), field("phone", inputs.phone_number),
+  h("div", { class: "row" }, h("div", {}, field("messenger", inputs.messenger_type)), h("div", {}, field("messenger_id", inputs.messenger_id))),
+  h("p", { class: "muted small" }, t("ai_privacy_notice")),
   h("button", { class: "btn", type: "submit" }, t("signup")), err);
   render(h("div", { class: "card" }, h("h1", {}, t("signup")), form,
     h("p", { class: "muted" }, t("have_account"), " ", h("a", { href: "#/login" }, t("login")))));
@@ -146,6 +158,7 @@ async function home() {
     h("h1", {}, t("home_title")),
     h("a", { class: "btn", href: "#/record/new" }, t("add_record")),
     h("a", { class: "btn secondary", href: "#/chat" }, t("chat_open")),
+    h("a", { class: "btn secondary", href: "#/hospitals" }, t("hosp_title")),
     h("div", { class: "card" }, h("h2", {}, t("my_records")), recordList),
     guides.length ? h("div", { class: "card" }, h("h2", {}, t("my_guides")), guideList) : null,
     h("button", { class: "btn secondary", onclick: () => { store.token = null; location.hash = "#/"; } }, t("logout")),
@@ -232,8 +245,12 @@ function recordForm() {
     const body = { visit_date: f.visit_date.value, hospital_name: f.hospital_name.value.trim(),
       procedure_name: f.procedure_name.value.trim() || null, doctor_note: f.doctor_note.value.trim() || null, items };
     if (ocrJobId) body.ocr_job_id = ocrJobId;  // 사진에서 읽은 기록이면 서버가 source=OCR 로 저장
-    try { const rec = await api("POST", "/medical-records", body); await makeGuide(rec.id); }
-    catch (ex) { err.textContent = ex.message; }
+    let rec;
+    try { rec = await api("POST", "/medical-records", body); }
+    catch (ex) { err.textContent = ex.message; return; }
+    // [리뷰 #12] 기록은 저장됐는데 가이드만 실패(한도 등)하면 같은 폼에 머물지 않게 → 다시 '저장' 눌러 중복 생기는 것 방지
+    try { await makeGuide(rec.id); }
+    catch (ex) { location.hash = "#/home"; setTimeout(() => alert(t("record_saved_guide_failed") + "\n" + ex.message), 50); }
   } },
   field("visit_date", f.visit_date), field("hospital", f.hospital_name), field("procedure", f.procedure_name),
   field("doctor_note", f.doctor_note), h("h2", { style: "margin-top:16px" }, t("drugs")), drugBox,
@@ -250,6 +267,7 @@ let pollTimer = null;
 async function guideView(id) {
   if (!store.token) return (location.hash = "#/login");
   clearTimeout(pollTimer);
+  progressStart = 0;  // [리뷰 #12] 다른 가이드의 경과 시간이 이어지지 않게
   const g = await api("GET", `/guides/${id}`);
   if (g.status === "PENDING") return progressView(id);
   render(h("a", { href: "#/home" }, t("back")), guideResult(g));
@@ -271,14 +289,26 @@ function progressView(id) {
     const g = await api("GET", `/guides/${id}`);
     if (g.status === "PENDING" && elapsed < 60) return progressView(id);
     progressStart = 0;
+    if (g.status === "PENDING") {  // [리뷰 #12] 아직 만드는 중 — 빈 결과로 보여주지 않는다
+      return render(h("a", { href: "#/home" }, t("back")), h("div", { class: "card" }, h("p", { class: "notice" }, t("still_pending"))));
+    }
     render(h("a", { href: "#/home" }, t("back")), guideResult(g));
   }, 1200);
+}
+
+// 같은 기록으로 가이드 다시 만들기 (기록이 바뀌었거나 실패했을 때)
+function remakeButton(g) {
+  return g.record_id ? h("button", { class: "btn secondary", type: "button", onclick: (e) => {
+    e.target.disabled = true;
+    makeGuide(g.record_id).catch((ex) => { e.target.disabled = false; alert(ex.message); });
+  } }, t("remake_guide")) : null;
 }
 
 function guideResult(g) {
   if (g.status === "NO_SOURCE" || g.status === "FAILED") {
     return h("div", { class: "card" }, h("h1", {}, t("tab_med")),
-      h("p", { class: "notice" }, t(g.status === "FAILED" ? "failed" : "no_source")), prescriptionCard(g), disclaimer(g));
+      h("p", { class: "notice" }, t(g.status === "FAILED" ? "failed" : "no_source")), prescriptionCard(g), disclaimer(g),
+      g.status === "FAILED" ? remakeButton(g) : null);
   }
   const panes = {
     med: [prescriptionCard(g), h("p", {}, g.medication_guide || t("empty_section"))],
@@ -297,6 +327,8 @@ function guideResult(g) {
     tabs.append(h("button", { "data-key": key, onclick: () => show(key) }, t(label))));
   show("med");
   return h("div", {},
+    // [리뷰 #11·#12] 가이드를 만든 뒤 기록이 바뀌었으면 맨 위에 알리고 다시 만들기 버튼
+    g.record_changed ? h("div", { class: "notice warn-box" }, h("strong", {}, t("record_changed")), remakeButton(g)) : null,
     h("div", { class: "card" }, h("h1", {}, t("guide_title")), tabs, body, disclaimer(g),
       // 가이드 평가: 서버 값은 대문자(UP/DOWN · WRONG_INFO …)
       feedbackBar(g.my_feedback ? g.my_feedback.toLowerCase() : null, (rating, reason) =>
@@ -311,12 +343,18 @@ function guideResult(g) {
 function feedbackBar(current, send) {
   const box = h("div", { class: "feedback" });
   const draw = (rating, asking) => {
+    // [리뷰 #16] 보내는 동안 버튼을 막아 같은 평가가 거의 동시에 두 번 가지 않게
+    const go = async (r, reason) => {
+      box.querySelectorAll("button").forEach((b) => (b.disabled = true));
+      await send(r, reason).catch(() => {});
+      draw(r, false);
+    };
     const btn = (r, label) => h("button", { type: "button", class: rating === r ? "on" : "", "aria-pressed": rating === r,
-      onclick: async () => { if (r === "up") { await send("up", null).catch(() => {}); draw("up", false); } else draw("down", true); } }, label);
+      onclick: () => (r === "up" ? go("up", null) : draw("down", true)) }, label);
     box.replaceChildren(h("span", { class: "muted small" }, rating && !asking ? t("fb_thanks") : t("fb_question")), btn("up", "👍"), btn("down", "👎"));
     if (asking) {
       box.append(h("div", { class: "reasons" }, ["wrong_info", "hard_to_understand", "not_relevant", "other"].map((r) =>
-        h("button", { type: "button", onclick: async () => { await send("down", r).catch(() => {}); draw("down", false); } }, t(`fb_${r}`)))));
+        h("button", { type: "button", onclick: () => go("down", r) }, t(`fb_${r}`)))));
     }
   };
   draw(current, false);
@@ -474,6 +512,7 @@ async function route() {
     if (hash === "#/home") return home();
     if (hash === "#/record/new") return recordForm();
     if (hash === "#/chat") return chatView();
+    if (hash === "#/hospitals") return hospitalsView();
     const m = hash.match(/^#\/guide\/(\d+)$/);
     if (m) return guideView(m[1]);
     const c = hash.match(/^#\/contact\/(\d+)$/);

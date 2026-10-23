@@ -5,7 +5,7 @@
 #   - 초안은 진료기록으로 저장하는 순간 지운다 (한 번만 쓸 수 있다)
 # ─────────────────────────────────────────────
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from fastapi import HTTPException, status
 
@@ -14,7 +14,7 @@ from app.dtos.ocr import OcrDraft, OcrJobResponse
 from app.models.ocr_jobs import OcrJob, OcrStatus
 from app.models.users import User
 from app.repositories.ocr_repository import OcrRepository
-from app.services import ocr_engine
+from app.services import ai_budget, ocr_engine
 
 log = logging.getLogger(__name__)
 
@@ -46,6 +46,9 @@ class OcrService:
             raise HTTPException(
                 status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail="오늘 사진 인식 횟수를 모두 썼습니다."
             )
+        await ai_budget.check_global_budget()
+        # [리뷰 #14] 진료기록으로 저장하지 않은 지 하루 지난 초안(약 이름 등)은 비운다 — 최소 보관
+        await self.repo.clear_old_drafts(now - timedelta(days=1))
         job = await self.repo.create(user_id=user.id, engine=ocr_engine.engine_name())
         return job, fmt
 

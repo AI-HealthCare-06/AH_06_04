@@ -141,14 +141,59 @@ def _safety() -> ModuleType:
     return module
 
 
-def remove_unsafe_sentences(text: str) -> tuple[str, int]:
-    """용량·복용 지시·진단 문장을 문장 단위로 걸러 낸다 → (남은 글, 지운 문장 수)"""
+# [리뷰 #11] 가이드 전용 추가 안전망
+#   챗봇 규칙(is_bad_output)은 '약' 낱말과 횟수가 같은 문장에 있어야 막는다.
+#   복약 안내 칸은 문장 전체가 약 이야기라 '약' 이 생략된다 → 이 칸에서는 낱말 없이도 복용 지시를 막는다.
+_MED_DIRECTIVE = re.compile(
+    "|".join(
+        [
+            # ko: 숫자·횟수 + 복용 지시  ("하루 2번 드세요", "식후 30분에 1알 드세요", "7일 동안 드세요")
+            r"(\d+|한|두|세)\s*(번|회|알|정|캡슐|일|주)[^.!?。]*?(드세요|드십시오|먹으세요|복용하세요|바르세요|발라\s*주세요)",
+            # en: take/use/apply + 횟수·개수
+            r"\b(take|use|apply)\b[^.!?]*\b(once|twice|three\s+times|\d+\s*(times|tablets?|pills?|capsules?|mg)|"
+            r"(one|two|three)\s+(tablets?|pills?|capsules?))\b",
+            r"\b(take|use|apply)\b[^.!?]*\b(daily|every\s+day|a\s+day|per\s+day)\b",
+            # ja: 1日2回 / 2錠 + 飲んで・服用・塗って
+            r"\d+\s*(回|錠|カプセル)[^。]*?(飲んで|服用し|塗って)",
+            # zh: 每日一次 · 每次一片
+            r"每(日|天)\s*[一二三两\d]+\s*次",
+            r"每次\s*[一二三两\d]+\s*(片|粒|颗)",
+        ]
+    ),
+    re.IGNORECASE,
+)
+# 두 칸 공통: 약을 끊어도 된다 · 진단 문장 (질환명 목록으로 좁힘 — "if you have kidney problems" 같은 원문은 지우지 않게)
+_DISEASE = r"(여드름|주사비|딸기코|아토피|습진|건선|피부염|대상포진|감염|acne|rosacea|eczema|psoriasis|dermatitis|shingles|an?\s+infection|ニキビ|酒さ|湿疹|乾癬|皮膚炎|帯状疱疹|痤疮|酒渣鼻|湿疹|银屑病|皮炎|带状疱疹)"
+_ALWAYS_BAD = re.compile(
+    "|".join(
+        [
+            r"(약을?|복용을?)\s*(끊어도|중단해도|그만\s*(먹어|드셔)도)\s*(됩니다|돼요|괜찮)",
+            r"\byou\s+(may|can)\s+stop\s+(taking|using)\b",
+            r"\bit'?s\s+(ok|okay|fine)\s+to\s+stop\b",
+            r"(飲むのを|服用を)?やめても(大丈夫|いい|かまい)",
+            r"可以停(药|止(服用|用药))",
+            r"당신은\s*" + _DISEASE,
+            r"\byou\s+(have|are\s+suffering\s+from)\s+(a\s+|an\s+)?" + _DISEASE,
+            r"あなたは\s*" + _DISEASE,
+            r"你(患有|得了|是)\s*" + _DISEASE,
+        ]
+    ),
+    re.IGNORECASE,
+)
+
+
+def remove_unsafe_sentences(text: str, medication: bool = False) -> tuple[str, int]:
+    """용량·복용 지시·진단 문장을 문장 단위로 걸러 낸다 → (남은 글, 지운 문장 수)
+    medication=True (복약 안내 칸): '약' 낱말이 없어도 횟수·개수 복용 지시를 막는다"""
     safety = _safety()
     kept, removed = [], 0
     for sentence in re.split(r"(?<=[.!?。！？])\s*|\n+", text):
         if not sentence.strip():
             continue
-        if safety.is_bad_output(sentence):
+        bad = safety.is_bad_output(sentence) or bool(_ALWAYS_BAD.search(sentence))
+        if medication and _MED_DIRECTIVE.search(sentence):
+            bad = True
+        if bad:
             removed += 1
         else:
             kept.append(sentence.strip())

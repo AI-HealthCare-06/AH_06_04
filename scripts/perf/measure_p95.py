@@ -42,10 +42,19 @@ async def timed(fn: Callable[[], Awaitable[httpx.Response]]) -> tuple[float, int
 Results = dict[str, list[float]]
 
 
-async def setup(c: httpx.AsyncClient, password: str) -> tuple[dict[str, str], str, int, int, dict]:
+async def setup(c: httpx.AsyncClient, password: str, no_ai: bool) -> tuple[dict[str, str], str, int, int | None, dict]:
     """측정용 가짜 계정·진료기록·가이드 만들기 → (헤더, 이메일, 기록 번호, 가이드 번호, 기록 내용)"""
     email = f"perf.{int(time.time())}@example.com"
-    signup = {"email": email, "password": password, "name": "perf", "gender": "FEMALE", "birth_date": "1995-01-01"}
+    signup = {
+        "email": email,
+        "password": password,
+        "name": "perf",
+        "gender": "FEMALE",
+        "birth_date": "1995-01-01",
+        "phone_number": f"+1555{int(time.time()) % 10**7:07d}",  # 측정용 가짜 해외 번호 (실행마다 다름)
+        "messenger_type": "WHATSAPP",
+        "messenger_id": "perf_test",
+    }
     r = await c.post("/auth/signup", json=signup)
     if r.status_code != 201:
         raise SystemExit(f"가입 실패 {r.status_code}: {r.text[:200]}")
@@ -57,12 +66,14 @@ async def setup(c: httpx.AsyncClient, password: str) -> tuple[dict[str, str], st
         "items": [{"drug_name": "세티리진정", "dose": "1정", "times_per_day": 1, "days": 5}],
     }
     record_id = (await c.post("/medical-records", json=record, headers=h)).json()["id"]
-    guide_id = (await c.post("/guides", json={"record_id": record_id}, headers=h)).json()["guide_id"]
+    guide_id = None if no_ai else (await c.post("/guides", json={"record_id": record_id}, headers=h)).json()["guide_id"]
     return h, email, record_id, guide_id, record
 
 
-async def measure_api(c: httpx.AsyncClient, password: str, n: int, results: Results, errors: dict[str, int]) -> dict:
-    h, email, record_id, guide_id, record = await setup(c, password)
+async def measure_api(
+    c: httpx.AsyncClient, password: str, n: int, results: Results, errors: dict[str, int], no_ai: bool
+) -> dict:
+    h, email, record_id, guide_id, record = await setup(c, password, no_ai)
     cases: dict[str, tuple[int, Callable[[], Awaitable[httpx.Response]]]] = {
         "POST /auth/login": (n, lambda: c.post("/auth/login", json={"email": email, "password": password})),
         "GET /users/me": (n, lambda: c.get("/users/me", headers=h)),
@@ -77,6 +88,9 @@ async def measure_api(c: httpx.AsyncClient, password: str, n: int, results: Resu
             lambda: c.post("/ocr/prescriptions", files={"file": ("rx.png", PNG, "image/png")}, headers=h),
         ),
     }
+    if no_ai:  # [리뷰 #17] 운영 측정: AI 를 부르는 요청(가이드 생성·OCR)은 빼서 비용·데이터를 만들지 않는다
+        for name in ("GET /guides/{id}", "POST /guides (202 접수)", "POST /ocr/prescriptions (202 접수)"):
+            cases.pop(name)
     for name, (times, fn) in cases.items():
         for _ in range(times):
             sec, code = await timed(fn)
@@ -133,6 +147,7 @@ async def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--n", type=int, default=30, help="API 마다 몇 번 부를지")
     ap.add_argument("--no-chat", action="store_true", help="챗봇 측정 건너뛰기")
+    ap.add_argument("--no-ai", action="store_true", help="AI 를 부르는 요청(가이드·OCR·챗봇)은 빼고 측정 — 운영 권장")
     args = ap.parse_args()
     base = os.environ.get("BASE_URL", "http://localhost").rstrip("/")
     password = os.environ.get("DEMO_PASSWORD")
@@ -142,8 +157,8 @@ async def main() -> None:
     results: Results = {}
     errors: dict[str, int] = {}
     async with httpx.AsyncClient(base_url=f"{base}/api/v1", timeout=30) as c:
-        h = await measure_api(c, password, args.n, results, errors)
-        if not args.no_chat:
+        h = await measure_api(c, password, args.n, results, errors, args.no_ai)
+        if not (args.no_chat or args.no_ai):
             await measure_chat(c, h, args.n, results, errors)
 
     text = report(base, args.n, results, errors)

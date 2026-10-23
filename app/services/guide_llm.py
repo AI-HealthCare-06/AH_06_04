@@ -57,6 +57,7 @@ async def _openai(records_text: str, docs: list[KnowledgeDoc], lang: str) -> tup
     payload = {
         "model": config.OPENAI_CHAT_MODEL,
         "temperature": 0,  # 같은 입력 → 같은 결과에 가깝게 (평가 3-3)
+        "max_tokens": config.GUIDE_LLM_MAX_TOKENS,  # 답 길이 상한 = 비용 상한
         "response_format": {"type": "json_object"},
         "messages": [{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": user_msg}],
     }

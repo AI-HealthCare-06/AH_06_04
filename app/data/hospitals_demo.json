@@ -1,0 +1,146 @@
+{
+ "_note": "데모용 가짜 병원 목록 — 실제 병원이 아니다. 실제 데이터(공공데이터)로 바꿀 때 같은 칸 이름으로 이 파일만 교체하거나 HOSPITAL_DATA_FILE 로 경로 지정",
+ "items": [
+  {
+   "hospital_id": 1,
+   "name": "글로우데모 피부과의원 1",
+   "department": "피부과",
+   "address": "서울 강남구 신사동 (데모 주소)",
+   "phone": "000-0000-0001",
+   "languages": [
+    "ko",
+    "zh",
+    "en"
+   ]
+  },
+  {
+   "hospital_id": 2,
+   "name": "글로우데모 피부과의원 2",
+   "department": "피부과",
+   "address": "서울 강남구 압구정동 (데모 주소)",
+   "phone": "000-0000-0002",
+   "languages": [
+    "ko",
+    "ja",
+    "en"
+   ]
+  },
+  {
+   "hospital_id": 3,
+   "name": "글로우데모 피부과의원 3",
+   "department": "피부과",
+   "address": "서울 강남구 역삼동 (데모 주소)",
+   "phone": "000-0000-0003",
+   "languages": [
+    "ko",
+    "zh"
+   ]
+  },
+  {
+   "hospital_id": 4,
+   "name": "글로우데모 피부과의원 4",
+   "department": "피부과",
+   "address": "서울 서초구 서초동 (데모 주소)",
+   "phone": "000-0000-0004",
+   "languages": [
+    "ko",
+    "en"
+   ]
+  },
+  {
+   "hospital_id": 5,
+   "name": "글로우데모 피부과의원 5",
+   "department": "피부과",
+   "address": "서울 중구 명동 (데모 주소)",
+   "phone": "000-0000-0005",
+   "languages": [
+    "ko",
+    "zh",
+    "ja",
+    "en"
+   ]
+  },
+  {
+   "hospital_id": 6,
+   "name": "글로우데모 피부과의원 6",
+   "department": "피부과",
+   "address": "서울 마포구 서교동 (데모 주소)",
+   "phone": "000-0000-0006",
+   "languages": [
+    "ko",
+    "ja"
+   ]
+  },
+  {
+   "hospital_id": 7,
+   "name": "글로우데모 성형외과의원 1",
+   "department": "성형외과",
+   "address": "서울 강남구 신사동 (데모 주소)",
+   "phone": "000-0000-0007",
+   "languages": [
+    "ko",
+    "zh",
+    "en"
+   ]
+  },
+  {
+   "hospital_id": 8,
+   "name": "글로우데모 성형외과의원 2",
+   "department": "성형외과",
+   "address": "서울 강남구 논현동 (데모 주소)",
+   "phone": "000-0000-0008",
+   "languages": [
+    "ko",
+    "ja",
+    "zh"
+   ]
+  },
+  {
+   "hospital_id": 9,
+   "name": "글로우데모 성형외과의원 3",
+   "department": "성형외과",
+   "address": "서울 서초구 잠원동 (데모 주소)",
+   "phone": "000-0000-0009",
+   "languages": [
+    "ko",
+    "en"
+   ]
+  },
+  {
+   "hospital_id": 10,
+   "name": "글로우데모 피부과의원 7",
+   "department": "피부과",
+   "address": "부산 해운대구 우동 (데모 주소)",
+   "phone": "000-0000-0010",
+   "languages": [
+    "ko",
+    "ja",
+    "zh"
+   ]
+  },
+  {
+   "hospital_id": 11,
+   "name": "글로우데모 피부과의원 8",
+   "department": "피부과",
+   "address": "서울 강남구 청담동 (데모 주소)",
+   "phone": "000-0000-0011",
+   "languages": [
+    "ko",
+    "zh",
+    "ja",
+    "en"
+   ]
+  },
+  {
+   "hospital_id": 12,
+   "name": "글로우데모 피부과의원 9",
+   "department": "피부과",
+   "address": "서울 송파구 잠실동 (데모 주소)",
+   "phone": "000-0000-0012",
+   "languages": [
+    "ko",
+    "en"
+   ]
+  }
+ ]
+}

@@ -23,6 +23,7 @@ from typing import Annotated, Literal
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field, field_validator
+from tortoise.exceptions import IntegrityError
 
 from app import i18n
 from app.auth import current_user_id
@@ -133,9 +134,8 @@ async def stream(
     async def gen():
         n = 0
         async for event, data in run_turn(conv, body.message, lang, llm, request.is_disconnected, body.context):
-            if event == "done":  # 마지막에 방금 저장한 답 번호를 붙인다 → 화면이 👍/👎 를 이 번호로 보낸다
-                last = await Message.filter(conversation=conv, role="assistant").order_by("-id").first()
-                data = {**data, "message_id": last.id if last else None}
+            if event == "done":  # 이 턴에서 저장한 답 번호를 붙인다 → 화면이 👍/👎 를 이 번호로 보낸다
+                data = {**data, "message_id": getattr(conv, "last_answer_id", None)}
             yield f"id: {n}\nevent: {event}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
             n += 1
 
@@ -161,7 +161,9 @@ async def feedback(conversation_id: str, message_id: int, body: FeedbackIn, user
     if msg.outcome not in ("ok", "cached"):
         raise HTTPException(400, detail={"code": "not_rateable"})
     reason = body.reason if body.rating == "down" else None
-    await Feedback.update_or_create(
-        defaults={"rating": body.rating, "reason": reason, "user_id": user_id}, message_id=msg.id
-    )
+    values = {"rating": body.rating, "reason": reason, "user_id": user_id}
+    try:
+        await Feedback.update_or_create(defaults=values, message_id=msg.id)
+    except IntegrityError:  # [리뷰 #16] 거의 동시에 두 번 누름 → 먼저 만든 줄을 고친다
+        await Feedback.filter(message_id=msg.id).update(**values)
     return {"message_id": msg.id, "rating": body.rating, "reason": reason}

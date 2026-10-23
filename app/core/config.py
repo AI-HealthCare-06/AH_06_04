@@ -48,6 +48,15 @@ class Config(BaseSettings):
     GUIDE_KB_DIR: str = ""
     # 감수 전(reviewed: false) 안내문도 근거로 쓸지 — 운영(prod)에서는 반드시 false
     GUIDE_ALLOW_UNREVIEWED_DOCS: bool = False
+    # [리뷰 #11] 비용 보호 — 답 길이 상한 · 사용자별 하루 한도 · 만드는 중 상태 최대 시간
+    GUIDE_LLM_MAX_TOKENS: int = 700
+    GUIDE_DAILY_LIMIT: int = 10
+    GUIDE_PENDING_TIMEOUT_S: int = 120  # 이 시간이 지나도 PENDING 이면 실패로 본다 (서버 재시작 등)
+    # 서비스 전체 하루 AI 호출 상한 (가이드 + OCR 합계) — 계정을 여러 개 만들어 우회하는 것까지 막는다
+    AI_DAILY_GLOBAL_LIMIT: int = 300
+
+    # ── 병원 검색 (파트 B) — 비우면 app/data/hospitals_demo.json (데모용 가짜 병원)
+    HOSPITAL_DATA_FILE: str = ""
 
     # ── FR-05 처방전·약봉투 사진 인식 (OCR) ─────────────
     # fake   = 가짜 결과(키·비용 0, 테스트·데모용)
@@ -58,5 +67,25 @@ class Config(BaseSettings):
     OCR_TIMEOUT_S: float = 30.0
     OCR_DAILY_LIMIT: int = 20  # 한 사용자 하루 OCR 횟수 (비용 보호)
     OPENAI_VISION_MODEL: str = "gpt-4o-mini"
+    OCR_LLM_MAX_TOKENS: int = 800  # [리뷰 #14] 약 30줄 JSON 여유
     CLOVA_OCR_SECRET_KEY: str = ""  # .env 에만 (공개 레포)
     CLOVA_OCR_INVOKE_URL: str = ""  # 콘솔의 General OCR 'APIGW Invoke URL' (이것도 비밀값)
+
+
+# 공개 레포에 올라간 예시 값 — 운영에서 이 값이면 누구나 로그인 토큰을 만들 수 있다 [리뷰 #20]
+_EXAMPLE_SECRET_PREFIXES = ("oz-codingschool", "default-secret-key")
+_EXAMPLE_DB_PASSWORDS = ("pw1234", "Password1234@", "Ozcoding1234@")
+
+
+def prod_setting_problems(c: Config) -> list[str]:
+    """ENV=prod 일 때 막아야 할 설정 목록. ⚠ 메시지에 비밀값 자체는 절대 넣지 않는다 (로그에 남지 않게)"""
+    if c.ENV != Env.PROD:
+        return []
+    problems = []
+    if c.SECRET_KEY.startswith(_EXAMPLE_SECRET_PREFIXES) or len(c.SECRET_KEY) < 32:
+        problems.append("SECRET_KEY 가 예시 값이거나 32자 미만")
+    if c.DB_PASSWORD in _EXAMPLE_DB_PASSWORDS or not c.DB_PASSWORD:
+        problems.append("DB_PASSWORD 가 비어 있거나 예시 값")
+    if c.COOKIE_DOMAIN == "localhost":
+        problems.append("COOKIE_DOMAIN 이 localhost")
+    return problems

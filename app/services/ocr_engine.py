@@ -84,6 +84,7 @@ async def _openai_json(user_content: Any, model: str) -> dict[str, Any]:
     payload = {
         "model": model,
         "temperature": 0,  # 같은 사진 → 같은 결과에 가깝게 (평가 3-3)
+        "max_tokens": config.OCR_LLM_MAX_TOKENS,  # 답 길이 상한 = 비용 상한
         "response_format": {"type": "json_object"},
         "messages": [{"role": "system", "content": EXTRACT_RULES}, {"role": "user", "content": user_content}],
     }

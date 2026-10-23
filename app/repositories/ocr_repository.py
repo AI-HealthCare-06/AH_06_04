@@ -30,3 +30,6 @@ class OcrRepository:
         """한 번만 쓰게: 아직 안 쓴 작업일 때만 바꾼다 (동시에 두 번 저장해도 1건만 성공)"""
         updated = await OcrJob.filter(id=job_id, used_at__isnull=True).update(used_at=used_at, draft=None)
         return updated == 1
+
+    async def clear_old_drafts(self, before: datetime) -> None:
+        await OcrJob.filter(used_at__isnull=True, created_at__lt=before, draft__isnull=False).update(draft=None)

@@ -55,6 +55,8 @@ class GuideResponse(BaseModel):
     created_at: datetime
     generated_at: datetime | None
     my_feedback: FeedbackRating | None = None  # 내가 남긴 평가 (화면에 눌린 상태로 보여준다)
+    # [리뷰 #11] 가이드를 만든 뒤 진료기록이 바뀜 → 처방 칸(지금 기록)과 AI 안내(옛 기록)가 다를 수 있다
+    record_changed: bool = False
 
 
 class GuideFeedbackRequest(BaseModel):

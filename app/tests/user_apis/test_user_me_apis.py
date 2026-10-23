@@ -16,6 +16,8 @@ class TestUserMeApis(TestCase):
             "gender": "FEMALE",
             "birth_date": "1992-02-02",
             "phone_number": "01055556666",
+            "messenger_type": "WECHAT",
+            "messenger_id": "glowpass_test",
         }
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             await client.post("/api/v1/auth/signup", json=signup_data)
@@ -40,6 +42,8 @@ class TestUserMeApis(TestCase):
             "gender": "MALE",
             "birth_date": "1990-10-10",
             "phone_number": "01077778888",
+            "messenger_type": "WECHAT",
+            "messenger_id": "glowpass_test",
         }
         update_data = {"name": "수정후"}
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
@@ -69,6 +73,8 @@ class TestUserMeApis(TestCase):
             "gender": "FEMALE",
             "birth_date": "1995-05-05",
             "phone_number": "01022223333",
+            "messenger_type": "WECHAT",
+            "messenger_id": "glowpass_test",
         }
         update_data = {"email": "hacker@example.com"}
         async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
