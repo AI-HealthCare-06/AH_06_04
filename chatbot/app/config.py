@@ -11,7 +11,8 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     # dev = 로컬 개발·데모 / prod = 실제 서비스 (prod 에서는 아래 check_startup 이 위험한 설정을 막는다)
-    app_env: Literal["dev", "prod"] = "dev"
+    # dev = 개발 · demo = 데모데이 운영 (prod 와 같은 검사 + 감수 전 안내문 허용, 화면에 '감수 전' 표시) · prod = 정식 운영
+    app_env: Literal["dev", "demo", "prod"] = "dev"
     db_url: str = "sqlite://chat_lab.sqlite3"
 
     # 안내문 (근거 문서)
@@ -94,13 +95,16 @@ class Settings(BaseSettings):
             and not self.openai_api_key
         ):
             problems.append("EMBEDDING_MODE=openai 인데 OPENAI_API_KEY 가 비어 있음")
-        if self.app_env == "prod":
+        # demo 도 실제 사용자가 보는 서버라 prod 와 같은 검사를 한다 (감수 전 안내문 허용만 다름)
+        if self.app_env in ("demo", "prod"):
             if self.search_mode != "keyword" and self.embedding_mode == "fake":
-                problems.append("prod 에서 가짜 임베딩(EMBEDDING_MODE=fake)으로 벡터 검색은 금지")
-            if self.allow_unreviewed_docs:
-                problems.append("prod 에서 ALLOW_UNREVIEWED_DOCS=true 는 금지 — 감수된 안내문만 답의 근거로 쓴다")
+                problems.append(f"{self.app_env} 에서 가짜 임베딩(EMBEDDING_MODE=fake)으로 벡터 검색은 금지")
             if self.llm_mode == "fake":
-                problems.append("prod 에서 LLM_MODE=fake 는 금지")
+                problems.append(f"{self.app_env} 에서 LLM_MODE=fake 는 금지")
+        if self.app_env == "prod" and self.allow_unreviewed_docs:
+            problems.append(
+                "prod 에서 ALLOW_UNREVIEWED_DOCS=true 는 금지 — 감수된 안내문만 답의 근거로 쓴다 (데모는 APP_ENV=demo)"
+            )
         return problems
 
 

@@ -476,7 +476,9 @@ async function ask(convId, message, lang, bubble, emergencyBox, context = []) {
         }
         if (sources.length && ["ok", "cached"].includes(d.outcome)) {
           box.append(h("div", { class: "srcs" }, t("chat_sources"), " ",
-            sources.map((s) => h("span", { class: "badge" }, s.title))));
+            sources.map((s) => h("span", { class: "badge" }, s.title)),
+            // 감수 전 안내문이 근거에 섞였으면 그 사실을 답 바로 아래에 밝힌다
+            sources.some((s) => s.reviewed === false) ? h("span", { class: "badge badge-warn" }, t("unreviewed_badge")) : null));
         }
       }
     }
@@ -526,3 +528,9 @@ async function route() {
 document.getElementById("lang").addEventListener("change", (e) => setLang(e.target.value));
 window.addEventListener("hashchange", route);
 setLang(store.lang);
+
+// 데모 운영(감수 전 안내문 사용) 이면 화면 맨 위에 띠를 띄운다 — 실패해도 화면은 그대로 동작
+fetch(API + "/service-info")
+  .then((res) => (res.ok ? res.json() : null))
+  .then((info) => { if (info && info.demo_unreviewed_docs) document.getElementById("demo-banner").hidden = false; })
+  .catch(() => {});

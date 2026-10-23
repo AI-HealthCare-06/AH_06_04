@@ -55,8 +55,8 @@ flowchart LR
 |---|---|---|
 | `GUIDE_LLM_MODE` | `fake` / `openai` | 가이드 생성. fake 는 키·비용 없이 데모 |
 | `OCR_MODE` | `fake` / `openai` / `clova` | 처방전 인식 |
-| `CHAT_LLM_MODE` · `CHAT_APP_ENV` | `fake`·`dev` / `openai`·`prod` | 챗봇 (prod 에서는 fake·감수 전 안내문 금지) |
-| `GUIDE_ALLOW_UNREVIEWED_DOCS` · `CHAT_ALLOW_UNREVIEWED_DOCS` | `true` / `false` | 감수 전 안내문을 근거로 쓸지 (운영은 false) |
+| `CHAT_LLM_MODE` · `CHAT_APP_ENV` | `fake`·`dev` / `openai`·`demo`(데모데이) 또는 `prod` | 챗봇 (demo·prod 에서는 fake 금지 · prod 에서는 감수 전 안내문도 금지) |
+| `GUIDE_ALLOW_UNREVIEWED_DOCS` · `CHAT_ALLOW_UNREVIEWED_DOCS` | `true` / `false` | 감수 전 안내문을 근거로 쓸지 (데모데이까지 true + 화면에 '감수 전' 표시, 감수 후 false) |
 | `OPENAI_API_KEY` · `CLOVA_OCR_*` | — | **`.env` 에만.** 공개 레포라 코드·커밋에 넣지 않는다 |
 
 ## 평가 기준 대응표
