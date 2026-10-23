@@ -4,6 +4,8 @@
 #   GET  /api/v1/guides                     내 가이드 목록 (최신순)
 #   GET  /api/v1/guides/{guide_id}          가이드 결과 (status 가 PENDING 이면 잠시 후 다시 조회)
 #   GET  /api/v1/guides/{guide_id}/sources  근거 자료 목록 (출처 표시)
+#   PUT  /api/v1/guides/{guide_id}/feedback 👍/👎 평가 (가이드당 1개, 다시 보내면 바뀜)
+#   GET  /api/v1/guides/feedback/summary    (관리자) 평가 집계 — 근거 안내문·모델별 '아쉬워요' 수
 # ─────────────────────────────────────────────
 from typing import Annotated
 
@@ -11,7 +13,15 @@ from fastapi import APIRouter, BackgroundTasks, Depends, Query, status
 from fastapi.responses import ORJSONResponse
 
 from app.dependencies.security import get_request_user
-from app.dtos.guides import GuideAcceptedResponse, GuideCreateRequest, GuideResponse, GuideSourceResponse
+from app.dtos.guides import (
+    GuideAcceptedResponse,
+    GuideCreateRequest,
+    GuideFeedbackRequest,
+    GuideFeedbackResponse,
+    GuideFeedbackSummary,
+    GuideResponse,
+    GuideSourceResponse,
+)
 from app.models.users import User
 from app.services.guides import GuideService
 
@@ -43,6 +53,15 @@ async def list_guides(
     return ORJSONResponse([g.model_dump(mode="json") for g in guides], status_code=status.HTTP_200_OK)
 
 
+@guide_router.get("/feedback/summary", response_model=GuideFeedbackSummary, status_code=status.HTTP_200_OK)
+async def guide_feedback_summary(
+    user: Annotated[User, Depends(get_request_user)],
+    service: Annotated[GuideService, Depends(GuideService)],
+) -> ORJSONResponse:
+    summary = await service.feedback_summary(user=user)
+    return ORJSONResponse(summary.model_dump(), status_code=status.HTTP_200_OK)
+
+
 @guide_router.get("/{guide_id}", response_model=GuideResponse, status_code=status.HTTP_200_OK)
 async def get_guide(
     guide_id: int,
@@ -61,3 +80,14 @@ async def get_guide_sources(
 ) -> ORJSONResponse:
     guide = await service.get_guide(user=user, guide_id=guide_id)
     return ORJSONResponse([s.model_dump(mode="json") for s in guide.sources], status_code=status.HTTP_200_OK)
+
+
+@guide_router.put("/{guide_id}/feedback", response_model=GuideFeedbackResponse, status_code=status.HTTP_200_OK)
+async def put_guide_feedback(
+    guide_id: int,
+    request: GuideFeedbackRequest,
+    user: Annotated[User, Depends(get_request_user)],
+    service: Annotated[GuideService, Depends(GuideService)],
+) -> ORJSONResponse:
+    feedback = await service.save_feedback(user=user, guide_id=guide_id, data=request)
+    return ORJSONResponse(feedback.model_dump(mode="json"), status_code=status.HTTP_200_OK)

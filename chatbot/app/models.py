@@ -50,3 +50,20 @@ class DailyUsage(Model):
     class Meta:
         table = "chat_daily_usage"
         unique_together = (("user_id", "day"),)
+
+
+class Feedback(Model):
+    """답 1개에 대한 👍/👎 (평가 3-4: 사용자 피드백 반영 구조).
+    'down' 이 많이 달린 답의 근거 안내문(sources)·질문 유형을 모아 안내문·프롬프트·평가셋(eval/)을 고친다.
+    새 표라서 서버가 켜질 때 generate_schemas 가 만든다 (기존 표는 건드리지 않음)."""
+
+    id = fields.IntField(primary_key=True)
+    message = fields.OneToOneField("models.Message", related_name="feedback", on_delete=fields.CASCADE)
+    user_id = fields.BigIntField(db_index=True)
+    rating = fields.CharField(max_length=4)  # up | down
+    reason = fields.CharField(max_length=20, null=True)  # wrong_info | hard_to_understand | not_relevant | other
+    created_at = fields.DatetimeField(auto_now_add=True)
+    updated_at = fields.DatetimeField(auto_now=True)
+
+    class Meta:
+        table = "chat_feedback"

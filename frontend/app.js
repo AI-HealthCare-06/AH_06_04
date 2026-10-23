@@ -293,9 +293,29 @@ function guideResult(g) {
     tabs.append(h("button", { "data-key": key, onclick: () => show(key) }, t(label))));
   show("med");
   return h("div", {},
-    h("div", { class: "card" }, h("h1", {}, t("guide_title")), tabs, body, disclaimer(g)),
+    h("div", { class: "card" }, h("h1", {}, t("guide_title")), tabs, body, disclaimer(g),
+      // 가이드 평가: 서버 값은 대문자(UP/DOWN · WRONG_INFO …)
+      feedbackBar(g.my_feedback ? g.my_feedback.toLowerCase() : null, (rating, reason) =>
+        api("PUT", `/guides/${g.guide_id}/feedback`, { rating: rating.toUpperCase(), reason: reason ? reason.toUpperCase() : null }))),
     h("a", { class: "btn", href: "#/chat" }, t("ask_ai")),
     h("button", { class: "btn secondary", onclick: (e) => (e.target.textContent = t("coming_soon")) }, t("contact_hospital")));
+}
+
+// ── 👍/👎 피드백 (평가 3-4) — 👎 이면 이유를 고르게 한다 ──
+// send(rating, reason) 은 서버에 보내는 함수. 실패해도 화면은 멈추지 않는다
+function feedbackBar(current, send) {
+  const box = h("div", { class: "feedback" });
+  const draw = (rating, asking) => {
+    const btn = (r, label) => h("button", { type: "button", class: rating === r ? "on" : "", "aria-pressed": rating === r,
+      onclick: async () => { if (r === "up") { await send("up", null).catch(() => {}); draw("up", false); } else draw("down", true); } }, label);
+    box.replaceChildren(h("span", { class: "muted small" }, rating && !asking ? t("fb_thanks") : t("fb_question")), btn("up", "👍"), btn("down", "👎"));
+    if (asking) {
+      box.append(h("div", { class: "reasons" }, ["wrong_info", "hard_to_understand", "not_relevant", "other"].map((r) =>
+        h("button", { type: "button", onclick: async () => { await send("down", r).catch(() => {}); draw("down", false); } }, t(`fb_${r}`)))));
+    }
+  };
+  draw(current, false);
+  return box;
 }
 
 function prescriptionCard(g) {
@@ -400,6 +420,12 @@ async function ask(convId, message, lang, bubble, emergencyBox) {
       else if (event === "notice") box.after(h("div", { class: "muted small" }, d.text));
       else if (event === "done") {
         if (d.outcome === "emergency") showEmergency(emergencyBox);
+        // AI 가 만든 답에만 👍/👎 (응급·차단 같은 고정 문구에는 달지 않는다)
+        if (d.message_id && ["ok", "cached"].includes(d.outcome)) {
+          const bar = feedbackBar(null, (rating, reason) =>
+            api("PUT", `/chat/conversations/${convId}/messages/${d.message_id}/feedback`, { rating, reason }));
+          (box.nextElementSibling && box.nextElementSibling.classList.contains("small") ? box.nextElementSibling : box).after(bar);
+        }
         if (sources.length && ["ok", "cached"].includes(d.outcome)) {
           box.append(h("div", { class: "srcs" }, t("chat_sources"), " ",
             sources.map((s) => h("span", { class: "badge" }, s.title))));
