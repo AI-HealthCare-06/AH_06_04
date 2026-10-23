@@ -281,3 +281,29 @@ Object.assign(window.I18N.ko, { demo_banner: "데모 버전이에요. AI 답변�
 Object.assign(window.I18N.ja, { demo_banner: "デモ版です。AI回答の根拠資料はまだ医療者の監修前です。実際の治療の判断は必ず医療者にご相談ください。", unreviewed_badge: "監修前の資料" });
 Object.assign(window.I18N.zh, { demo_banner: "这是演示版。AI回答所依据的资料尚未经过医务人员审核。实际治疗请务必咨询医务人员。", unreviewed_badge: "未经审核的资料" });
 Object.assign(window.I18N.en, { demo_banner: "This is a demo. The sources behind AI answers have not yet been reviewed by medical staff. Always consult a medical professional about your treatment.", unreviewed_badge: "Not yet reviewed" });
+
+// 병원 연락 요청 (API 명세서 23·24번)
+Object.assign(window.I18N.ko, { hc_request: "연락 요청", hc_request_from_card: "병원 목록에서 연락 요청하기", hc_method: "연락 받을 방법",
+  hc_m_messenger: "메신저 (가입 때 적은 계정)", hc_m_phone: "전화", hc_m_email: "이메일", hc_m_visit: "방문 안내", hc_memo: "병원에 남길 말 (선택)",
+  hc_send: "요청 보내기", hc_sent: "요청을 보냈어요. 병원이 확인하면 상태가 바뀌어요.", hc_mine: "내 연락 요청", hc_none: "아직 보낸 요청이 없어요.",
+  hc_cancel: "요청 취소", hc_status_requested: "접수됨", hc_status_in_progress: "병원 확인 중", hc_status_completed: "연락 완료", hc_status_cancelled: "취소됨",
+  hc_login_needed: "연락 요청은 로그인 후 할 수 있어요.", hc_about_record: "고른 병원에 내 시술 기록에 대한 문의로 보냅니다.",
+  hc_demo: "※ 데모 버전에서는 실제 병원에 전달되지 않아요." });
+Object.assign(window.I18N.ja, { hc_request: "連絡をリクエスト", hc_request_from_card: "病院一覧から連絡をリクエスト", hc_method: "連絡の受け方",
+  hc_m_messenger: "メッセンジャー（登録したアカウント）", hc_m_phone: "電話", hc_m_email: "メール", hc_m_visit: "来院のご案内", hc_memo: "病院へのメッセージ（任意）",
+  hc_send: "リクエストを送る", hc_sent: "リクエストを送りました。病院が確認すると状態が変わります。", hc_mine: "連絡リクエスト一覧", hc_none: "まだリクエストはありません。",
+  hc_cancel: "取り消す", hc_status_requested: "受付済み", hc_status_in_progress: "病院が確認中", hc_status_completed: "連絡済み", hc_status_cancelled: "取り消し",
+  hc_login_needed: "連絡リクエストはログイン後に利用できます。", hc_about_record: "選んだ病院に、施術記録についての問い合わせとして送ります。",
+  hc_demo: "※ デモ版では実際の病院には届きません。" });
+Object.assign(window.I18N.zh, { hc_request: "请求联系", hc_request_from_card: "从医院列表请求联系", hc_method: "希望的联系方式",
+  hc_m_messenger: "即时通讯（注册时填写的账号）", hc_m_phone: "电话", hc_m_email: "邮件", hc_m_visit: "到院说明", hc_memo: "给医院的留言（可选）",
+  hc_send: "发送请求", hc_sent: "请求已发送。医院确认后状态会更新。", hc_mine: "我的联系请求", hc_none: "还没有发送过请求。",
+  hc_cancel: "取消请求", hc_status_requested: "已受理", hc_status_in_progress: "医院确认中", hc_status_completed: "已联系", hc_status_cancelled: "已取消",
+  hc_login_needed: "登录后才能请求联系。", hc_about_record: "将作为关于您治疗记录的咨询发送给所选医院。",
+  hc_demo: "※ 演示版不会真正发送给医院。" });
+Object.assign(window.I18N.en, { hc_request: "Request contact", hc_request_from_card: "Request contact from the clinic list", hc_method: "How should they contact you?",
+  hc_m_messenger: "Messenger (account from sign-up)", hc_m_phone: "Phone", hc_m_email: "Email", hc_m_visit: "Visit information", hc_memo: "Message to the clinic (optional)",
+  hc_send: "Send request", hc_sent: "Request sent. The status changes when the clinic checks it.", hc_mine: "My contact requests", hc_none: "No requests yet.",
+  hc_cancel: "Cancel request", hc_status_requested: "Received", hc_status_in_progress: "Clinic checking", hc_status_completed: "Contacted", hc_status_cancelled: "Cancelled",
+  hc_login_needed: "Log in to request contact.", hc_about_record: "This is sent to the clinic you choose as a question about your treatment record.",
+  hc_demo: "※ In the demo, requests are not delivered to real clinics." });

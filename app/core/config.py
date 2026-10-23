@@ -57,6 +57,8 @@ class Config(BaseSettings):
 
     # ── 병원 검색 (파트 B) — 비우면 app/data/hospitals_demo.json (데모용 가짜 병원)
     HOSPITAL_DATA_FILE: str = ""
+    # 병원 연계 요청 — 한 사람이 하루에 보낼 수 있는 요청 수 (병원 피로도)
+    HOSPITAL_CONTACT_DAILY_LIMIT: int = 5
 
     # ── FR-05 처방전·약봉투 사진 인식 (OCR) ─────────────
     # fake   = 가짜 결과(키·비용 0, 테스트·데모용)
