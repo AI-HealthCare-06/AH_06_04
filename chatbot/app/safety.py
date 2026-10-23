@@ -64,6 +64,83 @@ _EMERGENCY = [
     r"視力模糊",
     r"视线模糊",
     r"看不清",
+    # 보툴리눔 톡신 확산 신호 (FDA 환자 안내서: 삼키기·말하기 어려움, 겹쳐 보임) — botox-fda 안내문
+    # 삼키기 어려움은 그 자체로 위험 → 항상 응급
+    r"삼키(기|는\s*게)?\s*(가|이)?\s*(힘들|어렵|안\s*돼|못)",
+    r"(trouble|difficulty|hard\s+to)\s+swallow(ing)?",
+    r"can'?t\s+swallow",
+    r"slurred\s+speech",
+    r"double\s+vision",
+    r"吞咽困难",
+    r"吞咽困難",
+    r"复视",
+    r"複視",
+    r"飲み込(みにく|めな)",
+    r"ろれつが回らな",
+    # [응급 탐지율 개선 2026-10-24] 같은 증상을 '바꿔 말한' 표현 — 새 문장 시험셋 탐지율 13% 에서 개선
+    # 숨 · 호흡
+    r"숨\s*(이|을)?\s*(가빠|가쁘)",
+    r"숨\s*쉬(기|는\s*게)?\s*(가|이)?\s*(너무\s*|많이\s*)?(힘들|어렵|어려|안\s*돼|불편)",
+    r"호흡\s*(이)?\s*(가빠|가쁘|힘들|어렵|어려|곤란|안\s*돼)",
+    r"질식",
+    r"喘不(过|過|上)气|喘不(过|過|上)氣|上不来气|透不过气|透不過氣",
+    r"呼吸(急促|不了|不上)|(无法|無法|不能)呼吸|窒息",
+    r"息が(でき|詰ま|しづら|しにく)|呼吸が(苦し|でき|しづら|荒)",
+    r"(trouble|difficulty|hard)\s+(to\s+)?breath(e|ing)",
+    r"gasp(ing|ed)?\s+for\s+(air|breath)",
+    r"\bchok(e|ing|ed)\b|suffocat",
+    # 목 · 혀 붓기 (기도가 막힐 수 있음)
+    r"목(이|구멍)?\s*(이\s*)?(막혀|막히)",
+    r"혀(가)?\s*(붓|부어|부풀)",
+    r"(喉咙|喉嚨|嗓子)\S{0,3}(肿|腫|紧|緊|堵)",
+    r"(舌头|舌頭)\S{0,3}(肿|腫)",
+    r"喉が(苦し|腫れ|詰ま|締め|狭)|舌が(腫れ|膨)",
+    r"throat\b[^.!?]{0,25}(swell|swollen|clos|tight)",
+    r"(swell|swollen)[^.!?]{0,20}\b(throat|tongue)",
+    r"tongue\b[^.!?]{0,20}(swell|swollen)",
+    # 의식
+    r"의식\s*(이)?\s*흐려|정신(을|이)?\s*(잃|없어|놓)|실신",
+    r"晕过去|暈過去|失去(意识|意識|知觉|知覺)|昏迷",
+    r"意識(が|を)\s*(な|失|もうろう)|失神",
+    r"black(ed|ing)?\s+out|lost\s+consciousness",
+    # 시력
+    r"눈앞이\s*(캄캄|깜깜|까맣|하얘)",
+    r"看不(见|見|到)|眼前(一片)?\S{0,2}(黑|暗)",
+    r"見えな(くな|い)|目の前が\S{0,3}(暗|黒)",
+    # 겹쳐 보임 · 삼키기 · 말 (일상 표현과 덜 겹치는 형태만 여기, 나머지는 시술 문맥 목록)
+    r"\bsee(ing)?\s+double\b|ダブって見え",
+    r"(침|음식|물)(을|이)?\s*(못|안)\s*삼키|삼킬\s*수\s*(가\s*)?없",
+    r"삼키(기|는\s*게)?\s*(가|이)?\s*(너무\s*)?어려",
+    r"咽不下|吞不下|(无法|無法)吞咽",
+    r"飲み込(みづら|むのが)",
+    r"(problem|trouble|difficulty)\s+swallow|can'?t\s+get\s+(food|anything|water|it)\s+down",
+    r"\bslurr(ed|ing)\b|口齿不清|口齒不清|ろれつ",
+]
+
+# [PR #10 리뷰] 일상 표현과 겹치는 신호 — 시술·주사 낱말이 같은 질문에 있을 때만 응급
+#   ("한국어 말하기가 어려워요" · "주말이 안 나와요" · "아이섀도 겹쳐 보이게" · "重影眼妆" 같은 오탐 방지)
+_PROCEDURE_CONTEXT = (
+    r"보톡스|보툴리눔|톡신|필러|주사|시술|맞(고|은|았)"
+    r"|botox|botulinum|toxin|filler|inject|procedure|treatment"
+    r"|ボトックス|ボツリヌス|フィラー|注射|施術|肉毒|玻尿酸|填充|打完|做完|打针|打針|넣(은|고)|레이저|laser|激光|レーザー"
+)
+_EMERGENCY_IF_PROCEDURE = [
+    r"(?<![가-힣])말(이|하기가?)?\s*(어눌|안\s*나와|꼬여)",  # '주말' 제외
+    r"(둘로|겹쳐)\s*보",
+    r"(trouble|difficulty|hard\s+to)\s+speak(ing)?",
+    r"说话含糊",
+    r"說話含糊",
+    r"重影",
+    r"二重に見え",
+    # [응급 탐지율 개선] 필러·주사 뒤 피부색 변화 = 혈관이 막히는 신호일 수 있다 (멍은 제외되게 '변함·퍼짐' 형태만)
+    r"(하얗게|창백|보라색|보랏빛|검게|까맣게|파랗게|푸르게|거멓게)\S{0,6}\s*(변|질리|퍼지|퍼져|번지|번져)",
+    r"(发|發|变|變)(白|紫|黑)",
+    r"(白|紫|黒)(く|色に)(なっ|変わ)",
+    r"(turn(ed|ing|s)?|went|go(ne|ing)?)\s+(white|pale|purple|blue|black|dark|gr[ae]y)|blanch",
+    r"(purple|discolou?r)\S*[^.!?]{0,30}spread",
+    r"(말|발음)(이)?\s*(꼬여|꼬이|이상)",
+    r"说话不清|說話不清|言葉が(うまく)?(出ま|出な|でな)",
+    r"(looks?|seeing)\s+double|看(东西|東西)?\S{0,3}(两个|兩個)",
 ]
 
 # ① 질문이 '진단·처방·용량' 을 직접 요구 — LLM 에 보내지 않는다
@@ -134,6 +211,8 @@ _FREQUENCY = (
 _MED_ORDER = r"(드세요|복용하세요|드십시오|바르세요|끊으세요|중단하세요|飲んでください|塗ってください|请吃|請吃)"
 
 _EMERGENCY_RE = re.compile("|".join(_EMERGENCY), re.IGNORECASE)
+_PROCEDURE_CONTEXT_RE = re.compile(_PROCEDURE_CONTEXT, re.IGNORECASE)
+_EMERGENCY_IF_PROCEDURE_RE = re.compile("|".join(_EMERGENCY_IF_PROCEDURE), re.IGNORECASE)
 _ASK_MEDICAL_RE = re.compile("|".join(_ASK_MEDICAL), re.IGNORECASE)
 _BAD_OUTPUT_RE = re.compile("|".join(_BAD_OUTPUT), re.IGNORECASE)
 _MED_WORD_RE = re.compile(_MED_WORD, re.IGNORECASE)
@@ -145,7 +224,10 @@ _SENTENCE_END = re.compile(r"(?<=[.!?])\s+|(?<=[。！？])|\n+")
 
 
 def is_emergency(text: str) -> bool:
-    return bool(_EMERGENCY_RE.search(text))
+    if _EMERGENCY_RE.search(text):
+        return True
+    # 일상 표현과 겹치는 신호는 시술·주사 이야기와 함께일 때만
+    return bool(_EMERGENCY_IF_PROCEDURE_RE.search(text) and _PROCEDURE_CONTEXT_RE.search(text))
 
 
 def asks_for_medical_decision(text: str) -> bool:

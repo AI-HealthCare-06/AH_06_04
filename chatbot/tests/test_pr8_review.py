@@ -17,6 +17,16 @@ from app import privacy, safety
         "I have blurred vision after filler",
         "I can't see well after the injection",
         "필러 맞으면 실명할 수도 있어요?",
+        "보톡스 맞고 삼키기가 힘들어요",
+        "보톡스 후에 물체가 둘로 보여요",
+        "打完肉毒素后看东西重影",
+        "ボトックスの後、飲み込みにくい",
+        "Trouble swallowing after Botox",
+        # [PR #10 리뷰] 시술 맥락이 있으면 말하기·겹쳐 보임도 응급
+        "Botox made it hard to speak",
+        "보톡스 맞고 말이 어눌해요",
+        "필러 맞고 겹쳐 보여요",
+        "Hard to swallow since the injection",
     ],
 )
 def test_vision_problems_are_emergency(q):
@@ -33,6 +43,15 @@ def test_vision_problems_are_emergency(q):
         "눈썹 문신 해도 돼요?",
         "실명 인증은 어떻게 해요?",
         "I can't see any difference after botox",
+        "보톡스 맞고 말해도 돼요?",
+        "물광주사 맞고 물 마셔도 돼요?",
+        # [PR #10 리뷰] 일상 표현 오탐 방지
+        "I had trouble speaking Korean at the clinic",
+        "주말이 안 나와요",
+        "렌즈 끼면 둘로 보여요?",
+        "아이섀도 겹쳐 보이게 바르는 법",
+        "韩国医生说话含糊我听不懂",
+        "重影眼妆怎么画",
     ],
 )
 def test_normal_questions_are_not_emergency(q):
