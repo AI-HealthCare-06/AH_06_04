@@ -67,9 +67,14 @@ function cardButton(g) {
     };
     section(t("tab_med"), g.medication_guide);
     section(t("tab_life"), g.lifestyle_guide);
-    // 맨 아래: 면책 문구는 꼭 넣는다 (진단·처방이 아님)
+    // 맨 아래: 출처 · (감수 전이면) 감수 전 표시 · 면책 문구 — 화면과 같은 기준 (카드는 밖으로 퍼지는 용도)
     ctx.fillStyle = "#7a6f80"; ctx.font = "26px sans-serif";
-    let fy = H - 150;
+    const srcLine = (g.sources || []).map((s) => s.document_title).filter(Boolean).slice(0, 3).join(" · ");
+    const unreviewed = (g.sources || []).some((s) => s.reviewed === false) || !document.getElementById("demo-banner").hidden;
+    let fy = H - 230;
+    if (srcLine) { ctx.fillText(`${t("chat_sources")} ${srcLine}`.slice(0, 60), PAD, fy); fy += 36; }
+    if (unreviewed) { ctx.fillStyle = "#7a4a00"; ctx.fillText(`※ ${t("unreviewed_badge")}`, PAD, fy); ctx.fillStyle = "#7a6f80"; fy += 36; }
+    fy = Math.max(fy, H - 150);
     for (const line of wrapLines(ctx, g.disclaimer, W - PAD * 2).slice(0, 4)) { ctx.fillText(line, PAD, fy); fy += 36; }
     const a = document.createElement("a");
     a.href = c.toDataURL("image/png");

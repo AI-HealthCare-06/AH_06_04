@@ -5,6 +5,7 @@
 eval/emergency.jsonl
   set=dev  : 규칙을 고칠 때 보고 맞춘 문장
   set=test : 규칙을 고칠 때 보지 않은 문장 (처음 보는 표현에도 통하는지 확인용)
+  set=review : #25 리뷰에서 찾은 오탐·미탐 문장 ("효과가 안 보여요" 같은 일상 질문이 응급으로 잡히지 않는지)
 ⚠ 두 세트 모두 팀이 직접 쓴 문장이라 실제 사용자 표현보다 쉬울 수 있다 → 숫자는 '상한' 으로 읽는다
 """
 
@@ -22,7 +23,7 @@ DATA = ROOT / "eval" / "emergency.jsonl"
 
 def main() -> None:
     rows = [json.loads(line) for line in DATA.read_text(encoding="utf-8").splitlines() if line.strip()]
-    for split in ("dev", "test"):
+    for split in ("dev", "test", "review"):
         part = [r for r in rows if r["set"] == split]
         pos = [r for r in part if r["emergency"]]  # 응급이어야 하는 문장
         neg = [r for r in part if not r["emergency"]]  # 응급이 아니어야 하는 문장

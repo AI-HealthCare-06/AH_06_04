@@ -56,6 +56,16 @@ echo "${COLOR_BLUE}도커 이미지를 업로드할 레포지토리 이름을 �
 read -p "Docker Repository Name: " docker_repo
 echo ""
 
+# ---------- 입력값과 .prod.env 가 같은지 확인 — [#22 리뷰] 빌드·푸시 '전에' 막는다 (EC2 는 .prod.env 의 이미지 이름·버전을 받는다) ----------
+warn_diff () {
+  if [[ -n "$2" && "$2" != "$3" ]]; then
+    echo "${COLOR_RED}⚠ $1: 입력값($2) ≠ .prod.env($3). EC2 는 .prod.env 값으로 이미지를 받습니다. .prod.env 를 고치고 다시 실행하세요.${COLOR_NC}"
+    exit 1
+  fi
+}
+warn_diff "DOCKER_USER" "${docker_user}" "${DOCKER_USER}"
+warn_diff "DOCKER_REPOSITORY" "${docker_repo}" "${DOCKER_REPOSITORY}"
+
 # ---------- Select Prompt ----------
 echo "${COLOR_BLUE}배포 전 빌드 & 푸시할 이미지를 선택하세요(복수선택 가능, 띄어쓰기로 구분)${COLOR_NC}"
 echo "1) fastapi"
@@ -73,6 +83,7 @@ for choice in $selections; do
     1)
       echo "${COLOR_BLUE}FastAPI 앱의 배포 버젼을 입력하세요(ex. v1.0.0)${COLOR_NC}"
       read -p "FastAPI 앱 버젼: " fastapi_version
+      warn_diff "APP_VERSION" "${fastapi_version}" "${APP_VERSION}"
       build_and_push ${docker_user} ${docker_repo} "FastAPI" ${fastapi_version} "app/Dockerfile" "."
       DEPLOY_SERVICES+=("fastapi")
       ;;
@@ -85,6 +96,7 @@ for choice in $selections; do
     3)
       echo "${COLOR_BLUE}챗봇의 배포 버젼을 입력하세요(ex. v1.0.0) — .prod.env 의 CHATBOT_VERSION 과 같게${COLOR_NC}"
       read -p "챗봇 버젼: " chatbot_version
+      warn_diff "CHATBOT_VERSION" "${chatbot_version}" "${CHATBOT_VERSION}"
       build_and_push ${docker_user} ${docker_repo} "Chatbot" ${chatbot_version} "chatbot/Dockerfile" "chatbot"
       DEPLOY_SERVICES+=("chatbot")
       ;;
@@ -113,18 +125,6 @@ echo "1) http 사용중"
 echo "2) https 사용중"
 read -p "선택(ex. 1): " is_https
 echo ""
-
-# ---------- 입력값과 .prod.env 가 같은지 확인 (EC2 는 .prod.env 의 이미지 이름·버전을 받는다) ----------
-warn_diff () {
-  if [[ -n "$2" && "$2" != "$3" ]]; then
-    echo "${COLOR_RED}⚠ $1: 입력값($2) ≠ .prod.env($3). EC2 는 .prod.env 값으로 이미지를 받습니다. .prod.env 를 고치고 다시 실행하세요.${COLOR_NC}"
-    exit 1
-  fi
-}
-warn_diff "DOCKER_USER" "${docker_user}" "${DOCKER_USER}"
-warn_diff "DOCKER_REPOSITORY" "${docker_repo}" "${DOCKER_REPOSITORY}"
-warn_diff "APP_VERSION" "${fastapi_version}" "${APP_VERSION}"
-warn_diff "CHATBOT_VERSION" "${chatbot_version}" "${CHATBOT_VERSION}"
 
 # ---------- EC2 내에 배포 준비 파일 복사  ----------
 # [리뷰 #20] 새 EC2 에는 ~/project/nginx 폴더가 없다 → 먼저 만든다

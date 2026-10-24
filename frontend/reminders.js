@@ -40,11 +40,13 @@ async function remindersView() {
     h("span", { class: "badge" }, t(`rm_repeat_${r.repeat_rule === "daily" ? "daily" : "none"}`)),
     h("div", { class: "row" },
       h("label", { class: "check" }, h("input", { type: "checkbox", checked: r.is_active, onchange: async (e) => {
-        await api("PATCH", `/reminders/${r.id}`, { is_active: e.target.checked });
+        try { await api("PATCH", `/reminders/${r.id}`, { is_active: e.target.checked }); }
+        catch (ex) { e.target.checked = !e.target.checked; err.textContent = ex.message; }  // 실패하면 원래대로
       } }), " ", t("rm_on")),
-      h("button", { class: "btn secondary", type: "button", onclick: async () => {
-        await api("DELETE", `/reminders/${r.id}`);
-        remindersView();
+      h("button", { class: "btn secondary", type: "button", onclick: async (e) => {
+        e.target.disabled = true;
+        try { await api("DELETE", `/reminders/${r.id}`); remindersView(); }
+        catch (ex) { err.textContent = ex.message; e.target.disabled = false; }
       } }, t("rm_delete"))));
 
   render(h("a", { href: "#/home" }, t("back")),

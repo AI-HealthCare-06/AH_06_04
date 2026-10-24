@@ -65,7 +65,7 @@ function contactRequestBox(hospital, recordId, alertId) {
         if (alertId) body.safety_alert_id = alertId;
         await api("POST", "/hospital-contacts", body);
         box.replaceChildren(h("p", { class: "notice" }, t("hc_sent"), " ", h("a", { href: "#/contacts" }, t("hc_mine"))));
-      } catch (ex) { err.textContent = ex.message; send.disabled = false; }
+      } catch (ex) { err.textContent = ex.status === 409 ? t("hc_already") : ex.message; send.disabled = false; }
     } }, t("hc_send"));
     box.replaceChildren(h("div", { class: "card" }, field("hc_method", method), field("hc_memo", memo), err, send,
       h("p", { class: "muted small" }, t("hc_demo"))));
@@ -78,18 +78,20 @@ function contactRequestBox(hospital, recordId, alertId) {
 async function contactsView() {
   if (!store.token) return (location.hash = "#/login");
   const { data } = await api("GET", "/hospital-contacts");
+  const err = errorBox();
   const row = (c) => h("div", { class: "item" },
     h("strong", {}, c.hospital_name), " ", h("span", { class: "badge" }, t(`hc_status_${c.status}`)),
     h("div", { class: "muted small" }, `${c.created_at.slice(0, 16).replace("T", " ")} · ${t(`hc_m_${c.contact_method}`)}`),
     c.memo ? h("div", {}, c.memo) : null,
     ["requested", "in_progress"].includes(c.status)
-      ? h("button", { class: "btn secondary", type: "button", onclick: async () => {
-          await api("PATCH", `/hospital-contacts/${c.contact_id}`, { status: "cancelled" });
-          contactsView();
+      ? h("button", { class: "btn secondary", type: "button", onclick: async (e) => {
+          e.target.disabled = true;
+          try { await api("PATCH", `/hospital-contacts/${c.contact_id}`, { status: "cancelled" }); contactsView(); }
+          catch (ex) { err.textContent = ex.message; e.target.disabled = false; }  // 예: 다른 탭에서 이미 취소 → 409
         } }, t("hc_cancel"))
       : null);
   render(h("a", { href: "#/home" }, t("back")),
-    h("div", { class: "card" }, h("h1", {}, t("hc_mine")),
+    h("div", { class: "card" }, h("h1", {}, t("hc_mine")), err,
       data.items.length ? data.items.map(row) : h("p", { class: "muted" }, t("hc_none")),
       h("a", { class: "btn secondary", href: "#/hospitals" }, t("hosp_title")),
       h("p", { class: "muted small" }, t("hc_demo"))));

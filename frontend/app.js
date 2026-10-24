@@ -515,19 +515,20 @@ async function route() {
   const hash = location.hash || "#/";
   if (chatAbort) { chatAbort.abort(); chatAbort = null; }  // 챗봇 화면을 떠나면 답 받기 중지
   try {
-    if (hash === "#/") return store.token ? home() : onboarding();
+    // [#21 리뷰] async 화면은 await 로 돌려줘야 서버 오류(404 등)가 아래 catch 에 잡혀 화면에 보인다
+    if (hash === "#/") return store.token ? await home() : onboarding();
     if (hash === "#/login") return loginView();
     if (hash === "#/signup") return signupView();
-    if (hash === "#/home") return home();
+    if (hash === "#/home") return await home();
     if (hash === "#/record/new") return recordForm();
-    if (hash === "#/chat") return chatView();
-    if (hash.startsWith("#/hospitals")) return hospitalsView(new URLSearchParams(hash.split("?")[1] || ""));
-    if (hash === "#/contacts") return contactsView();
-    if (hash === "#/reminders") return remindersView();
+    if (hash === "#/chat") return await chatView();
+    if (hash.startsWith("#/hospitals")) return await hospitalsView(new URLSearchParams(hash.split("?")[1] || ""));
+    if (hash === "#/contacts") return await contactsView();
+    if (hash === "#/reminders") return await remindersView();
     const m = hash.match(/^#\/guide\/(\d+)$/);
-    if (m) return guideView(m[1]);
+    if (m) return await guideView(m[1]);
     const c = hash.match(/^#\/contact\/(\d+)$/);
-    if (c) return clinicCardView(c[1]);
+    if (c) return await clinicCardView(c[1]);
     location.hash = "#/";
   } catch (ex) {
     render(h("div", { class: "card" }, h("p", { class: "error" }, ex.message), h("a", { href: "#/" }, t("back"))));

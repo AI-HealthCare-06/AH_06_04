@@ -118,3 +118,31 @@
 {"set": "test", "lang": "en", "q": "Can I wear a mask after the procedure?", "emergency": false}
 {"set": "test", "lang": "en", "q": "There is a small purple bruise at the injection site", "emergency": false}
 {"set": "test", "lang": "en", "q": "I am double-checking my appointment time", "emergency": false}
+{"set": "review", "lang": "ko", "q": "정신이 없어서 어제 약 먹는 걸 깜빡했어요", "emergency": false}
+{"set": "review", "lang": "ko", "q": "요즘 정신없어서 연고를 못 발랐어요", "emergency": false}
+{"set": "review", "lang": "ko", "q": "캡슐이 너무 커서 삼키기 어려워요", "emergency": false}
+{"set": "review", "lang": "en", "q": "I have a problem swallowing big pills", "emergency": false}
+{"set": "review", "lang": "zh-Hans", "q": "打完水光针一周了还看不到效果", "emergency": false}
+{"set": "review", "lang": "zh-Hans", "q": "做完热玛吉看不见变化正常吗", "emergency": false}
+{"set": "review", "lang": "zh-Hans", "q": "看不到明显效果怎么办", "emergency": false}
+{"set": "review", "lang": "ja", "q": "効果が見えないのですが大丈夫ですか", "emergency": false}
+{"set": "review", "lang": "ja", "q": "施術後、効果が見えないです", "emergency": false}
+{"set": "review", "lang": "ja", "q": "このクリームの効果が見えない", "emergency": false}
+{"set": "review", "lang": "ko", "q": "레이저 토닝 받고 피부가 하얗게 변했어요 효과 좋네요", "emergency": false}
+{"set": "review", "lang": "zh-Hans", "q": "激光美白后皮肤变白了", "emergency": false}
+{"set": "review", "lang": "en", "q": "Laser toning made my skin turn white", "emergency": false}
+{"set": "review", "lang": "en", "q": "I choked on water while laughing, lol", "emergency": false}
+{"set": "review", "lang": "ko", "q": "목이 막혀서 물 마셨어요", "emergency": false}
+{"set": "review", "lang": "ko", "q": "보톡스 맞고 알약 삼키기가 어려워요", "emergency": true}
+{"set": "review", "lang": "ko", "q": "필러 맞고 목이 막히는 느낌이에요", "emergency": true}
+{"set": "review", "lang": "ko", "q": "목이 막혀서 숨을 못 쉬겠어요", "emergency": true}
+{"set": "review", "lang": "en", "q": "I feel like I'm choking after the filler", "emergency": true}
+{"set": "review", "lang": "ko", "q": "필러 맞고 피부가 하얗게 변했어요 효과가 없나요", "emergency": true}
+{"set": "review", "lang": "zh-Hans", "q": "打完玻尿酸后突然看不见了", "emergency": true}
+{"set": "review", "lang": "zh-Hans", "q": "打完针以后看不到东西了", "emergency": true}
+{"set": "review", "lang": "zh-Hans", "q": "突然看不见了", "emergency": true}
+{"set": "review", "lang": "zh-Hans", "q": "一只眼睛看不见了", "emergency": true}
+{"set": "review", "lang": "ja", "q": "急に見えなくなった", "emergency": true}
+{"set": "review", "lang": "ja", "q": "目が見えなくなりました", "emergency": true}
+{"set": "review", "lang": "ko", "q": "필러 맞고 코 옆이 하얗게 질렸어요", "emergency": true}
+{"set": "review", "lang": "ja", "q": "ヒアルロン酸を打ったら息ができません", "emergency": true}

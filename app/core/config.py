@@ -88,6 +88,8 @@ def prod_setting_problems(c: Config) -> list[str]:
         problems.append("SECRET_KEY 가 예시 값이거나 32자 미만")
     if c.DB_PASSWORD in _EXAMPLE_DB_PASSWORDS or not c.DB_PASSWORD:
         problems.append("DB_PASSWORD 가 비어 있거나 예시 값")
-    if c.COOKIE_DOMAIN == "localhost":
-        problems.append("COOKIE_DOMAIN 이 localhost")
+    if c.COOKIE_DOMAIN == "localhost" or "넣으세요" in c.COOKIE_DOMAIN or not c.COOKIE_DOMAIN:
+        problems.append(
+            "COOKIE_DOMAIN 이 localhost 이거나 예시 값"
+        )  # [#22 리뷰] example.prod.env 의 자리표시 문구도 막는다
     return problems

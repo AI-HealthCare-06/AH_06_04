@@ -24,6 +24,7 @@ def test_prod_rejects_example_values_without_leaking_them():
     assert len(problems) == 3
     assert "oz-codingschool" not in " ".join(problems)  # 비밀값 자체는 메시지에 안 남긴다
     assert prod_setting_problems(_cfg(SECRET_KEY="short")) != []
+    assert prod_setting_problems(_cfg(COOKIE_DOMAIN="도메인을_넣으세요")) != []  # example.prod.env 자리표시 문구
 
 
 def test_local_is_not_checked():

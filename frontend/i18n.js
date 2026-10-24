@@ -339,3 +339,7 @@ Object.assign(window.I18N.en, { rm_title: "Medication reminders", rm_intro: "Set
   rm_MEDICATION: "Take medicine", rm_GUIDE_CHECK: "Check care guide", rm_repeat_daily: "Every day", rm_repeat_none: "Once", rm_add: "Add reminder", rm_list: "My reminders",
   rm_none: "No reminders yet.", rm_on: "On", rm_delete: "Delete", rm_alert_MEDICATION: "💊 Time for your medicine. Take it as prescribed.",
   rm_alert_GUIDE_CHECK: "📋 Time to check your aftercare guide.", rm_demo_note: "※ In the demo, reminders only appear while GlowPass is open." });
+Object.assign(window.I18N.ko, { hc_already: "이 병원에 이미 진행 중인 요청이 있어요. '내 연락 요청'에서 확인하세요." });
+Object.assign(window.I18N.ja, { hc_already: "この病院にはすでに進行中のリクエストがあります。「連絡リクエスト一覧」でご確認ください。" });
+Object.assign(window.I18N.zh, { hc_already: "您对这家医院已有正在处理的请求，请在“我的联系请求”中查看。" });
+Object.assign(window.I18N.en, { hc_already: "You already have an open request for this clinic. See 'My contact requests'." });

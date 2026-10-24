@@ -88,9 +88,9 @@ _EMERGENCY = [
     r"息が(でき|詰ま|しづら|しにく)|呼吸が(苦し|でき|しづら|荒)",
     r"(trouble|difficulty|hard)\s+(to\s+)?breath(e|ing)",
     r"gasp(ing|ed)?\s+for\s+(air|breath)",
-    r"\bchok(e|ing|ed)\b|suffocat",
+    r"\bchok(e|ing|ed)\b(?!\s+on\b)|suffocat",  # [#25 리뷰] 'choked on water' 같은 사레는 제외
     # 목 · 혀 붓기 (기도가 막힐 수 있음)
-    r"목(이|구멍)?\s*(이\s*)?(막혀|막히)",
+    r"목(이|구멍)?\s*(이\s*)?(막혀|막히)[^.!?]{0,15}(숨|호흡)|(숨|호흡)[^.!?]{0,15}목(이|구멍)?\s*(이\s*)?(막혀|막히)",  # [#25 리뷰] '목이 막혀서 물 마셨어요' 제외
     r"혀(가)?\s*(붓|부어|부풀)",
     r"(喉咙|喉嚨|嗓子)\S{0,3}(肿|腫|紧|緊|堵)",
     r"(舌头|舌頭)\S{0,3}(肿|腫)",
@@ -99,21 +99,21 @@ _EMERGENCY = [
     r"(swell|swollen)[^.!?]{0,20}\b(throat|tongue)",
     r"tongue\b[^.!?]{0,20}(swell|swollen)",
     # 의식
-    r"의식\s*(이)?\s*흐려|정신(을|이)?\s*(잃|없어|놓)|실신",
+    r"의식\s*(이)?\s*흐려|정신(을|이)?\s*(잃|놓)|실신",  # [#25 리뷰] '정신이 없어서 깜빡' 은 응급 아님
     r"晕过去|暈過去|失去(意识|意識|知觉|知覺)|昏迷",
     r"意識(が|を)\s*(な|失|もうろう)|失神",
     r"black(ed|ing)?\s+out|lost\s+consciousness",
     # 시력
     r"눈앞이\s*(캄캄|깜깜|까맣|하얘)",
-    r"看不(见|見|到)|眼前(一片)?\S{0,2}(黑|暗)",
-    r"見えな(くな|い)|目の前が\S{0,3}(暗|黒)",
+    # [#25 리뷰] '看不到效果'(효과가 안 보임) 는 응급 아님 → 눈·사물·갑자기 와 함께일 때만
+    r"(眼睛?|东西|東西)\S{0,4}看不(见|見|到)|看不(见|見|到)\S{0,2}(东西|東西)|看不(见|見)了|(突然|一下子)\S{0,3}看不(见|見|到|清)|眼前(一片)?\S{0,2}(黑|暗)",
+    r"(目|視界|物)が\S{0,3}見えな(くな|い)|見えなくな(っ|り|る)|目の前が\S{0,3}(暗|黒)",  # [#25 리뷰] '効果が見えない' 제외
     # 겹쳐 보임 · 삼키기 · 말 (일상 표현과 덜 겹치는 형태만 여기, 나머지는 시술 문맥 목록)
     r"\bsee(ing)?\s+double\b|ダブって見え",
     r"(침|음식|물)(을|이)?\s*(못|안)\s*삼키|삼킬\s*수\s*(가\s*)?없",
-    r"삼키(기|는\s*게)?\s*(가|이)?\s*(너무\s*)?어려",
     r"咽不下|吞不下|(无法|無法)吞咽",
     r"飲み込(みづら|むのが)",
-    r"(problem|trouble|difficulty)\s+swallow|can'?t\s+get\s+(food|anything|water|it)\s+down",
+    r"can'?t\s+get\s+(food|anything|water|it)\s+down",  # 'problem swallow' 는 _SWALLOW_HARD 로 (알약 크기 질문 구분)
     r"\bslurr(ed|ing)\b|口齿不清|口齒不清|ろれつ",
 ]
 
@@ -122,7 +122,7 @@ _EMERGENCY = [
 _PROCEDURE_CONTEXT = (
     r"보톡스|보툴리눔|톡신|필러|주사|시술|맞(고|은|았)"
     r"|botox|botulinum|toxin|filler|inject|procedure|treatment"
-    r"|ボトックス|ボツリヌス|フィラー|注射|施術|肉毒|玻尿酸|填充|打完|做完|打针|打針|넣(은|고)|레이저|laser|激光|レーザー"
+    r"|ボトックス|ボツリヌス|フィラー|ヒアルロン酸|打っ(た|て)|注射|施術|肉毒|玻尿酸|填充|打完|做完|打针|打針|넣(은|고)|레이저|laser|激光|レーザー"
 )
 _EMERGENCY_IF_PROCEDURE = [
     r"(?<![가-힣])말(이|하기가?)?\s*(어눌|안\s*나와|꼬여)",  # '주말' 제외
@@ -133,7 +133,10 @@ _EMERGENCY_IF_PROCEDURE = [
     r"重影",
     r"二重に見え",
     # [응급 탐지율 개선] 필러·주사 뒤 피부색 변화 = 혈관이 막히는 신호일 수 있다 (멍은 제외되게 '변함·퍼짐' 형태만)
-    r"(하얗게|창백|보라색|보랏빛|검게|까맣게|파랗게|푸르게|거멓게)\S{0,6}\s*(변|질리|퍼지|퍼져|번지|번져)",
+    r"(하얗게|창백|보라색|보랏빛|검게|까맣게|파랗게|푸르게|거멓게)\S{0,6}\s*(변|질리|질렸|퍼지|퍼져|번지|번져)",
+    # [#25 리뷰] 시술 뒤에만 응급으로 볼 신호 (일상에서는 '목이 막혀서 물 마셨어요' · '看不到效果' 와 겹침)
+    r"목(이|구멍)?\s*(이\s*)?(막혀|막히)",
+    r"看不(见|見|到)(?!\S{0,3}(效果|变化|變化|区别|區別|差别|差別))",
     r"(发|發|变|變)(白|紫|黑)",
     r"(白|紫|黒)(く|色に)(なっ|変わ)",
     r"(turn(ed|ing|s)?|went|go(ne|ing)?)\s+(white|pale|purple|blue|black|dark|gr[ae]y)|blanch",
@@ -210,7 +213,20 @@ _FREQUENCY = (
 # ③-3 약 낱말 + 지시 동사 (예: '이 약을 아침에 드세요')
 _MED_ORDER = r"(드세요|복용하세요|드십시오|바르세요|끊으세요|중단하세요|飲んでください|塗ってください|请吃|請吃)"
 
+# [#25 리뷰] 일상 표현과 구분이 필요한 신호
+_SWALLOW_HARD = r"삼키(기|는\s*게)?\s*(가|이)?\s*(너무\s*)?어려|(problem|trouble|difficulty)\s+swallow"
+_PILL = r"알약|캡슐|정제|\b(pills?|tablets?|capsules?)\b|药片|藥片|胶囊|膠囊|錠剤|カプセル"  # 알약 크기 때문에 삼키기 어려운 것
+_COSMETIC = r"미백|토닝|whiten|toning|美白|ホワイトニング"  # 미백·토닝의 '하얘짐' 은 효과
+_COLOUR = (
+    r"하얗게|창백|보라|검게|까맣게|파랗게|푸르게|거멓게|[发發变變][白紫黑]|[白紫黒](く|色に)"
+    r"|white|pale|purple|blue|black|dark|gr[ae]y|blanch|discolou?r"
+)
+
 _EMERGENCY_RE = re.compile("|".join(_EMERGENCY), re.IGNORECASE)
+_SWALLOW_HARD_RE = re.compile(_SWALLOW_HARD, re.IGNORECASE)
+_PILL_RE = re.compile(_PILL, re.IGNORECASE)
+_COSMETIC_RE = re.compile(_COSMETIC, re.IGNORECASE)
+_COLOUR_RE = re.compile(_COLOUR, re.IGNORECASE)
 _PROCEDURE_CONTEXT_RE = re.compile(_PROCEDURE_CONTEXT, re.IGNORECASE)
 _EMERGENCY_IF_PROCEDURE_RE = re.compile("|".join(_EMERGENCY_IF_PROCEDURE), re.IGNORECASE)
 _ASK_MEDICAL_RE = re.compile("|".join(_ASK_MEDICAL), re.IGNORECASE)
@@ -224,18 +240,27 @@ _SENTENCE_END = re.compile(r"(?<=[.!?])\s+|(?<=[。！？])|\n+")
 
 
 def emergency_match(text: str) -> str | None:
-    """응급으로 본 근거 낱말 (위험 신호 기록용). 질문 전체가 아니라 걸린 부분만 — 민감정보 최소 보관"""
+    """응급으로 본 근거 낱말 (위험 신호 기록용). 질문 전체가 아니라 걸린 부분만 — 민감정보 최소 보관.
+    [#26 리뷰] 판정 규칙은 이 함수 한 곳에만 — is_emergency() 는 이 결과만 본다 (두 곳이 어긋나지 않게)"""
     m = _EMERGENCY_RE.search(text)
-    if m is None and _PROCEDURE_CONTEXT_RE.search(text):
-        m = _EMERGENCY_IF_PROCEDURE_RE.search(text)
+    procedure = _PROCEDURE_CONTEXT_RE.search(text)
+    if m is None:
+        # '삼키기 어려워요' 는 알약 크기 질문과 겹친다 → 알약 이야기만 있고 시술 이야기가 없으면 응급 아님
+        m = _SWALLOW_HARD_RE.search(text)
+        if m and _PILL_RE.search(text) and not procedure:
+            m = None
+    if m is None and procedure:
+        # 시술 문맥에서만 보는 신호 — 미백·토닝의 '하얘짐' 은 효과라 제외
+        cosmetic = _COSMETIC_RE.search(text)
+        m = next(
+            (x for x in _EMERGENCY_IF_PROCEDURE_RE.finditer(text) if not (cosmetic and _COLOUR_RE.search(x.group(0)))),
+            None,
+        )
     return m.group(0)[:50] if m else None
 
 
 def is_emergency(text: str) -> bool:
-    if _EMERGENCY_RE.search(text):
-        return True
-    # 일상 표현과 겹치는 신호는 시술·주사 이야기와 함께일 때만
-    return bool(_EMERGENCY_IF_PROCEDURE_RE.search(text) and _PROCEDURE_CONTEXT_RE.search(text))
+    return emergency_match(text) is not None  # 판정 규칙은 한 곳에
 
 
 def medical_request_match(text: str) -> str | None:
