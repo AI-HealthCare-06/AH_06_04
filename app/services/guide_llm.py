@@ -77,6 +77,11 @@ async def _openai(records_text: str, docs: list[KnowledgeDoc], lang: str) -> tup
         raise GuideLLMError("llm bad response") from e
 
 
+def current_model() -> str:
+    """지금 설정으로 만들면 어떤 모델 이름이 저장되는지 (가이드 재사용 판단용 — generate() 와 같은 규칙)"""
+    return config.OPENAI_CHAT_MODEL if config.GUIDE_LLM_MODE == "openai" else "fake"
+
+
 async def generate(records_text: str, docs: list[KnowledgeDoc], lang: str) -> tuple[str, str, str]:
     """→ (복약 안내, 생활관리 안내, 사용한 모델 이름)"""
     if config.GUIDE_LLM_MODE == "openai":

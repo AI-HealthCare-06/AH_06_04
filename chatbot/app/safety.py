@@ -187,6 +187,9 @@ _BAD_OUTPUT = [
     r"처방(합니다|해\s*드립니다)",
     r"\byou\s+(have|probably\s+have)\s+(a|an)?\s*\w*\s*(infection|disease|disorder|condition)",
     r"\b(take|stop\s+taking|increase|double)\s+(your|the|this)?\s*(medicine|medication|dose|pills?)",
+    # [#22 리뷰 P2] "you can stop using the cream" · "stop the antibiotic" 같은 중단 지시
+    r"\byou\s+(may|can|could|should)\s+(safely\s+)?stop\s+(taking|using|the|your|it)\b",
+    r"\bstop\s+(taking|using)\s+(it|them|the|your)\b",
     r"safe\s+to\s+take",
     r"i\s+(diagnose|prescribe|recommend\s+taking)",
     r"服用",
@@ -202,13 +205,14 @@ _BAD_OUTPUT = [
 _MED_WORD = (
     r"(?<![가-힣])약(?![간속점하해한했할함])|(감기|소염|진통|항생|먹는|바르는|처방|알)\s?약|캡슐|연고|복용|정제|항생제"
     r"|\b(medicines?|medications?|pills?|tablets?|capsules?|ointments?|antibiotics?|doses?|drugs?)\b"
-    r"|薬|錠|カプセル|軟膏|药|藥|胶囊|膠囊|药膏|藥膏|片剂"
+    r"|薬|錠|カプセル|軟膏|药|藥|胶囊|膠囊|药膏|藥膏|片剂|抗生素|消炎药|止痛药|退烧药|抗生物質|痛み止め"  # [#22 리뷰 P2] 약 이름 부류 추가
 )
 _FREQUENCY = (
     r"하루\s*\S{1,3}\s*(번|회)|\d+\s*시간\s*(마다|간격)"
     r"|\b(once|twice|thrice|\d+\s*times)\s+(a|per)\s+day\b|\bevery\s+\d+\s+hours\b"
     r"|1日\s*\S{1,2}回|一日\s*\S{1,2}回|\d+\s*時間(ごと|おき)"
-    r"|(每天|每日|一天|一日)\s*\S{1,2}次|每\s*\d+\s*(个|個)?小时"
+    r"|(每天|每日|一天|一日)\s*\S{1,2}次|每隔?\s*\d+\s*(个|個)?小时"
+    r"|(早上|早晨|中午|晚上|睡前|饭前|饭后)[^。！？]*各?(吃|服|涂|用)\s*[一二三两\d]+\s*(次|片|粒|颗)"  # [#22 리뷰 P2] 시간대별 횟수
 )
 # ③-3 약 낱말 + 지시 동사 (예: '이 약을 아침에 드세요')
 _MED_ORDER = r"(드세요|복용하세요|드십시오|바르세요|끊으세요|중단하세요|飲んでください|塗ってください|请吃|請吃)"

@@ -46,3 +46,23 @@ async def test_deleting_conversation_deletes_alerts(client):
     assert await SafetyAlert.all().count() == 1
     assert (await client.delete(f"/api/v1/chat/conversations/{cid}")).status_code in (200, 204)
     assert await SafetyAlert.all().count() == 0  # 사용자가 지우면 기록도 같이 (민감정보)
+
+
+def test_output_filter_gaps_from_review():
+    # [#22 리뷰 P2] 중단 지시·시간대별 횟수·약 이름 부류
+    from app.safety import is_bad_output
+
+    for bad in [
+        "You may stop the antibiotic after 3 days.",
+        "You can stop using the cream.",
+        "抗生素每日两次。",
+        "请在早上和晚上各吃一次抗生素。",
+        "抗生物質は1日2回飲んでください。",
+    ]:
+        assert is_bad_output(bad), bad
+    for ok in [
+        "세안은 하루 두 번 해 주세요.",
+        "早上和晚上洗脸两次。",
+        "Stop and call your doctor if you have trouble breathing.",
+    ]:
+        assert not is_bad_output(ok), ok

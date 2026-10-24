@@ -6,6 +6,7 @@
 #   그래서 ① 안내문(.md)은 같은 파일을 읽고 ② 안전 규칙은 chatbot/app/safety.py 파일을 직접 불러온다.
 #   → 안전 규칙이 한 곳(safety.py)에만 있어서, 챗봇을 고치면 가이드에도 똑같이 적용된다.
 # ─────────────────────────────────────────────
+import hashlib
 import importlib.util
 import re
 from dataclasses import dataclass, field
@@ -107,6 +108,12 @@ def load_docs() -> tuple[KnowledgeDoc, ...]:
     return _load_docs(str(kb_dir()))
 
 
+def kb_version() -> str:
+    """안내문 묶음의 '내용 지문' (짧은 해시). 안내문이 하나라도 바뀌면 값이 바뀐다 → 가이드 재사용 판단에 쓴다"""
+    raw = "\n".join(f"{d.id}|{d.reviewed}|{d.source}|{d.body('ko')}|{d.body('en')}" for d in load_docs())
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:16]
+
+
 def _keyword_hit(keyword: str, text: str) -> bool:
     """낱말 맞추기 — 한국어·영어는 '낱말의 시작'에서만, 중국어·일본어는 글자 그대로 (챗봇과 같은 규칙)"""
     if re.search(r"[぀-ヿ一-鿿]", keyword):
@@ -153,11 +160,18 @@ _MED_DIRECTIVE = re.compile(
             r"\b(take|use|apply)\b[^.!?]*\b(once|twice|three\s+times|\d+\s*(times|tablets?|pills?|capsules?|mg)|"
             r"(one|two|three)\s+(tablets?|pills?|capsules?))\b",
             r"\b(take|use|apply)\b[^.!?]*\b(daily|every\s+day|a\s+day|per\s+day)\b",
+            # en: "take one more pill" 같은 추가 복용 지시 [#22 리뷰 P2]
+            r"\btake\b[^.!?]*\b(one|another|an\s+extra|\d+)\s+more\b",
             # ja: 1日2回 / 2錠 + 飲んで・服用・塗って
             r"\d+\s*(回|錠|カプセル)[^。]*?(飲んで|服用し|塗って)",
             # zh: 每日一次 · 每次一片
             r"每(日|天)\s*[一二三两\d]+\s*次",
             r"每次\s*[一二三两\d]+\s*(片|粒|颗)",
+            # zh: "早上和晚上各吃一次" · "一天三次" · "每隔6小时" 같은 횟수 지시 [#22 리뷰 P2]
+            #   (자외선 차단제 '각 바르기·2시간마다 보습' 같은 생활 안내는 남기게 먹는 지시(吃·服)만)
+            r"(早上|早晨|中午|晚上|睡前|饭前|饭后)[^。！？]*各?(吃|服)\s*[一二三两\d]+\s*(次|片|粒|颗)",
+            r"(一|每)天\s*[一二三两\d]+\s*次[^。！？]*(吃|服|药)|(吃|服|药)[^。！？]*(一|每)天\s*[一二三两\d]+\s*次",
+            r"每隔?\s*\d+\s*(个)?小时\s*(吃|服)",
         ]
     ),
     re.IGNORECASE,
@@ -168,7 +182,8 @@ _ALWAYS_BAD = re.compile(
     "|".join(
         [
             r"(약을?|복용을?)\s*(끊어도|중단해도|그만\s*(먹어|드셔)도)\s*(됩니다|돼요|괜찮)",
-            r"\byou\s+(may|can)\s+stop\s+(taking|using)\b",
+            r"\byou\s+(may|can|could|should)\s+(safely\s+)?stop\s+(taking|using|the|your|it)\b",  # "you may stop the antibiotic" 도 [#22 리뷰 P2]
+            r"\bstop\s+(taking|using)\s+(it|them|the|your)\b[^.!?]*\b(when|once|after|if)\b",
             r"\bit'?s\s+(ok|okay|fine)\s+to\s+stop\b",
             r"(飲むのを|服用を)?やめても(大丈夫|いい|かまい)",
             r"可以停(药|止(服用|用药))",
