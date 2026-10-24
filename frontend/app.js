@@ -142,7 +142,9 @@ function signupView() {
 // ── 3. 홈 (내 진료기록 · 내 가이드) ──────────────
 async function home() {
   if (!store.token) return (location.hash = "#/login");
-  const [records, guides] = await Promise.all([api("GET", "/medical-records"), api("GET", "/guides")]);
+  const [records, guides, me] = await Promise.all([
+    api("GET", "/medical-records"), api("GET", "/guides"), api("GET", "/users/me").catch(() => null),
+  ]);
   const recordList = records.length
     ? records.map((r) => h("div", { class: "item" },
         h("strong", {}, `${r.visit_date} · ${r.hospital_name}`), r.source === "OCR" ? h("span", { class: "badge" }, t("ocr_badge")) : null,
@@ -161,6 +163,7 @@ async function home() {
     h("a", { class: "btn secondary", href: "#/hospitals" }, t("hosp_title")),
     h("a", { class: "btn secondary", href: "#/contacts" }, t("hc_mine")),
     h("a", { class: "btn secondary", href: "#/reminders" }, t("rm_title")),
+    me && me.is_admin ? h("a", { class: "btn secondary", href: "#/desk" }, t("hd_title")) : null,  // 병원 접수대 (관리자만)
     h("div", { class: "card" }, h("h2", {}, t("my_records")), recordList),
     guides.length ? h("div", { class: "card" }, h("h2", {}, t("my_guides")), guideList) : null,
     h("button", { class: "btn secondary", onclick: () => { store.token = null; location.hash = "#/"; } }, t("logout")),
@@ -524,6 +527,7 @@ async function route() {
     if (hash === "#/chat") return await chatView();
     if (hash.startsWith("#/hospitals")) return await hospitalsView(new URLSearchParams(hash.split("?")[1] || ""));
     if (hash === "#/contacts") return await contactsView();
+    if (hash.startsWith("#/desk")) return await deskView(new URLSearchParams(hash.split("?")[1] || ""));
     if (hash === "#/reminders") return await remindersView();
     const m = hash.match(/^#\/guide\/(\d+)$/);
     if (m) return await guideView(m[1]);

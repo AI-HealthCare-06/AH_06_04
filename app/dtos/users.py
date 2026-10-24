@@ -49,3 +49,4 @@ class UserInfoResponse(BaseSerializerModel):
     messenger_type: Messenger | None
     messenger_id: str | None
     created_at: datetime
+    is_admin: bool = False  # 병원 접수대 화면(데모: 관리자가 병원 역할) 버튼을 보여줄지 결정

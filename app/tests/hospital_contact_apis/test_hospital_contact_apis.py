@@ -75,6 +75,39 @@ class TestHospitalContactApis(TestCase):
         res = await self.client.patch(f"{URL}/{cid}", json={"status": "in_progress"}, headers=other)
         assert res.status_code == 200 and res.json()["data"]["status"] == "in_progress"
 
+    async def test_admin_list_all_requests(self):
+        # 병원 접수대 화면: 관리자만 모든 요청을 본다 · 요청자 이름과 고른 연락 방법의 연락처만 붙는다
+        owner = await signup_and_login(self.client, "hc_all1@example.com", "01050000011")
+        staff = await signup_and_login(self.client, "hc_staff@example.com", "01050000012")
+        await self.client.post(URL, json={"hospital_id": 1, "contact_method": "phone"}, headers=owner)
+        assert (await self.client.get(f"{URL}?scope=all", headers=owner)).status_code == 403  # 일반 사용자는 못 본다
+        me = (await self.client.get("/api/v1/users/me", headers=owner)).json()
+        assert me["is_admin"] is False
+        await User.filter(email="hc_staff@example.com").update(is_admin=True)
+        res = await self.client.get(f"{URL}?scope=all", headers=staff)
+        assert res.status_code == 200, res.text
+        items = res.json()["data"]["items"]
+        mine = [i for i in items if i["requester_name"] and i["hospital_id"] == 1 and i["contact_method"] == "phone"]
+        assert mine and mine[0]["requester_contact"] == "01050000011" and mine[0]["requester_language"]
+        # 완료 처리하면 '진행 중만' 목록에서 빠지고, open=false 로는 보인다
+        cid = mine[0]["contact_id"]
+        await self.client.patch(f"{URL}/{cid}", json={"status": "completed"}, headers=staff)
+        open_ids = [
+            i["contact_id"] for i in (await self.client.get(f"{URL}?scope=all", headers=staff)).json()["data"]["items"]
+        ]
+        all_ids = [
+            i["contact_id"]
+            for i in (await self.client.get(f"{URL}?scope=all&open=false", headers=staff)).json()["data"]["items"]
+        ]
+        assert cid not in open_ids and cid in all_ids
+        # 위험 신호에서 넘어온 요청은 더 오래됐어도 맨 위
+        await self.client.post(
+            URL, json={"hospital_id": 2, "contact_method": "phone", "safety_alert_id": 7}, headers=owner
+        )
+        await self.client.post(URL, json={"hospital_id": 3, "contact_method": "phone"}, headers=owner)
+        top = (await self.client.get(f"{URL}?scope=all", headers=staff)).json()["data"]["items"][0]
+        assert top["safety_alert_id"] == 7
+
     async def test_record_must_be_mine(self):
         owner = await signup_and_login(self.client, "hc_rec1@example.com", "01050000006")
         other = await signup_and_login(self.client, "hc_rec2@example.com", "01050000007")
