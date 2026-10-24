@@ -17,6 +17,8 @@ async def signup_and_login(client: AsyncClient, email: str, phone_number: str, *
         "gender": "FEMALE",
         "birth_date": "1992-02-02",
         "phone_number": phone_number,
+        "messenger_type": "WECHAT",
+        "messenger_id": "glowpass_test",
     }
     await client.post("/api/v1/auth/signup", json=signup_data)
     if is_admin:

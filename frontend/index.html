@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GlowPass</title>
+  <!-- GlowPass 웹 화면 (한 페이지 앱) — 디자인 시안(GlowPass_UI_Design.pdf) 흐름을 따른다 -->
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a href="#/home" class="brand">GlowPass</a>
+    <select id="lang" aria-label="language">
+      <option value="ko">한국어</option>
+      <option value="ja">日本語</option>
+      <option value="zh">中文</option>
+      <option value="en">English</option>
+    </select>
+  </header>
+  <!-- 의료진 감수 전 안내문으로 데모 운영 중일 때만 보인다 (GET /api/v1/service-info) -->
+  <div id="demo-banner" class="demo-banner" role="note" data-i18n="demo_banner" hidden></div>
+  <main id="view" aria-live="polite"></main>
+  <footer class="footer" data-i18n="disclaimer_short"></footer>
+  <script src="/static/i18n.js"></script>
+  <script src="/static/clinic.js"></script>
+  <script src="/static/hospitals.js"></script>
+  <script src="/static/app.js"></script>
+</body>
+</html>

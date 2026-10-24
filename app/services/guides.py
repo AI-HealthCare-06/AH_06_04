@@ -13,13 +13,22 @@ from datetime import datetime
 from fastapi import HTTPException, status
 
 from app.core import config
-from app.dtos.guides import GuideCreateRequest, GuideResponse, GuideSourceResponse, PrescriptionLine
-from app.models.guides import Guide, GuideStatus
+from app.dtos.guides import (
+    FeedbackCount,
+    GuideCreateRequest,
+    GuideFeedbackRequest,
+    GuideFeedbackResponse,
+    GuideFeedbackSummary,
+    GuideResponse,
+    GuideSourceResponse,
+    PrescriptionLine,
+)
+from app.models.guides import FeedbackRating, Guide, GuideFeedback, GuideStatus
 from app.models.medical_records import MedicalRecord
 from app.models.users import User
 from app.repositories.guide_repository import GuideRepository
 from app.repositories.medical_record_repository import MedicalRecordRepository
-from app.services import guide_knowledge, guide_llm
+from app.services import ai_budget, guide_knowledge, guide_llm
 
 log = logging.getLogger(__name__)
 
@@ -45,6 +54,23 @@ def _record_text(record: MedicalRecord) -> str:
     return line
 
 
+def _my_feedback(guide: Guide) -> FeedbackRating | None:
+    """미리 읽어 둔(prefetch) 평가가 있으면 그 값 (없으면 None)"""
+    feedback = getattr(guide, "feedback", None)
+    # 미리 읽지 않았으면 DB 객체가 아니라 '조회 예정' 객체라서 평가 없음으로 본다
+    return feedback.rating if isinstance(feedback, GuideFeedback) else None
+
+
+def _record_changed(guide: Guide, record: MedicalRecord | None) -> bool:
+    """가이드를 만든 뒤 진료기록이 고쳐졌는지 (updated_at > generated_at)"""
+    return bool(record is not None and guide.generated_at is not None and record.updated_at > guide.generated_at)
+
+
+def _counts(table: dict[str, list[int]], top: int = 20) -> list[FeedbackCount]:
+    rows = [FeedbackCount(key=k, up=v[0], down=v[1]) for k, v in table.items()]
+    return sorted(rows, key=lambda r: (-r.down, r.key))[:top]
+
+
 class GuideService:
     def __init__(self) -> None:
         self.repo = GuideRepository()
@@ -59,10 +85,32 @@ class GuideService:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST, detail="가이드를 만들 진료기록이 없습니다. 먼저 등록해 주세요."
             )
+        if data.record_id is not None:
+            # [리뷰 #11 · 평가 3-3] 같은 기록·언어로 이미 만든 가이드가 있고 기록이 그 뒤로 안 바뀌었으면 그대로 돌려준다
+            #   → 같은 입력엔 같은 결과 + AI 비용 0
+            cached = await self.repo.latest_done(user.id, data.record_id, str(data.language))
+            if cached is not None and not _record_changed(
+                cached, await self.record_repo.get_user_record(record_id=data.record_id, user_id=user.id)
+            ):
+                return cached
+        # [리뷰 #11] 비용 보호: 사용자별 하루 한도 → 서비스 전체 상한
+        if await self.repo.count_since(user.id, ai_budget.today_start()) >= config.GUIDE_DAILY_LIMIT:
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail="오늘 가이드를 만들 수 있는 횟수를 모두 썼습니다."
+            )
+        await ai_budget.check_global_budget()
         return await self.repo.create(user_id=user.id, record_id=data.record_id, language=data.language)
 
     async def generate(self, guide_id: int) -> None:
-        """실제 생성 — 응답을 먼저 돌려준 뒤 백그라운드에서 실행된다 (평가 3-2·5-5 비동기)"""
+        """실제 생성 — 응답을 먼저 돌려준 뒤 백그라운드에서 실행된다 (평가 3-2·5-5 비동기)
+        [리뷰 #11] 예상 못 한 예외(DB 순간 끊김 등)도 FAILED 로 바꿔서 '영원히 만드는 중' 을 막는다"""
+        try:
+            await self._generate(guide_id)
+        except Exception:
+            log.exception("guide crashed id=%s", guide_id)
+            await self.repo.fail_if_pending(guide_id, datetime.now(config.TIMEZONE), "internal error")
+
+    async def _generate(self, guide_id: int) -> None:
         guide = await self.repo.get(guide_id)
         if guide is None or guide.status != GuideStatus.PENDING:
             return
@@ -89,7 +137,7 @@ class GuideService:
             log.warning("guide %s generation failed: %s", guide_id, e)
             await self.repo.finish(guide, GuideStatus.FAILED, now, [], error_message=str(e)[:200])
             return
-        medication, removed_m = guide_knowledge.remove_unsafe_sentences(medication)
+        medication, removed_m = guide_knowledge.remove_unsafe_sentences(medication, medication=True)
         lifestyle, removed_l = guide_knowledge.remove_unsafe_sentences(lifestyle)
         if removed_m or removed_l:
             log.info("guide %s: removed %d unsafe sentences", guide_id, removed_m + removed_l)
@@ -126,14 +174,64 @@ class GuideService:
             llm_model=guide.llm_model,
             created_at=guide.created_at,
             generated_at=guide.generated_at,
+            my_feedback=_my_feedback(guide),
+            record_changed=_record_changed(guide, record),
         )
 
     async def get_guide(self, user: User, guide_id: int) -> GuideResponse:
+        await self.repo.expire_stale(user.id, datetime.now(config.TIMEZONE), config.GUIDE_PENDING_TIMEOUT_S)
         guide = await self.repo.get_user_guide(guide_id=guide_id, user_id=user.id)
         if guide is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="가이드를 찾을 수 없습니다.")
         return self.to_response(guide)
 
     async def list_guides(self, user: User, limit: int, offset: int) -> list[GuideResponse]:
+        await self.repo.expire_stale(user.id, datetime.now(config.TIMEZONE), config.GUIDE_PENDING_TIMEOUT_S)
         guides = await self.repo.list_user_guides(user_id=user.id, limit=limit, offset=offset)
         return [self.to_response(g) for g in guides]
+
+    # ── 사용자 피드백 (평가 3-4: 피드백 반영 구조) ──────────
+    async def save_feedback(self, user: User, guide_id: int, data: GuideFeedbackRequest) -> GuideFeedbackResponse:
+        guide = await self.repo.get_user_guide(guide_id=guide_id, user_id=user.id)
+        if guide is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="가이드를 찾을 수 없습니다.")
+        if guide.status == GuideStatus.PENDING:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="가이드를 만드는 중입니다.")
+        values = data.model_dump()
+        if data.rating == FeedbackRating.UP:  # 👍 이면 이유·의견은 비운다
+            values.update(reason=None, comment=None)
+        elif values["comment"] is not None:
+            values["comment"] = values["comment"].strip() or None
+        feedback = await self.repo.save_feedback(guide, values)
+        return GuideFeedbackResponse(
+            guide_id=guide.id,
+            rating=feedback.rating,
+            reason=feedback.reason,
+            comment=feedback.comment,
+            updated_at=feedback.updated_at,
+        )
+
+    async def feedback_summary(self, user: User) -> GuideFeedbackSummary:
+        """관리자 전용 집계 — 의견(comment) 원문은 내보내지 않고 숫자만"""
+        if not user.is_admin:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="관리자만 볼 수 있습니다.")
+        rows = await self.repo.all_feedback()
+        reasons: dict[str, int] = {}
+        by_doc: dict[str, list[int]] = {}
+        by_model: dict[str, list[int]] = {}
+        for fb in rows:
+            idx = 0 if fb.rating == FeedbackRating.UP else 1
+            if idx and fb.reason:
+                reasons[str(fb.reason)] = reasons.get(str(fb.reason), 0) + 1
+            by_model.setdefault(fb.guide.llm_model or "unknown", [0, 0])[idx] += 1
+            for src in fb.guide.sources:
+                by_doc.setdefault(src.doc_id, [0, 0])[idx] += 1
+        down = sum(1 for fb in rows if fb.rating == FeedbackRating.DOWN)
+        return GuideFeedbackSummary(
+            total=len(rows),
+            up=len(rows) - down,
+            down=down,
+            down_reasons=reasons,
+            by_doc=_counts(by_doc),
+            by_model=_counts(by_model),
+        )

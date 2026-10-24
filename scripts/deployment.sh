@@ -21,6 +21,8 @@ build_and_push () {
 
   if [[ "$name" == "FastAPI" ]]; then
     tag_base="app"
+  elif [[ "$name" == "Chatbot" ]]; then
+    tag_base="chatbot"
   else
     tag_base="ai"
   fi
@@ -58,6 +60,7 @@ echo ""
 echo "${COLOR_BLUE}배포 전 빌드 & 푸시할 이미지를 선택하세요(복수선택 가능, 띄어쓰기로 구분)${COLOR_NC}"
 echo "1) fastapi"
 echo "2) ai_worker"
+echo "3) chatbot"
 read -p "선택 (예: 1 2): " selections
 echo ""
 
@@ -78,6 +81,12 @@ for choice in $selections; do
       read -p "AI-worker 앱 버젼: " ai_version
       build_and_push ${docker_user} ${docker_repo} "AI Worker" ${ai_version} "ai_worker/Dockerfile" "."
       DEPLOY_SERVICES+=("ai-worker")
+      ;;
+    3)
+      echo "${COLOR_BLUE}챗봇의 배포 버젼을 입력하세요(ex. v1.0.0) — .prod.env 의 CHATBOT_VERSION 과 같게${COLOR_NC}"
+      read -p "챗봇 버젼: " chatbot_version
+      build_and_push ${docker_user} ${docker_repo} "Chatbot" ${chatbot_version} "chatbot/Dockerfile" "chatbot"
+      DEPLOY_SERVICES+=("chatbot")
       ;;
     *)
       echo "${COLOR_RED}잘못된 선택입니다: $choice${COLOR_NC}"
@@ -105,7 +114,21 @@ echo "2) https 사용중"
 read -p "선택(ex. 1): " is_https
 echo ""
 
+# ---------- 입력값과 .prod.env 가 같은지 확인 (EC2 는 .prod.env 의 이미지 이름·버전을 받는다) ----------
+warn_diff () {
+  if [[ -n "$2" && "$2" != "$3" ]]; then
+    echo "${COLOR_RED}⚠ $1: 입력값($2) ≠ .prod.env($3). EC2 는 .prod.env 값으로 이미지를 받습니다. .prod.env 를 고치고 다시 실행하세요.${COLOR_NC}"
+    exit 1
+  fi
+}
+warn_diff "DOCKER_USER" "${docker_user}" "${DOCKER_USER}"
+warn_diff "DOCKER_REPOSITORY" "${docker_repo}" "${DOCKER_REPOSITORY}"
+warn_diff "APP_VERSION" "${fastapi_version}" "${APP_VERSION}"
+warn_diff "CHATBOT_VERSION" "${chatbot_version}" "${CHATBOT_VERSION}"
+
 # ---------- EC2 내에 배포 준비 파일 복사  ----------
+# [리뷰 #20] 새 EC2 에는 ~/project/nginx 폴더가 없다 → 먼저 만든다
+ssh -i ~/.ssh/${ssh_key_file} ubuntu@${ec2_ip} "mkdir -p ~/project/nginx"
 scp -i ~/.ssh/${ssh_key_file} envs/.prod.env ubuntu@${ec2_ip}:~/project/.env
 scp -i ~/.ssh/${ssh_key_file} infra/docker/docker-compose.prod.yml ubuntu@${ec2_ip}:~/project/docker-compose.yml
 if [[ "$is_https" == "1" ]] ; then
@@ -135,8 +158,20 @@ ssh -i ~/.ssh/${ssh_key_file} ubuntu@${ec2_ip} \
   echo "Docker login"
   docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PAT"
 
+  # [리뷰 #20] ① DB·redis 먼저 (첫 배포여도) — healthy 가 될 때까지 기다린다
+  docker compose up -d --wait mysql redis
+
+  # ② 새 코드가 뜨기 '전에' 마이그레이션 (아직 안 한 것만 · 여러 번 돌려도 안전 · 빈 DB 면 0번부터)
+  if [[ " $DEPLOY_SERVICES " == *" fastapi "* ]]; then
+    echo "DB migration (aerich upgrade)"
+    docker compose pull fastapi
+    docker compose run --rm --no-deps fastapi uv run --no-sync aerich upgrade
+  fi
+
+  # ③ 고른 서비스 교체 → ④ nginx (ai-worker 는 아직 실제 작업이 없어 띄우지 않는다)
   echo "Deploying services: $DEPLOY_SERVICES"
   docker compose up -d --pull always --no-deps $DEPLOY_SERVICES
+  docker compose up -d --no-deps nginx
 
   docker image prune -af
 EOF

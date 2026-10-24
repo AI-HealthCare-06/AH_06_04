@@ -26,6 +26,8 @@ async def signup_and_login(client: AsyncClient, email: str, phone_number: str) -
         "gender": "FEMALE",
         "birth_date": "1994-11-11",
         "phone_number": phone_number,
+        "messenger_type": "WECHAT",
+        "messenger_id": "glowpass_test",
     }
     await client.post("/api/v1/auth/signup", json=signup_data)
     login_response = await client.post("/api/v1/auth/login", json={"email": email, "password": "Password123!"})

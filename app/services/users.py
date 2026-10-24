@@ -15,7 +15,8 @@ class UserManageService:
     async def update_user(self, user: User, data: UserUpdateRequest) -> User:
         if data.phone_number:
             normalized_phone_number = normalize_phone_number(data.phone_number)
-            await self.auth_service.check_phone_number_exists(normalized_phone_number)
+            if normalized_phone_number != user.phone_number:  # [리뷰 #15] 내 번호를 그대로 보내면 중복 아님
+                await self.auth_service.check_phone_number_exists(normalized_phone_number)
             data.phone_number = normalized_phone_number
         async with in_transaction():
             await self.repo.update_instance(user=user, data=data.model_dump(exclude_none=True))

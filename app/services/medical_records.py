@@ -2,6 +2,7 @@
 # FR-01 진료기록 서비스 — 주방장: 규칙 검사·응답 만들기 등 실제 판단을 담당
 # ─────────────────────────────────────────────
 from fastapi import HTTPException, status
+from tortoise.transactions import in_transaction
 
 from app.dtos.medical_records import (
     GuideContextResponse,
@@ -13,6 +14,7 @@ from app.dtos.medical_records import (
 from app.models.medical_records import MedicalRecord, RecordSource
 from app.models.users import User
 from app.repositories.medical_record_repository import MedicalRecordRepository
+from app.services.ocr import OcrService
 
 
 class MedicalRecordService:
@@ -43,10 +45,17 @@ class MedicalRecordService:
         return record
 
     async def create_record(self, user: User, data: MedicalRecordCreateRequest) -> MedicalRecordResponse:
-        record_data = data.model_dump(exclude={"items"})  # 진료기록 부분
-        record_data["source"] = RecordSource.MANUAL  # 입력 경로는 서버가 정한다 (OCR은 FR-05 서버 코드만)
+        record_data = data.model_dump(exclude={"items", "ocr_job_id"})  # 진료기록 부분
         items = [item.model_dump() for item in data.items]  # 약 목록 부분
-        record = await self.repo.create(user_id=user.id, record_data=record_data, items=items)
+        if data.ocr_job_id is None:
+            record_data["source"] = RecordSource.MANUAL  # 입력 경로는 서버가 정한다
+            record = await self.repo.create(user_id=user.id, record_data=record_data, items=items)
+            return self.to_response(record)
+        # FR-05: 내 OCR 결과를 '사용 완료'로 바꾸고 기록 저장 — 둘 중 하나라도 실패하면 둘 다 취소
+        async with in_transaction():
+            await OcrService().claim_for_record(user=user, job_id=data.ocr_job_id)
+            record_data["source"] = RecordSource.OCR
+            record = await self.repo.create(user_id=user.id, record_data=record_data, items=items)
         return self.to_response(record)
 
     async def list_records(self, user: User, limit: int, offset: int) -> list[MedicalRecordResponse]:

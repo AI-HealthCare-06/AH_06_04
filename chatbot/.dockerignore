@@ -1,0 +1,8 @@
+.venv
+__pycache__
+*.sqlite3*
+.env
+.env.*
+.pytest_cache
+eval/결과
+tests

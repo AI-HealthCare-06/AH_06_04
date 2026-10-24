@@ -21,10 +21,8 @@ class AuthService:
         # 이메일 중복 체크
         await self.check_email_exists(data.email)
 
-        # 입력받은 휴대폰 번호를 노말라이즈
+        # 휴대폰 번호 정리(한국 010… / 해외 +86…) 후 중복 체크
         normalized_phone_number = normalize_phone_number(data.phone_number)
-
-        # 휴대폰 번호 중복 체크
         await self.check_phone_number_exists(normalized_phone_number)
 
         # 유저 생성
@@ -36,6 +34,10 @@ class AuthService:
                 phone_number=normalized_phone_number,
                 gender=data.gender,
                 birthday=data.birth_date,
+                nationality=data.nationality,
+                preferred_language=data.preferred_language,
+                messenger_type=data.messenger_type,
+                messenger_id=data.messenger_id,
             )
 
             return user

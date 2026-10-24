@@ -52,6 +52,7 @@ class Guide(models.Model):
     generated_at = fields.DatetimeField(null=True)  # 완성 시각
 
     sources: fields.ReverseRelation["GuideSource"]
+    feedback: fields.BackwardOneToOneRelation["GuideFeedback"]
     user_id: int  # FK 칸 이름 (타입 검사용 표시)
     record_id: int | None
 
@@ -73,3 +74,36 @@ class GuideSource(models.Model):
 
     class Meta:
         table = "guide_sources"
+
+
+class FeedbackRating(StrEnum):
+    UP = "UP"  # 도움이 됐어요
+    DOWN = "DOWN"  # 아쉬워요
+
+
+class FeedbackReason(StrEnum):
+    """'아쉬워요' 이유 — 정해진 선택지로 받아야 집계·개선에 쓸 수 있다 (평가 3-4)"""
+
+    WRONG_INFO = "WRONG_INFO"  # 내용이 틀린 것 같아요
+    HARD_TO_UNDERSTAND = "HARD_TO_UNDERSTAND"  # 이해하기 어려워요
+    NOT_RELEVANT = "NOT_RELEVANT"  # 내 기록과 관계없어요
+    OTHER = "OTHER"
+
+
+class GuideFeedback(models.Model):
+    """가이드 1건에 대한 사용자 평가 (가이드당 1개, 다시 누르면 바뀐다)"""
+
+    id = fields.BigIntField(primary_key=True)
+    guide: fields.OneToOneRelation[Guide] = fields.OneToOneField(
+        "models.Guide", related_name="feedback", on_delete=fields.CASCADE
+    )
+    rating = fields.CharEnumField(enum_type=FeedbackRating)
+    reason = fields.CharEnumField(enum_type=FeedbackReason, null=True)
+    comment = fields.CharField(max_length=300, null=True)  # 자유 의견 (로그에 찍지 않는다)
+    created_at = fields.DatetimeField(auto_now_add=True)
+    updated_at = fields.DatetimeField(auto_now=True)
+
+    guide_id: int
+
+    class Meta:
+        table = "guide_feedback"

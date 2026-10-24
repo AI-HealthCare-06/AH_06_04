@@ -8,6 +8,7 @@
 | POST | /conversations/{id}/stream | 질문 → SSE 로 답 흘리기 (중지 = 브라우저가 연결 끊기) |
 | DELETE | /conversations/{id} | 대화 지우기 (민감정보 — 사용자가 지울 수 있어야) |
 | GET | /usage | 오늘 쓴 질문 수 / 한도 |
+| PUT | /conversations/{id}/messages/{message_id}/feedback | 답 1개에 👍/👎 (평가 3-4) |
 
 [리뷰 P1-4] 로그인 필수 — 모든 주소에 `Authorization: Bearer <로그인 access 토큰>` (없으면 401 login_required).
 쿠키 세션은 없앴다 (쿠키를 지우면 한도가 초기화되던 문제 · Secure 쿠키 문제가 함께 사라짐).
@@ -17,17 +18,18 @@
 
 import json
 import uuid
-from typing import Annotated
+from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field, field_validator
+from tortoise.exceptions import IntegrityError
 
 from app import i18n
 from app.auth import current_user_id
 from app.config import settings
 from app.llm import make_llm
-from app.models import Conversation, Message
+from app.models import Conversation, Feedback, Message
 from app.service import questions_today, run_turn
 
 router = APIRouter(prefix="/api/v1/chat", tags=["chat"])
@@ -62,6 +64,8 @@ class NewConversation(BaseModel):
 class Ask(BaseModel):
     message: str = Field(min_length=1, max_length=settings.max_question_chars)
     lang: str | None = None
+    # FR-01 → 챗봇: 내 최근 진료기록의 약·시술 이름 ("이 약 먹고 술 마셔도 돼요?" 의 '이 약')
+    context: list[str] | None = Field(None, max_length=10)
 
     @field_validator("message")
     @classmethod
@@ -92,7 +96,14 @@ async def messages(conversation_id: str, user_id: UserId):
         "conversation_id": conversation_id,
         "lang": conv.lang,
         "messages": [
-            {"role": m.role, "content": m.content, "lang": m.lang, "outcome": m.outcome, "sources": m.sources}
+            {
+                "id": m.id,
+                "role": m.role,
+                "content": m.content,
+                "lang": m.lang,
+                "outcome": m.outcome,
+                "sources": m.sources,
+            }
             for m in rows
         ],
     }
@@ -122,7 +133,9 @@ async def stream(
 
     async def gen():
         n = 0
-        async for event, data in run_turn(conv, body.message, lang, llm, request.is_disconnected):
+        async for event, data in run_turn(conv, body.message, lang, llm, request.is_disconnected, body.context):
+            if event == "done":  # 이 턴에서 저장한 답 번호를 붙인다 → 화면이 👍/👎 를 이 번호로 보낸다
+                data = {**data, "message_id": getattr(conv, "last_answer_id", None)}
             yield f"id: {n}\nevent: {event}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
             n += 1
 
@@ -131,3 +144,26 @@ async def stream(
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},  # 프록시가 모아 두지 않게
     )
+
+
+class FeedbackIn(BaseModel):
+    rating: Literal["up", "down"]
+    reason: Literal["wrong_info", "hard_to_understand", "not_relevant", "other"] | None = None
+
+
+@router.put("/conversations/{conversation_id}/messages/{message_id}/feedback")
+async def feedback(conversation_id: str, message_id: int, body: FeedbackIn, user_id: UserId):
+    """내 대화의 AI 답에만 (고정 문구·질문에는 못 단다). 다시 보내면 바뀐다."""
+    conv = await _own(conversation_id, user_id)
+    msg = await Message.get_or_none(id=message_id, conversation=conv, role="assistant")
+    if msg is None:
+        raise HTTPException(404, detail={"code": "not_found"})
+    if msg.outcome not in ("ok", "cached"):
+        raise HTTPException(400, detail={"code": "not_rateable"})
+    reason = body.reason if body.rating == "down" else None
+    values = {"rating": body.rating, "reason": reason, "user_id": user_id}
+    try:
+        await Feedback.update_or_create(defaults=values, message_id=msg.id)
+    except IntegrityError:  # [리뷰 #16] 거의 동시에 두 번 누름 → 먼저 만든 줄을 고친다
+        await Feedback.filter(message_id=msg.id).update(**values)
+    return {"message_id": msg.id, "rating": body.rating, "reason": reason}
