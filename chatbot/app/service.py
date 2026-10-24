@@ -29,7 +29,7 @@ from app import docs, i18n, retrieval, safety
 from app.cache import answer_cache
 from app.config import settings
 from app.llm import LLMError
-from app.models import Conversation, DailyUsage, Message
+from app.models import Conversation, DailyUsage, Message, SafetyAlert
 from app.prompt import build_messages
 
 Event = tuple[str, dict]
@@ -101,12 +101,23 @@ async def _save_answer(
     await conv.save(update_fields=["last_message_at"])
 
 
-async def _fixed(conv: Conversation, key: str, lang: str) -> AsyncIterator[Event]:
-    """AI 를 부르지 않고 고정 문구로 끝내기."""
+async def _fixed(conv: Conversation, key: str, lang: str, trigger: str | None = None) -> AsyncIterator[Event]:
+    """AI 를 부르지 않고 고정 문구로 끝내기. 응급·진단 요청이면 위험 신호 기록(SafetyAlert)도 남긴다."""
     text = i18n.t(key, lang)
     await _save_answer(conv, text, lang, key)
+    alert_id = None
+    if key in ("emergency", "blocked"):
+        alert = await SafetyAlert.create(
+            user_id=conv.user_id,
+            conversation=conv,
+            message_id=getattr(conv, "last_answer_id", None),
+            trigger_keyword=(trigger or key)[:50],
+            severity="high" if key == "emergency" else "medium",
+            action_taken="emergency_guide" if key == "emergency" else "answer_blocked",
+        )
+        alert_id = alert.id
     yield "replace", {"text": text, "outcome": key}
-    yield "done", {"outcome": key, "tokens": 0, "cached": False}
+    yield "done", {"outcome": key, "tokens": 0, "cached": False, "safety_alert_id": alert_id}
 
 
 # 이어지는 질문 표시 — 이런 말로 시작/포함하면 '앞 질문 이야기' 로 본다
@@ -188,18 +199,16 @@ async def run_turn(
     await Message.create(conversation=conv, role="user", content=question, lang=lang)
 
     # ② 응급 · ③ 진단·처방 요청 → LLM 을 부르지 않는다
-    key = (
-        "emergency"
-        if safety.is_emergency(question)
-        else "blocked"
-        if safety.asks_for_medical_decision(question)
-        else None
-    )
+    # 걸린 낱말은 위험 신호 기록(SafetyAlert)에 남긴다 — 질문 전체가 아니라 그 부분만
+    emergency = safety.emergency_match(question)
+    blocked = None if emergency else safety.medical_request_match(question)
+    key = "emergency" if emergency else "blocked" if blocked else None
+    trigger = emergency or blocked
     # ④ 안내문 찾기 — 없으면 AI 를 부르지 않는다 (지어낼 틈 0 · 비용 0)
     context = clean_context(context)
     found = [] if key else await _find_docs(conv, question, first_turn, context)
     if key or not found:
-        async for ev in _fixed(conv, key or "no_doc", lang):
+        async for ev in _fixed(conv, key or "no_doc", lang, trigger):
             yield ev
         return
     source_ids = [d.id for d in found]

@@ -281,3 +281,65 @@ Object.assign(window.I18N.ko, { demo_banner: "데모 버전이에요. AI 답변�
 Object.assign(window.I18N.ja, { demo_banner: "デモ版です。AI回答の根拠資料はまだ医療者の監修前です。実際の治療の判断は必ず医療者にご相談ください。", unreviewed_badge: "監修前の資料" });
 Object.assign(window.I18N.zh, { demo_banner: "这是演示版。AI回答所依据的资料尚未经过医务人员审核。实际治疗请务必咨询医务人员。", unreviewed_badge: "未经审核的资料" });
 Object.assign(window.I18N.en, { demo_banner: "This is a demo. The sources behind AI answers have not yet been reviewed by medical staff. Always consult a medical professional about your treatment.", unreviewed_badge: "Not yet reviewed" });
+
+// 병원 연락 요청 (API 명세서 23·24번)
+Object.assign(window.I18N.ko, { hc_request: "연락 요청", hc_request_from_card: "병원 목록에서 연락 요청하기", hc_method: "연락 받을 방법",
+  hc_m_messenger: "메신저 (가입 때 적은 계정)", hc_m_phone: "전화", hc_m_email: "이메일", hc_m_visit: "방문 안내", hc_memo: "병원에 남길 말 (선택)",
+  hc_send: "요청 보내기", hc_sent: "요청을 보냈어요. 병원이 확인하면 상태가 바뀌어요.", hc_mine: "내 연락 요청", hc_none: "아직 보낸 요청이 없어요.",
+  hc_cancel: "요청 취소", hc_status_requested: "접수됨", hc_status_in_progress: "병원 확인 중", hc_status_completed: "연락 완료", hc_status_cancelled: "취소됨",
+  hc_login_needed: "연락 요청은 로그인 후 할 수 있어요.", hc_about_record: "고른 병원에 내 시술 기록에 대한 문의로 보냅니다.",
+  hc_demo: "※ 데모 버전에서는 실제 병원에 전달되지 않아요." });
+Object.assign(window.I18N.ja, { hc_request: "連絡をリクエスト", hc_request_from_card: "病院一覧から連絡をリクエスト", hc_method: "連絡の受け方",
+  hc_m_messenger: "メッセンジャー（登録したアカウント）", hc_m_phone: "電話", hc_m_email: "メール", hc_m_visit: "来院のご案内", hc_memo: "病院へのメッセージ（任意）",
+  hc_send: "リクエストを送る", hc_sent: "リクエストを送りました。病院が確認すると状態が変わります。", hc_mine: "連絡リクエスト一覧", hc_none: "まだリクエストはありません。",
+  hc_cancel: "取り消す", hc_status_requested: "受付済み", hc_status_in_progress: "病院が確認中", hc_status_completed: "連絡済み", hc_status_cancelled: "取り消し",
+  hc_login_needed: "連絡リクエストはログイン後に利用できます。", hc_about_record: "選んだ病院に、施術記録についての問い合わせとして送ります。",
+  hc_demo: "※ デモ版では実際の病院には届きません。" });
+Object.assign(window.I18N.zh, { hc_request: "请求联系", hc_request_from_card: "从医院列表请求联系", hc_method: "希望的联系方式",
+  hc_m_messenger: "即时通讯（注册时填写的账号）", hc_m_phone: "电话", hc_m_email: "邮件", hc_m_visit: "到院说明", hc_memo: "给医院的留言（可选）",
+  hc_send: "发送请求", hc_sent: "请求已发送。医院确认后状态会更新。", hc_mine: "我的联系请求", hc_none: "还没有发送过请求。",
+  hc_cancel: "取消请求", hc_status_requested: "已受理", hc_status_in_progress: "医院确认中", hc_status_completed: "已联系", hc_status_cancelled: "已取消",
+  hc_login_needed: "登录后才能请求联系。", hc_about_record: "将作为关于您治疗记录的咨询发送给所选医院。",
+  hc_demo: "※ 演示版不会真正发送给医院。" });
+Object.assign(window.I18N.en, { hc_request: "Request contact", hc_request_from_card: "Request contact from the clinic list", hc_method: "How should they contact you?",
+  hc_m_messenger: "Messenger (account from sign-up)", hc_m_phone: "Phone", hc_m_email: "Email", hc_m_visit: "Visit information", hc_memo: "Message to the clinic (optional)",
+  hc_send: "Send request", hc_sent: "Request sent. The status changes when the clinic checks it.", hc_mine: "My contact requests", hc_none: "No requests yet.",
+  hc_cancel: "Cancel request", hc_status_requested: "Received", hc_status_in_progress: "Clinic checking", hc_status_completed: "Contacted", hc_status_cancelled: "Cancelled",
+  hc_login_needed: "Log in to request contact.", hc_about_record: "This is sent to the clinic you choose as a question about your treatment record.",
+  hc_demo: "※ In the demo, requests are not delivered to real clinics." });
+Object.assign(window.I18N.ko, { hc_after_emergency: "시술 병원에도 알리기 (연락 요청)" });
+Object.assign(window.I18N.ja, { hc_after_emergency: "施術した病院にも知らせる（連絡リクエスト）" });
+Object.assign(window.I18N.zh, { hc_after_emergency: "同时通知做治疗的医院（请求联系）" });
+Object.assign(window.I18N.en, { hc_after_emergency: "Also tell your clinic (request contact)" });
+Object.assign(window.I18N.ko, { hc_about_alert: "위험 신호 안내에서 왔어요. 증상이 심하면 병원 연락을 기다리지 말고 119에 먼저 전화하세요." });
+Object.assign(window.I18N.ja, { hc_about_alert: "危険サインの案内から来ました。症状が重い場合は病院の連絡を待たずに、まず119に電話してください。" });
+Object.assign(window.I18N.zh, { hc_about_alert: "您是从危险信号提示进入的。症状严重时请不要等待医院联系，先拨打119。" });
+Object.assign(window.I18N.en, { hc_about_alert: "You came from a warning-sign alert. If symptoms are severe, call 119 first instead of waiting for the clinic." });
+
+// 가이드 음성·카드 (선택기능 FR-08)
+Object.assign(window.I18N.ko, { tts_play: "🔊 음성으로 듣기", tts_stop: "⏹ 멈추기", tts_unsupported: "이 브라우저는 음성 읽기를 지원하지 않아요.", card_save: "🖼 카드 이미지로 저장" });
+Object.assign(window.I18N.ja, { tts_play: "🔊 音声で聞く", tts_stop: "⏹ 停止", tts_unsupported: "このブラウザは音声読み上げに対応していません。", card_save: "🖼 カード画像で保存" });
+Object.assign(window.I18N.zh, { tts_play: "🔊 语音朗读", tts_stop: "⏹ 停止", tts_unsupported: "此浏览器不支持语音朗读。", card_save: "🖼 保存为卡片图片" });
+Object.assign(window.I18N.en, { tts_play: "🔊 Listen", tts_stop: "⏹ Stop", tts_unsupported: "This browser can't read text aloud.", card_save: "🖼 Save as card image" });
+
+// 복약·가이드 확인 알림 (선택기능 FR-10)
+Object.assign(window.I18N.ko, { rm_title: "복약 알림", rm_intro: "약 먹을 시간이나 관리 안내를 확인할 시간을 정해 두세요.", rm_type: "무엇을 알릴까요", rm_time: "시각", rm_repeat: "반복",
+  rm_MEDICATION: "약 먹을 시간", rm_GUIDE_CHECK: "관리 안내 확인", rm_repeat_daily: "매일", rm_repeat_none: "한 번만", rm_add: "알림 추가", rm_list: "내 알림",
+  rm_none: "아직 알림이 없어요.", rm_on: "켜기", rm_delete: "삭제", rm_alert_MEDICATION: "💊 약 먹을 시간이에요. 처방전에 적힌 대로 드세요.",
+  rm_alert_GUIDE_CHECK: "📋 시술 후 관리 안내를 확인할 시간이에요.", rm_demo_note: "※ 데모 버전에서는 GlowPass 화면이 열려 있을 때만 알려요." });
+Object.assign(window.I18N.ja, { rm_title: "服薬リマインダー", rm_intro: "お薬の時間やケア案内を確認する時間を設定しましょう。", rm_type: "通知の種類", rm_time: "時刻", rm_repeat: "繰り返し",
+  rm_MEDICATION: "お薬の時間", rm_GUIDE_CHECK: "ケア案内の確認", rm_repeat_daily: "毎日", rm_repeat_none: "1回のみ", rm_add: "追加", rm_list: "マイ通知",
+  rm_none: "まだ通知はありません。", rm_on: "オン", rm_delete: "削除", rm_alert_MEDICATION: "💊 お薬の時間です。処方どおりに服用してください。",
+  rm_alert_GUIDE_CHECK: "📋 施術後のケア案内を確認する時間です。", rm_demo_note: "※ デモ版では GlowPass の画面を開いているときだけ通知します。" });
+Object.assign(window.I18N.zh, { rm_title: "用药提醒", rm_intro: "设置吃药时间或查看护理说明的时间。", rm_type: "提醒内容", rm_time: "时间", rm_repeat: "重复",
+  rm_MEDICATION: "吃药时间", rm_GUIDE_CHECK: "查看护理说明", rm_repeat_daily: "每天", rm_repeat_none: "仅一次", rm_add: "添加提醒", rm_list: "我的提醒",
+  rm_none: "还没有提醒。", rm_on: "开启", rm_delete: "删除", rm_alert_MEDICATION: "💊 该吃药了。请按处方服用。",
+  rm_alert_GUIDE_CHECK: "📋 该查看术后护理说明了。", rm_demo_note: "※ 演示版仅在 GlowPass 页面打开时提醒。" });
+Object.assign(window.I18N.en, { rm_title: "Medication reminders", rm_intro: "Set times to take your medicine or check your care guide.", rm_type: "Remind me to", rm_time: "Time", rm_repeat: "Repeat",
+  rm_MEDICATION: "Take medicine", rm_GUIDE_CHECK: "Check care guide", rm_repeat_daily: "Every day", rm_repeat_none: "Once", rm_add: "Add reminder", rm_list: "My reminders",
+  rm_none: "No reminders yet.", rm_on: "On", rm_delete: "Delete", rm_alert_MEDICATION: "💊 Time for your medicine. Take it as prescribed.",
+  rm_alert_GUIDE_CHECK: "📋 Time to check your aftercare guide.", rm_demo_note: "※ In the demo, reminders only appear while GlowPass is open." });
+Object.assign(window.I18N.ko, { hc_already: "이 병원에 이미 진행 중인 요청이 있어요. '내 연락 요청'에서 확인하세요." });
+Object.assign(window.I18N.ja, { hc_already: "この病院にはすでに進行中のリクエストがあります。「連絡リクエスト一覧」でご確認ください。" });
+Object.assign(window.I18N.zh, { hc_already: "您对这家医院已有正在处理的请求，请在“我的联系请求”中查看。" });
+Object.assign(window.I18N.en, { hc_already: "You already have an open request for this clinic. See 'My contact requests'." });

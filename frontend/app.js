@@ -159,6 +159,8 @@ async function home() {
     h("a", { class: "btn", href: "#/record/new" }, t("add_record")),
     h("a", { class: "btn secondary", href: "#/chat" }, t("chat_open")),
     h("a", { class: "btn secondary", href: "#/hospitals" }, t("hosp_title")),
+    h("a", { class: "btn secondary", href: "#/contacts" }, t("hc_mine")),
+    h("a", { class: "btn secondary", href: "#/reminders" }, t("rm_title")),
     h("div", { class: "card" }, h("h2", {}, t("my_records")), recordList),
     guides.length ? h("div", { class: "card" }, h("h2", {}, t("my_guides")), guideList) : null,
     h("button", { class: "btn secondary", onclick: () => { store.token = null; location.hash = "#/"; } }, t("logout")),
@@ -330,6 +332,8 @@ function guideResult(g) {
     // [리뷰 #11·#12] 가이드를 만든 뒤 기록이 바뀌었으면 맨 위에 알리고 다시 만들기 버튼
     g.record_changed ? h("div", { class: "notice warn-box" }, h("strong", {}, t("record_changed")), remakeButton(g)) : null,
     h("div", { class: "card" }, h("h1", {}, t("guide_title")), tabs, body, disclaimer(g),
+      // 선택기능 FR-08: 음성으로 듣기 · 카드 이미지 저장 (브라우저 안에서, 비용 0)
+      h("div", { class: "row" }, speakButton(g), cardButton(g)),
       // 가이드 평가: 서버 값은 대문자(UP/DOWN · WRONG_INFO …)
       feedbackBar(g.my_feedback ? g.my_feedback.toLowerCase() : null, (rating, reason) =>
         api("PUT", `/guides/${g.guide_id}/feedback`, { rating: rating.toUpperCase(), reason: reason ? reason.toUpperCase() : null }))),
@@ -467,7 +471,8 @@ async function ask(convId, message, lang, bubble, emergencyBox, context = []) {
       else if (event === "sources") sources = d.docs || [];
       else if (event === "notice") box.after(h("div", { class: "muted small" }, d.text));
       else if (event === "done") {
-        if (d.outcome === "emergency") showEmergency(emergencyBox);
+        // 응급이면 위험 신호 기록 번호(safety_alert_id)를 붙여 '병원에 연락 요청' 까지 이어 준다
+        if (d.outcome === "emergency") showEmergency(emergencyBox, d.safety_alert_id);
         // AI 가 만든 답에만 👍/👎 (응급·차단 같은 고정 문구에는 달지 않는다)
         if (d.message_id && ["ok", "cached"].includes(d.outcome)) {
           const bar = feedbackBar(null, (rating, reason) =>
@@ -486,12 +491,14 @@ async function ask(convId, message, lang, bubble, emergencyBox, context = []) {
 }
 
 // 응급 신호가 보이면 맨 위에 빨간 안내 (디자인 시안 8번 화면)
-function showEmergency(box) {
+function showEmergency(box, alertId = null) {
   box.replaceChildren(h("div", { class: "emergency", role: "alert" },
     h("strong", {}, t("emergency_title")), h("p", {}, t("emergency_body")),
     h("a", { class: "btn danger", href: "tel:119" }, t("call_119")),
     h("a", { class: "btn secondary", href: "https://www.google.com/maps/search/emergency+room", target: "_blank", rel: "noopener noreferrer" }, t("find_er")),
-    h("a", { class: "btn secondary", href: "tel:1330" }, t("call_1330"))));
+    h("a", { class: "btn secondary", href: "tel:1330" }, t("call_1330")),
+    // 119 가 먼저, 그다음 시술 병원에 알리기 (기획서 §4 ③ 위험 신호 → 병원 연결)
+    alertId ? h("a", { class: "btn secondary", href: `#/hospitals?alert=${alertId}` }, t("hc_after_emergency")) : null));
   box.scrollIntoView({ block: "start" });
 }
 
@@ -508,17 +515,20 @@ async function route() {
   const hash = location.hash || "#/";
   if (chatAbort) { chatAbort.abort(); chatAbort = null; }  // 챗봇 화면을 떠나면 답 받기 중지
   try {
-    if (hash === "#/") return store.token ? home() : onboarding();
+    // [#21 리뷰] async 화면은 await 로 돌려줘야 서버 오류(404 등)가 아래 catch 에 잡혀 화면에 보인다
+    if (hash === "#/") return store.token ? await home() : onboarding();
     if (hash === "#/login") return loginView();
     if (hash === "#/signup") return signupView();
-    if (hash === "#/home") return home();
+    if (hash === "#/home") return await home();
     if (hash === "#/record/new") return recordForm();
-    if (hash === "#/chat") return chatView();
-    if (hash === "#/hospitals") return hospitalsView();
+    if (hash === "#/chat") return await chatView();
+    if (hash.startsWith("#/hospitals")) return await hospitalsView(new URLSearchParams(hash.split("?")[1] || ""));
+    if (hash === "#/contacts") return await contactsView();
+    if (hash === "#/reminders") return await remindersView();
     const m = hash.match(/^#\/guide\/(\d+)$/);
-    if (m) return guideView(m[1]);
+    if (m) return await guideView(m[1]);
     const c = hash.match(/^#\/contact\/(\d+)$/);
-    if (c) return clinicCardView(c[1]);
+    if (c) return await clinicCardView(c[1]);
     location.hash = "#/";
   } catch (ex) {
     render(h("div", { class: "card" }, h("p", { class: "error" }, ex.message), h("a", { href: "#/" }, t("back"))));

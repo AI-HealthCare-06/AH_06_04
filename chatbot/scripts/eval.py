@@ -36,6 +36,7 @@ def main() -> int:
         # 지금 안내문은 모두 감수 전 예시라, 평가할 때만 포함한다 (서버 설정은 그대로)
         settings.allow_unreviewed_docs = True
         print("※ 평가에는 감수 전 안내문도 포함 (ALLOW_UNREVIEWED_DOCS 는 바꾸지 않음)")
+    settings.fake_delay_s = 0  # [#25 리뷰] 화면용 지연은 평가에 불필요 (2분 → 1초)
     store = docs.store()
     # AI 를 부를 질문 수 = 응급·차단이 아니고 안내문을 찾은 것
     calls = sum(

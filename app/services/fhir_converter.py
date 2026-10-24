@@ -86,6 +86,7 @@ def bundle_to_records(bundle: dict[str, Any]) -> list[MedicalRecordCreateRequest
                 procedure_name=", ".join(t for p in my_procs if (t := (p.get("code") or {}).get("text"))) or None,
                 doctor_note=" ".join(notes) or None,
                 items=[item for m in my_meds if (item := _to_item(m)) is not None],
+                ocr_job_id=None,  # FHIR 로 가져온 기록은 사진 인식(OCR) 결과가 아니다
             )
         )
     return sorted(records, key=lambda r: r.visit_date)

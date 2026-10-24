@@ -12,6 +12,7 @@ TORTOISE_APP_MODELS = [
     "app.models.medical_records",
     "app.models.guides",
     "app.models.ocr_jobs",
+    "app.models.hospital_contacts",
 ]
 
 TORTOISE_ORM = {

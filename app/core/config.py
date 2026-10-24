@@ -57,6 +57,8 @@ class Config(BaseSettings):
 
     # ── 병원 검색 (파트 B) — 비우면 app/data/hospitals_demo.json (데모용 가짜 병원)
     HOSPITAL_DATA_FILE: str = ""
+    # 병원 연계 요청 — 한 사람이 하루에 보낼 수 있는 요청 수 (병원 피로도)
+    HOSPITAL_CONTACT_DAILY_LIMIT: int = 5
 
     # ── FR-05 처방전·약봉투 사진 인식 (OCR) ─────────────
     # fake   = 가짜 결과(키·비용 0, 테스트·데모용)
@@ -86,6 +88,8 @@ def prod_setting_problems(c: Config) -> list[str]:
         problems.append("SECRET_KEY 가 예시 값이거나 32자 미만")
     if c.DB_PASSWORD in _EXAMPLE_DB_PASSWORDS or not c.DB_PASSWORD:
         problems.append("DB_PASSWORD 가 비어 있거나 예시 값")
-    if c.COOKIE_DOMAIN == "localhost":
-        problems.append("COOKIE_DOMAIN 이 localhost")
+    if c.COOKIE_DOMAIN == "localhost" or "넣으세요" in c.COOKIE_DOMAIN or not c.COOKIE_DOMAIN:
+        problems.append(
+            "COOKIE_DOMAIN 이 localhost 이거나 예시 값"
+        )  # [#22 리뷰] example.prod.env 의 자리표시 문구도 막는다
     return problems
