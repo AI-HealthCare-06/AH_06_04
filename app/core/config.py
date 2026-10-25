@@ -29,6 +29,9 @@ class Config(BaseSettings):
     DB_NAME: str = "ai_health"
     DB_CONNECT_TIMEOUT: int = 5
     DB_CONNECTION_POOL_MAXSIZE: int = 10
+    # [최종 점검 9회차] AWS RDS 로 TLS 접속 — RDS 인증서 묶음(global-bundle.pem) 경로. 비우면 TLS 없이 (도커 mysql·로컬)
+    #   값을 넣으면 인증서와 호스트 이름(RDS 엔드포인트)까지 확인한다
+    DB_SSL_CA: str = ""
 
     COOKIE_DOMAIN: str = "localhost"
 
