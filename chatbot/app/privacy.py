@@ -14,13 +14,18 @@ _PATTERNS = [
     (re.compile(r"\b\d{6}\s*-\s*\d{7}\b"), "[등록번호]"),
     # 여권번호 (영문 1~2자 + 숫자 7~8자리) — 한국·중국·일본 여권 모양
     (re.compile(r"\b[A-Za-z]{1,2}\d{7,8}\b"), "[여권번호]"),
-    # 전화번호 (국가번호·하이픈·공백 포함, 숫자 9~15개)
-    (re.compile(r"(?<!\d)(\+?\d[\d\s-]{7,17}\d)(?!\d)"), "[전화번호]"),
 ]
+# 전화번호 (국가번호·하이픈·공백 포함) — [최종 점검 5회차] 숫자가 9~15개일 때만.
+#   전에는 '2026-10-05'(숫자 8개) 같은 시술 날짜도 [전화번호] 로 바뀌어 LLM·검색이 날짜를 잃었다
+_PHONE = re.compile(r"(?<!\d)(\+?\d[\d\s-]{7,17}\d)(?!\d)")
+
+
+def _phone(m: re.Match) -> str:
+    return "[전화번호]" if 9 <= sum(ch.isdigit() for ch in m.group(0)) <= 15 else m.group(0)
 
 
 def mask_pii(text: str) -> str:
     """연락처·이메일·등록번호·여권번호를 [종류] 표시로 바꾼 글을 돌려준다."""
     for pattern, label in _PATTERNS:
         text = pattern.sub(label, text)
-    return text
+    return _PHONE.sub(_phone, text)

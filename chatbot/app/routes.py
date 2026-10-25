@@ -65,7 +65,8 @@ class Ask(BaseModel):
     message: str = Field(min_length=1, max_length=settings.max_question_chars)
     lang: str | None = None
     # FR-01 → 챗봇: 내 최근 진료기록의 약·시술 이름 ("이 약 먹고 술 마셔도 돼요?" 의 '이 약')
-    context: list[str] | None = Field(None, max_length=10)
+    # [최종 점검 6회차] 개수(10)만 막고 한 칸 길이는 무제한이었다 → 약·시술 이름 칸 길이(100자)로 막는다
+    context: list[Annotated[str, Field(max_length=100)]] | None = Field(None, max_length=10)
 
     @field_validator("message")
     @classmethod
@@ -204,9 +205,8 @@ async def my_safety_alerts(
 @router.get("/safety-alerts/{alert_id}")
 async def safety_alert(alert_id: int, user_id: UserId):
     """감지 1건 상세 — 본인 것만"""
-    a = await SafetyAlert.get_or_none(id=alert_id)
+    # [최종 점검 4회차] 남의 기록은 '없음'과 똑같이 404 (대화 _own() 과 같은 규칙 — 번호로 남의 기록 유무를 알 수 없게)
+    a = await SafetyAlert.get_or_none(id=alert_id, user_id=user_id)
     if a is None:
         raise HTTPException(404, detail="해당 alert_id를 찾을 수 없습니다.")
-    if a.user_id != user_id:
-        raise HTTPException(403, detail="본인의 안전장치 감지 내역만 조회할 수 있습니다.")
     return {"message": "안전장치 감지 내역 조회에 성공했습니다.", "data": _alert_out(a)}
