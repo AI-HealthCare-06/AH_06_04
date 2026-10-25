@@ -61,6 +61,11 @@ src_folder = "./."
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "session"
 
+[tool.mypy]
+# [최종 점검 1회차] chatbot/ · login/ 도 패키지 이름이 'app' 이라 함께 검사하면
+#   "Duplicate module named app" 로 mypy 가 아무것도 검사하지 못하고 멈춘다 → 각자 폴더에서 따로 검사한다
+exclude = ["^chatbot/", "^login/"]
+
 [tool.ruff]
 # 기본 라인 길이 설정
 line-length = 120
