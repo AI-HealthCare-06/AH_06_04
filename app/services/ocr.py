@@ -83,6 +83,7 @@ class OcrService:
         )
 
     async def get_job(self, user: User, job_id: int) -> OcrJobResponse:
+        await self.repo.expire_stale(user.id, datetime.now(config.TIMEZONE), config.OCR_PENDING_TIMEOUT_S)
         job = await self.repo.get_user_job(job_id=job_id, user_id=user.id)
         if job is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="OCR 작업을 찾을 수 없습니다.")

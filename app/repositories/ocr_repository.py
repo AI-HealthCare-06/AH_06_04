@@ -1,7 +1,7 @@
 # ─────────────────────────────────────────────
 # FR-05 OCR 저장소 — DB에 넣고 꺼내는 일만
 # ─────────────────────────────────────────────
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any
 
 from app.models.ocr_jobs import OcrJob, OcrStatus
@@ -30,6 +30,12 @@ class OcrRepository:
         """한 번만 쓰게: 아직 안 쓴 작업일 때만 바꾼다 (동시에 두 번 저장해도 1건만 성공)"""
         updated = await OcrJob.filter(id=job_id, used_at__isnull=True).update(used_at=used_at, draft=None)
         return updated == 1
+
+    async def expire_stale(self, user_id: int, now: datetime, timeout_s: int) -> None:
+        """[최종 점검 3회차] 서버 재시작 등으로 영영 PENDING 에 남은 작업 → FAILED (가이드의 expire_stale 과 같은 규칙)"""
+        await OcrJob.filter(
+            user_id=user_id, status=OcrStatus.PENDING, created_at__lt=now - timedelta(seconds=timeout_s)
+        ).update(status=OcrStatus.FAILED, finished_at=now, error_message="timeout")
 
     async def clear_old_drafts(self, before: datetime) -> None:
         await OcrJob.filter(used_at__isnull=True, created_at__lt=before, draft__isnull=False).update(draft=None)

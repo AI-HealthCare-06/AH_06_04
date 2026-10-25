@@ -68,6 +68,8 @@ class Config(BaseSettings):
     OCR_MAX_BYTES: int = 5 * 1024 * 1024  # 사진 1장 최대 5MB
     OCR_TIMEOUT_S: float = 30.0
     OCR_DAILY_LIMIT: int = 20  # 한 사용자 하루 OCR 횟수 (비용 보호)
+    # [최종 점검 3회차] 서버 재시작 등으로 백그라운드 작업이 사라지면 PENDING 이 영원히 남는다 → 이 시간이 지나면 실패로
+    OCR_PENDING_TIMEOUT_S: int = 120
     OPENAI_VISION_MODEL: str = "gpt-4o-mini"
     OCR_LLM_MAX_TOKENS: int = 800  # [리뷰 #14] 약 30줄 JSON 여유
     CLOVA_OCR_SECRET_KEY: str = ""  # .env 에만 (공개 레포)
