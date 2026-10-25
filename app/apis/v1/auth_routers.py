@@ -5,7 +5,9 @@ from fastapi.responses import JSONResponse as Response
 
 from app.core import config
 from app.core.config import Env
+from app.core.jwt.tokens import RefreshToken
 from app.dtos.auth import LoginRequest, LoginResponse, SignUpRequest, TokenRefreshResponse
+from app.repositories.user_repository import UserRepository
 from app.services.auth import AuthService
 from app.services.jwt import JwtService
 
@@ -37,7 +39,10 @@ async def login(
         httponly=True,
         secure=True if config.ENV == Env.PROD else False,
         domain=config.COOKIE_DOMAIN or None,
-        expires=tokens["access_token"].payload["exp"],
+        # [최종 점검 2회차] refresh 쿠키가 access 만료 시각(60분)에 같이 사라져 재발급이 쓸모없던 문제 → refresh 만료로
+        max_age=int(RefreshToken.lifetime.total_seconds()) if RefreshToken.lifetime else None,
+        samesite="lax",
+        path="/api/v1/auth",  # 재발급 주소에만 실려 가게 (다른 API 요청마다 붙지 않게)
     )
     return resp
 
@@ -50,6 +55,10 @@ async def token_refresh(
     if not refresh_token:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Refresh token is missing.")
     access_token = jwt_service.refresh_jwt(refresh_token)
+    # [최종 점검 4회차] 탈퇴·차단된 계정의 refresh 로 새 access 를 받지 못하게 (get_request_user 와 같은 기준)
+    user = await UserRepository().get_user(access_token["user_id"])
+    if not user or not user.is_active:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authenticate Failed.")
     return Response(
         content=TokenRefreshResponse(access_token=str(access_token)).model_dump(), status_code=status.HTTP_200_OK
     )
