@@ -1,6 +1,7 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, status
+from fastapi import Response as EmptyResponse
 from fastapi.responses import ORJSONResponse as Response
 
 from app.dependencies.security import get_request_user
@@ -26,3 +27,15 @@ async def update_user_me_info(
 ) -> Response:
     updated_user = await user_manage_service.update_user(user=user, data=update_data)
     return Response(UserInfoResponse.model_validate(updated_user).model_dump(), status_code=status.HTTP_200_OK)
+
+
+# [최종 점검 5회차] 회원 탈퇴 — 건강정보(민감정보)는 탈퇴 시 삭제 (팀 규칙 CLAUDE.md §2)
+#   users 를 지우면 진료기록·처방·가이드·근거·평가·OCR 작업·병원 연계 요청·알림이 DB 의 CASCADE 로 같이 지워진다
+#   ⚠ 챗봇 대화(챗봇 서버의 SQLite)는 여기서 지우지 못한다 → 보관 기간(30일)이 지나면 자동 삭제 (docs/배포-체크리스트.md)
+@user_router.delete("/me", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_user_me(
+    user: Annotated[User, Depends(get_request_user)],
+    user_manage_service: Annotated[UserManageService, Depends(UserManageService)],
+) -> EmptyResponse:
+    await user_manage_service.delete_user(user=user)
+    return EmptyResponse(status_code=status.HTTP_204_NO_CONTENT)

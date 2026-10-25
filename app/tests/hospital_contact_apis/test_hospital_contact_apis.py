@@ -69,7 +69,9 @@ class TestHospitalContactApis(TestCase):
         cid = (await self.client.post(URL, json={"hospital_id": 3, "contact_method": "phone"}, headers=owner)).json()[
             "data"
         ]["contact_id"]
-        assert (await self.client.get(f"{URL}/{cid}", headers=other)).status_code == 403
+        # [최종 점검 4회차] 남의 요청은 404 (있는지조차 알려주지 않는다)
+        assert (await self.client.get(f"{URL}/{cid}", headers=other)).status_code == 404
+        assert (await self.client.patch(f"{URL}/{cid}", json={"status": "cancelled"}, headers=other)).status_code == 404
         # 병원 화면이 생기기 전까지 관리자가 병원 역할을 대신한다
         await User.filter(email="hc_other@example.com").update(is_admin=True)
         res = await self.client.patch(f"{URL}/{cid}", json={"status": "in_progress"}, headers=other)

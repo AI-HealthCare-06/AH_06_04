@@ -22,3 +22,7 @@ class UserManageService:
             await self.repo.update_instance(user=user, data=data.model_dump(exclude_none=True))
             await user.refresh_from_db()
         return user
+
+    async def delete_user(self, user: User) -> None:
+        """회원 탈퇴 — 계정과 딸린 기록을 지운다 (외래키 CASCADE). 지운 뒤에는 남은 토큰도 401 이 된다"""
+        await user.delete()

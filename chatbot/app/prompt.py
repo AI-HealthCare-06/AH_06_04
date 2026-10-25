@@ -2,6 +2,7 @@
 
 from app.docs import Doc
 from app.i18n import LANG_FOR_PROMPT
+from app.privacy import mask_pii
 
 SYSTEM_TEMPLATE = """You are the GlowPass daily-care assistant for foreign patients of dermatology clinics in Korea.
 Answer ONLY in {lang_name}. Keep it short: at most 5 sentences, plain words.
@@ -24,12 +25,14 @@ def build_messages(
     system = SYSTEM_TEMPLATE.format(lang_name=LANG_FOR_PROMPT[lang]) + "\n\n" + doc_text
 
     msgs: list[dict] = [{"role": "system", "content": system}]
+    # [최종 점검 5회차] 외부 LLM 으로 나가는 사용자 글은 연락처·이메일·등록번호를 가린다 (10/12 멘토링 결정)
+    #   전에는 임베딩(retrieval.py)에만 가리고, 정작 답을 만드는 LLM 에는 원문이 그대로 나갔다
     for role, content in history:
         if role == "user":
-            msgs.append({"role": "user", "content": f"<history>{content}</history>"})
+            msgs.append({"role": "user", "content": f"<history>{mask_pii(content)}</history>"})
         else:
             msgs.append({"role": "assistant", "content": content})
     # [리뷰 #19] 내 기록(화면이 보낸 값 = 누구나 바꿀 수 있음)은 system 이 아니라 user 메시지의 '데이터' 칸으로
     records = f"<my_records>{', '.join(context)}</my_records>\n" if context else ""
-    msgs.append({"role": "user", "content": f"{records}<user_question>{question}</user_question>"})
+    msgs.append({"role": "user", "content": f"{records}<user_question>{mask_pii(question)}</user_question>"})
     return msgs
