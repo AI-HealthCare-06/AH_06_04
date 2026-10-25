@@ -4,7 +4,7 @@ window.I18N = {
   ko: {
     tagline: "피부 고민, 이제 혼자 알아보지 마세요",
     intro: "진료받은 내용을 바탕으로 GlowPass가 복약·관리 방법을 쉽게 알려드려요.",
-    choose_lang: "언어 선택", login: "로그인", signup: "회원가입", logout: "로그아웃",
+    choose_lang: "언어 선택", login: "로그인", signup: "회원가입", logout: "로그아웃", withdraw: "회원 탈퇴", withdraw_confirm: "탈퇴하면 진료기록·가이드·병원 요청이 모두 지워지고 되돌릴 수 없어요. 탈퇴할까요?", withdraw_done: "탈퇴가 끝났어요. 챗봇 대화는 30일 안에 자동으로 지워져요.",
     email: "이메일", password: "비밀번호", password_hint: "8자 이상, 대·소문자·숫자·특수문자 포함",
     name: "이름", gender: "성별", female: "여성", male: "남성", birth: "생년월일",
     phone: "휴대폰 번호", phone_hint: "선택 · 예: 01012345678 또는 +86 138 1234 5678",
@@ -30,7 +30,7 @@ window.I18N = {
   ja: {
     tagline: "肌の悩み、もう一人で調べなくて大丈夫",
     intro: "受診内容をもとに、GlowPassがお薬とケアの方法をわかりやすくお伝えします。",
-    choose_lang: "言語を選択", login: "ログイン", signup: "新規登録", logout: "ログアウト",
+    choose_lang: "言語を選択", login: "ログイン", signup: "新規登録", logout: "ログアウト", withdraw: "退会", withdraw_confirm: "退会すると診療記録・ガイド・病院への依頼がすべて削除され、元に戻せません。退会しますか？", withdraw_done: "退会しました。チャットの会話は30日以内に自動で削除されます。",
     email: "メールアドレス", password: "パスワード", password_hint: "8文字以上・大文字・小文字・数字・記号を含む",
     name: "お名前", gender: "性別", female: "女性", male: "男性", birth: "生年月日",
     phone: "携帯電話番号", phone_hint: "任意 · 例: +81 90 1234 5678",
@@ -56,7 +56,7 @@ window.I18N = {
   zh: {
     tagline: "皮肤烦恼，不用再一个人查资料",
     intro: "GlowPass 根据您的就诊内容，用简单的方式告诉您用药和护理方法。",
-    choose_lang: "选择语言", login: "登录", signup: "注册", logout: "退出",
+    choose_lang: "选择语言", login: "登录", signup: "注册", logout: "退出", withdraw: "注销账号", withdraw_confirm: "注销后，诊疗记录、指南和医院请求将全部删除且无法恢复。确定注销吗？", withdraw_done: "账号已注销。聊天记录将在30天内自动删除。",
     email: "邮箱", password: "密码", password_hint: "至少8位，包含大小写字母、数字和符号",
     name: "姓名", gender: "性别", female: "女", male: "男", birth: "出生日期",
     phone: "手机号码", phone_hint: "选填 · 例如: +86 138 1234 5678",
@@ -82,7 +82,7 @@ window.I18N = {
   en: {
     tagline: "No more figuring out your skin care alone",
     intro: "GlowPass explains your medicines and after-care simply, based on your clinic visit.",
-    choose_lang: "Choose language", login: "Log in", signup: "Sign up", logout: "Log out",
+    choose_lang: "Choose language", login: "Log in", signup: "Sign up", logout: "Log out", withdraw: "Delete account", withdraw_confirm: "Deleting your account permanently removes your records, guides and clinic requests. This cannot be undone. Delete?", withdraw_done: "Your account was deleted. Chat history is removed automatically within 30 days.",
     email: "Email", password: "Password", password_hint: "8+ characters with upper, lower, number and symbol",
     name: "Name", gender: "Gender", female: "Female", male: "Male", birth: "Date of birth",
     phone: "Mobile number", phone_hint: "Optional · e.g. +1 415 555 0100",

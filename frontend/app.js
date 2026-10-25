@@ -8,7 +8,12 @@ const store = {
   get lang() { return localStorage.getItem("gp_lang") || "ko"; },
   set lang(v) { localStorage.setItem("gp_lang", v); },
   get token() { return sessionStorage.getItem("gp_token"); },  // 탭을 닫으면 사라지는 저장소
-  set token(v) { v ? sessionStorage.setItem("gp_token", v) : sessionStorage.removeItem("gp_token"); },
+  // [최종 점검 5회차] 로그아웃·만료 때 이 탭의 챗봇 대화방 번호도 지운다 (같은 탭의 다음 사람이 앞사람 대화방을 열지 않게)
+  set token(v) {
+    if (v) { sessionStorage.setItem("gp_token", v); return; }
+    sessionStorage.removeItem("gp_token");
+    sessionStorage.removeItem("gp_conv");
+  },
 };
 
 // 문구 꺼내기: t("key", {n: 3}) → 현재 언어 문구 (없으면 한국어)
@@ -164,6 +169,12 @@ async function home() {
     h("div", { class: "card" }, h("h2", {}, t("my_records")), recordList),
     guides.length ? h("div", { class: "card" }, h("h2", {}, t("my_guides")), guideList) : null,
     h("button", { class: "btn secondary", onclick: () => { store.token = null; location.hash = "#/"; } }, t("logout")),
+    // [최종 점검 5회차] 회원 탈퇴 — 한 번 더 묻고, 지운 뒤 첫 화면으로
+    h("button", { class: "btn secondary", type: "button", onclick: async () => {
+      if (!confirm(t("withdraw_confirm"))) return;
+      try { await api("DELETE", "/users/me"); store.token = null; alert(t("withdraw_done")); location.hash = "#/"; }
+      catch (ex) { alert(ex.message); }
+    } }, t("withdraw")),
   );
 }
 
