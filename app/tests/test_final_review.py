@@ -17,8 +17,10 @@ from tortoise.contrib.test import TestCase
 from app.core import config
 from app.main import app
 from app.models.guides import Guide
+from app.models.hospital_contacts import ContactMethod, HospitalContact
 from app.models.medical_records import MedicalRecord
 from app.models.ocr_jobs import OcrJob, OcrStatus
+from app.models.reminders import ReminderSetting, ReminderType
 from app.models.users import User
 from app.tests.medical_record_apis.test_medical_record_apis import SAMPLE_RECORD
 
@@ -127,11 +129,23 @@ class TestFinalReview(TestCase):
         guide = await self.client.post("/api/v1/guides", json={"record_id": rec.json()["id"]}, headers=headers)
         assert guide.status_code == 202
         user_id = (await User.get(email="fr_bye@example.com")).id
+        # [PR #30 리뷰] 알림·OCR·병원 요청도 같이 지워지는지 — 하나씩 만들어 두고 번호(id)로 확인
+        #   (user_id 로 찾으면 SET_NULL 처럼 줄이 남고 주인만 비는 경우를 못 잡는다)
+        reminder = await ReminderSetting.create(
+            user_id=user_id, reminder_type=ReminderType.MEDICATION, schedule_time=datetime.now(config.TIMEZONE)
+        )
+        ocr = await OcrJob.create(user_id=user_id, engine="fake")
+        contact = await HospitalContact.create(
+            user_id=user_id, hospital_id=1, hospital_name="테스트 피부과", contact_method=ContactMethod.PHONE
+        )
 
         assert (await self.client.delete("/api/v1/users/me", headers=headers)).status_code == 204
         assert not await User.filter(id=user_id).exists()
         assert not await MedicalRecord.filter(user_id=user_id).exists()  # CASCADE
         assert not await Guide.filter(user_id=user_id).exists()
+        assert not await ReminderSetting.filter(id=reminder.id).exists()
+        assert not await OcrJob.filter(id=ocr.id).exists()
+        assert not await HospitalContact.filter(id=contact.id).exists()
         # 지운 뒤에는 남은 토큰으로 아무것도 못 한다
         assert (await self.client.get("/api/v1/users/me", headers=headers)).status_code == 401
         assert (await self.client.delete("/api/v1/users/me", headers=headers)).status_code == 401

@@ -2,10 +2,16 @@
 
 5회차: LLM 으로 나가는 질문·이전 질문의 연락처를 가린다 · 날짜는 전화번호로 가리지 않는다 · 중·일 응급 신호 추가
 6회차: 내 기록(context) 한 칸 길이 상한
+[PR #30 리뷰] 탈퇴해도 남는 챗봇 기록은 보관 기간(30일)이 지나면 위험 신호 기록까지 같이 지워진다
 """
 
+from datetime import UTC, datetime, timedelta
+
 from app import privacy, safety
+from app.config import settings
+from app.models import Conversation, Message, SafetyAlert
 from app.prompt import build_messages
+from app.service import purge_expired
 from tests.conftest import ask, done, new_conv
 
 
@@ -84,3 +90,21 @@ async def test_context_item_length_is_limited(client):
         f"/api/v1/chat/conversations/{cid}/stream", json={"message": "레이저 토닝 후 세안은?", "context": ["가" * 100]}
     )
     assert ok.status_code == 200
+
+
+async def test_purge_after_retention_also_removes_safety_alerts(monkeypatch):
+    # [PR #30 리뷰] 탈퇴 뒤 챗봇 SQLite 에 남는 대화·위험 신호 기록은 _purge_loop(1시간마다) → purge_expired() 가 지운다
+    monkeypatch.setattr(settings, "chat_retention_days", 30)
+    now = datetime.now(UTC)
+    old = await Conversation.create(user_id=7, lang="zh", last_message_at=now - timedelta(days=31))
+    await Message.create(conversation=old, role="user", content="胸口很痛", lang="zh")
+    await SafetyAlert.create(
+        user_id=7, conversation=old, trigger_keyword="胸口很痛", severity="high", action_taken="emergency_guide"
+    )
+    recent = await Conversation.create(user_id=7, lang="zh", last_message_at=now - timedelta(days=29))
+    await SafetyAlert.create(
+        user_id=7, conversation=recent, trigger_keyword="胸口很痛", severity="high", action_taken="emergency_guide"
+    )
+    assert await purge_expired(now) == 1
+    assert await Message.filter(conversation_id=old.id).count() == 0
+    assert [a.conversation_id for a in await SafetyAlert.all()] == [recent.id]  # 30일 안 된 기록은 남는다
