@@ -15,10 +15,8 @@ from app.models.users import Gender, Language, Messenger
 
 
 class SignUpRequest(BaseModel):
-    email: Annotated[
-        EmailStr,
-        Field(None, max_length=100),
-    ]
+    # [5회 통독 1] Field(None) 이라 이메일을 빼고 보내면 검사를 통과해 DB 에서 터졌다(500) → 필수 칸 (빠지면 422)
+    email: Annotated[EmailStr, Field(max_length=100)]
     password: Annotated[str, Field(min_length=8), AfterValidator(validate_password)]
     name: Annotated[str, Field(min_length=1, max_length=50)]
     gender: Gender

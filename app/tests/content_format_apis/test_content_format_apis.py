@@ -3,7 +3,7 @@ from starlette import status
 from tortoise.contrib.test import TestCase
 
 from app.main import app
-from app.models.guides import Guide
+from app.models.guides import Guide, GuideStatus
 from app.models.users import User
 
 PASSWORD = "Password123!"
@@ -39,7 +39,7 @@ class TestContentFormatApis(TestCase):
 
     async def test_convert_my_guide_returns_202_and_can_be_read(self):
         headers, user_id = await signup_and_login(self.client, "cf1@example.com", "01080000001")
-        guide = await Guide.create(user_id=user_id)
+        guide = await Guide.create(user_id=user_id, status=GuideStatus.DONE)
         res = await self.client.post(
             f"/api/v1/guides/{guide.id}/content-formats", json={"format_type": "AUDIO"}, headers=headers
         )
@@ -52,7 +52,7 @@ class TestContentFormatApis(TestCase):
 
     async def test_convert_again_replaces_same_format(self):
         headers, user_id = await signup_and_login(self.client, "cf2@example.com", "01080000002")
-        guide = await Guide.create(user_id=user_id)
+        guide = await Guide.create(user_id=user_id, status=GuideStatus.DONE)
         url = f"/api/v1/guides/{guide.id}/content-formats"
         first = await self.client.post(url, json={"format_type": "IMAGE"}, headers=headers)
         second = await self.client.post(
@@ -66,7 +66,7 @@ class TestContentFormatApis(TestCase):
     async def test_other_users_guide_and_asset_are_404(self):
         mine, my_id = await signup_and_login(self.client, "cf3@example.com", "01080000003")
         other, _ = await signup_and_login(self.client, "cf4@example.com", "01080000004")
-        guide = await Guide.create(user_id=my_id)
+        guide = await Guide.create(user_id=my_id, status=GuideStatus.DONE)
         made = await self.client.post(
             f"/api/v1/guides/{guide.id}/content-formats", json={"format_type": "AUDIO"}, headers=mine
         )
@@ -79,7 +79,7 @@ class TestContentFormatApis(TestCase):
 
     async def test_bad_input_and_login_required(self):
         headers, user_id = await signup_and_login(self.client, "cf5@example.com", "01080000005")
-        guide = await Guide.create(user_id=user_id)
+        guide = await Guide.create(user_id=user_id, status=GuideStatus.DONE)
         url = f"/api/v1/guides/{guide.id}/content-formats"
         assert (await self.client.post(url, json={"format_type": "PDF"}, headers=headers)).status_code == 422
         bad = {"format_type": "AUDIO", "file_url": "javascript:alert(1)"}

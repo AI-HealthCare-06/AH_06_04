@@ -44,7 +44,8 @@ class JwtService:
         except ExpiredTokenError as err:
             raise HTTPException(status_code=401, detail=f"{token_type} token has expired.") from err
         except TokenError as err:
-            raise HTTPException(status_code=400, detail="Provided invalid token.") from err
+            # [5회 통독 1] 서명이 틀린 토큰(예: 배포 때 SECRET_KEY 교체)도 401 — 400 이면 화면이 로그인으로 안 돌아가고 계속 오류만 낸다
+            raise HTTPException(status_code=401, detail="Provided invalid token.") from err
 
     def refresh_jwt(self, refresh_token: str) -> AccessToken:
         verified_rt = self.verify_jwt(token=refresh_token, token_type="refresh")

@@ -72,9 +72,16 @@ async def _openai(records_text: str, docs: list[KnowledgeDoc], lang: str) -> tup
         raise GuideLLMError(f"llm status {res.status_code}")  # 상태코드만 (본문·키 안 남김)
     try:
         content = json.loads(res.json()["choices"][0]["message"]["content"])
-        return str(content.get("medication_guide", "")), str(content.get("lifestyle_guide", ""))
     except (KeyError, IndexError, TypeError, ValueError) as e:
         raise GuideLLMError("llm bad response") from e
+    if not isinstance(content, dict):
+        raise GuideLLMError("llm bad response")
+    # [5회 통독 6] AI 가 "medication_guide": null 로 답하면 str(None) = 'None' 이라는 글자가 가이드에 저장됐다 → 글자만 받는다
+    return _guide_text(content.get("medication_guide")), _guide_text(content.get("lifestyle_guide"))
+
+
+def _guide_text(value: object) -> str:
+    return value.strip() if isinstance(value, str) else ""
 
 
 def current_model() -> str:

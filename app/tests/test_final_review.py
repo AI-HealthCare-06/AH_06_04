@@ -83,12 +83,13 @@ class TestFinalReview(TestCase):
         ok = await self.client.get("/api/v1/users/me", headers={"Authorization": f"Bearer {access}"})
         assert ok.status_code == status.HTTP_200_OK
         bad = await self.client.get("/api/v1/users/me", headers={"Authorization": f"Bearer {refresh}"})
-        assert bad.status_code in (status.HTTP_400_BAD_REQUEST, status.HTTP_401_UNAUTHORIZED)
+        assert bad.status_code == status.HTTP_401_UNAUTHORIZED
 
     async def test_access_token_cannot_be_used_as_refresh_cookie(self):
         access, refresh, _ = await self._login("fr_type2@example.com", "01070000003")
         self.client.cookies["refresh_token"] = access
-        assert (await self.client.get("/api/v1/auth/token/refresh")).status_code == status.HTTP_400_BAD_REQUEST
+        # [5회 통독 1] 잘못된 토큰은 400 → 401 로 바꿈 (화면이 로그인으로 돌아가게)
+        assert (await self.client.get("/api/v1/auth/token/refresh")).status_code == status.HTTP_401_UNAUTHORIZED
         self.client.cookies["refresh_token"] = refresh
         assert (await self.client.get("/api/v1/auth/token/refresh")).status_code == status.HTTP_200_OK
 
@@ -103,7 +104,7 @@ class TestFinalReview(TestCase):
         # 서명은 맞지만 type 이 없는 토큰 (다른 서비스가 같은 키로 만든 토큰 등)
         forged = jwt.encode({"user_id": 1, "exp": int(time.time()) + 600}, config.SECRET_KEY, algorithm="HS256")
         res = await self.client.get("/api/v1/users/me", headers={"Authorization": f"Bearer {forged}"})
-        assert res.status_code in (status.HTTP_400_BAD_REQUEST, status.HTTP_401_UNAUTHORIZED)
+        assert res.status_code == status.HTTP_401_UNAUTHORIZED
 
     # ── 3회차 ──
     async def test_stale_pending_ocr_job_becomes_failed(self):

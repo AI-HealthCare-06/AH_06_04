@@ -1,6 +1,7 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, status
+from fastapi import Response as EmptyResponse
 from fastapi.responses import ORJSONResponse as Response
 
 from app.dependencies.security import get_request_user
@@ -47,6 +48,7 @@ async def delete_reminder(
     reminder_id: int,
     user: Annotated[User, Depends(get_request_user)],
     reminder_service: Annotated[ReminderService, Depends(ReminderService)],
-) -> Response:
+) -> EmptyResponse:
     await reminder_service.delete_reminder(reminder_id=reminder_id, user=user)
-    return Response(None, status_code=status.HTTP_204_NO_CONTENT)
+    # [5회 통독 2] JSON 응답(None)은 본문 'null' 이 붙어 uvicorn 이 삭제마다 "Response content longer than Content-Length" 예외를 냈다
+    return EmptyResponse(status_code=status.HTTP_204_NO_CONTENT)
