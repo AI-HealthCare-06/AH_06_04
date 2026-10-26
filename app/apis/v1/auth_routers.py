@@ -39,7 +39,7 @@ async def login(
         httponly=True,
         secure=True if config.ENV == Env.PROD else False,
         domain=config.COOKIE_DOMAIN or None,
-        # [최종 점검 2회차] refresh 쿠키가 access 만료 시각(60분)에 같이 사라져 재발급이 쓸모없던 문제 → refresh 만료로
+        # [최종 점검 2회차] expires 에 유닉스 시각(숫자)을 넣어 '지금부터 N초' 로 읽혀 쿠키가 2083년까지 살던 문제 → refresh 수명(14일)으로
         max_age=int(RefreshToken.lifetime.total_seconds()) if RefreshToken.lifetime else None,
         samesite="lax",
         path="/api/v1/auth",  # 재발급 주소에만 실려 가게 (다른 API 요청마다 붙지 않게)
