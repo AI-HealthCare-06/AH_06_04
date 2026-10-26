@@ -37,6 +37,13 @@ class UserUpdateRequest(BaseModel):
     messenger_id: Annotated[str | None, Field(None), optional_after_validator(validate_messenger_id)]
 
 
+class UserWithdrawRequest(BaseModel):
+    """DELETE /users/me — [팀 결정 10/26] 탈퇴 전에 비밀번호를 한 번 더 확인한다"""
+
+    model_config = ConfigDict(extra="forbid")
+    password: Annotated[str, Field(min_length=1, max_length=128)]
+
+
 class UserInfoResponse(BaseSerializerModel):
     id: int
     name: str

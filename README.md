@@ -43,7 +43,7 @@ flowchart LR
 | 영역 | 메서드 · 경로 |
 |---|---|
 | 인증 | `POST /auth/signup` · `POST /auth/login` · `GET /auth/token/refresh` |
-| 내 정보 | `GET /users/me` · `PATCH /users/me` · `DELETE /users/me` (회원 탈퇴 — 진료기록·가이드 등 함께 삭제) |
+| 내 정보 | `GET /users/me` · `PATCH /users/me` · `DELETE /users/me` (회원 탈퇴 — 비밀번호 재확인 · 진료기록·가이드 등 함께 삭제) |
 | 진료기록 | `POST/GET /medical-records` · `GET/PATCH/DELETE /medical-records/{id}` · `GET /medical-records/guide-context` |
 | OCR | `POST /ocr/prescriptions` (202) · `GET /ocr/prescriptions/{job_id}` |
 | AI 가이드 | `POST /guides` (202) · `GET /guides` · `GET /guides/{id}` · `GET /guides/{id}/sources` · `PUT /guides/{id}/feedback` · `GET /guides/feedback/summary` (관리자) |

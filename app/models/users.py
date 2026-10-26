@@ -29,13 +29,14 @@ class Messenger(StrEnum):
 
 class User(models.Model):
     id = fields.BigIntField(primary_key=True)
-    email = fields.CharField(max_length=100)  # [리뷰 #15] 40자 → 100자
+    # [팀 결정 10/26] 같은 이메일·전화번호로 동시에 가입해도 DB 가 한 줄만 받는다 (앱 확인만으로는 두 줄이 생길 수 있었다)
+    email = fields.CharField(max_length=100, unique=True)  # [리뷰 #15] 40자 → 100자
     hashed_password = fields.CharField(max_length=128)
     name = fields.CharField(max_length=50)  # [리뷰 #15] 서구권 긴 이름 (20자 → 50자)
     gender = fields.CharEnumField(enum_type=Gender)
     birthday = fields.DateField()
     # 외국인 사용자도 가입할 수 있게: 전화번호는 선택, 국제번호(+86…)는 '+' 포함 최대 16자
-    phone_number = fields.CharField(max_length=16, null=True)
+    phone_number = fields.CharField(max_length=16, null=True, unique=True)  # 비어 있는(null) 줄끼리는 겹쳐도 된다
     nationality = fields.CharField(max_length=2, null=True)  # 국적 (ISO 2글자, 예: CN·JP·US·KR)
     preferred_language = fields.CharEnumField(enum_type=Language, default=Language.KO)
     # 가입 때 전화번호 + 메신저 1개 (기존 가입자는 비어 있을 수 있어 DB 는 null 허용)

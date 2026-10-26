@@ -140,7 +140,9 @@ class TestFinalReview(TestCase):
             user_id=user_id, hospital_id=1, hospital_name="테스트 피부과", contact_method=ContactMethod.PHONE
         )
 
-        assert (await self.client.delete("/api/v1/users/me", headers=headers)).status_code == 204
+        assert (
+            await self.client.request("DELETE", "/api/v1/users/me", json={"password": PASSWORD}, headers=headers)
+        ).status_code == 204
         assert not await User.filter(id=user_id).exists()
         assert not await MedicalRecord.filter(user_id=user_id).exists()  # CASCADE
         assert not await Guide.filter(user_id=user_id).exists()
@@ -149,13 +151,18 @@ class TestFinalReview(TestCase):
         assert not await HospitalContact.filter(id=contact.id).exists()
         # 지운 뒤에는 남은 토큰으로 아무것도 못 한다
         assert (await self.client.get("/api/v1/users/me", headers=headers)).status_code == 401
-        assert (await self.client.delete("/api/v1/users/me", headers=headers)).status_code == 401
+        assert (
+            await self.client.request("DELETE", "/api/v1/users/me", json={"password": PASSWORD}, headers=headers)
+        ).status_code == 401
         # 같은 이메일로 다시 가입할 수 있다
         again = await self.client.post("/api/v1/auth/signup", json=_signup_body("fr_bye@example.com", "01070000006"))
         assert again.status_code == 201
 
     async def test_delete_me_requires_login(self):
-        assert (await self.client.delete("/api/v1/users/me")).status_code in (401, 403)
+        assert (await self.client.request("DELETE", "/api/v1/users/me", json={"password": PASSWORD})).status_code in (
+            401,
+            403,
+        )
 
 
 # ── 9회차 (AWS RDS TLS) ──

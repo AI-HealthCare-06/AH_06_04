@@ -100,7 +100,8 @@ function loginView(message) {
       location.hash = "#/home";
     } catch (ex) {
       // [리뷰 #12] 비밀번호 틀림 / 입력 형식 / 서버 문제를 나눠 보여준다
-      err.textContent = [400, 401, 404].includes(ex.status) ? t("err_login") : ex.status === 422 ? t("err_input") : t("err_generic");
+      // [팀 결정 10/26] 10분 안에 5번 틀리면 서버가 10분 동안 429 로 막는다
+      err.textContent = [400, 401, 404].includes(ex.status) ? t("err_login") : ex.status === 422 ? t("err_input") : ex.status === 429 ? t("err_locked") : t("err_generic");
     }
   } }, field("email", email), field("password", pw), h("button", { class: "btn", type: "submit" }, t("login")), err);
   render(h("div", { class: "card" }, h("h1", {}, t("login")),
@@ -161,6 +162,14 @@ async function home() {
   const guideList = guides.map((g) => h("div", { class: "item" },
     h("a", { href: `#/guide/${g.guide_id}` }, `#${g.guide_id} · ${g.created_at.slice(0, 10)}`), " ",
     h("span", { class: "badge" }, t(`status_${g.status}`))));
+  // [팀 결정 10/26] 탈퇴 확인 칸 — 비밀번호가 맞아야 서버가 지운다 (틀리면 400)
+  const withdrawPw = h("input", { type: "password", autocomplete: "current-password" });
+  const withdrawErr = errorBox();
+  const withdrawBox = h("form", { class: "card", hidden: true, onsubmit: async (e) => {
+    e.preventDefault();
+    try { await api("DELETE", "/users/me", { password: withdrawPw.value }); store.token = null; alert(t("withdraw_done")); location.hash = "#/"; }
+    catch (ex) { withdrawErr.textContent = ex.status === 400 ? t("withdraw_pw_wrong") : ex.message; }
+  } }, field("withdraw_pw", withdrawPw), h("button", { class: "btn", type: "submit" }, t("withdraw")), withdrawErr);
   render(
     h("h1", {}, t("home_title")),
     h("a", { class: "btn", href: "#/record/new" }, t("add_record")),
@@ -173,11 +182,13 @@ async function home() {
     guides.length ? h("div", { class: "card" }, h("h2", {}, t("my_guides")), guideList) : null,
     h("button", { class: "btn secondary", onclick: () => { store.token = null; location.hash = "#/"; } }, t("logout")),
     // [최종 점검 5회차] 회원 탈퇴 — 한 번 더 묻고, 지운 뒤 첫 화면으로
-    h("button", { class: "btn secondary", type: "button", onclick: async () => {
+    // [팀 결정 10/26] 비밀번호를 한 번 더 받는다 (prompt 는 글자가 보여서 쓰지 않고 password 칸을 연다)
+    h("button", { class: "btn secondary", type: "button", onclick: () => {
       if (!confirm(t("withdraw_confirm"))) return;
-      try { await api("DELETE", "/users/me"); store.token = null; alert(t("withdraw_done")); location.hash = "#/"; }
-      catch (ex) { alert(ex.message); }
+      withdrawBox.hidden = false;
+      withdrawPw.focus();
     } }, t("withdraw")),
+    withdrawBox,
   );
 }
 

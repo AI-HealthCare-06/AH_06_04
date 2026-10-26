@@ -39,6 +39,9 @@ class Config(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     REFRESH_TOKEN_EXPIRE_MINUTES: int = 14 * 24 * 60
     JWT_LEEWAY: int = 5
+    # [팀 결정 10/26] 로그인 실패 잠금 — 같은 이메일로 이 시간(분) 안에 이만큼 틀리면 그 시간 동안 막는다
+    LOGIN_MAX_FAILURES: int = 5
+    LOGIN_LOCK_MINUTES: int = 10
 
     # ── FR-03 AI 가이드 생성 ──────────────────────────
     # LLM: fake = 가짜 AI(키·비용 0, 테스트·데모용) / openai = 팀 키로 진짜 생성

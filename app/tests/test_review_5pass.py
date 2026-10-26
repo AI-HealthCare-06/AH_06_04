@@ -18,7 +18,7 @@ from app.main import app
 from app.models.content_assets import ContentFormatAsset
 from app.models.guides import Guide, GuideStatus
 from app.services import guide_llm
-from app.tests.content_format_apis.test_content_format_apis import signup_and_login
+from app.tests.content_format_apis.test_content_format_apis import PASSWORD, signup_and_login
 
 
 class TestReview5Pass(TestCase):
@@ -40,7 +40,9 @@ class TestReview5Pass(TestCase):
                 f"/api/v1/guides/{g.id}/content-formats", json={"format_type": "AUDIO"}, headers=h
             )
             assert res.status_code == status.HTTP_202_ACCEPTED
-        assert (await self.client.delete("/api/v1/users/me", headers=headers)).status_code == 204
+        assert (
+            await self.client.request("DELETE", "/api/v1/users/me", json={"password": PASSWORD}, headers=headers)
+        ).status_code == 204
         assert not await ContentFormatAsset.filter(guide_id=mine.id).exists()
         assert await ContentFormatAsset.filter(guide_id=theirs.id).exists()  # 다른 사람 것은 그대로
 
