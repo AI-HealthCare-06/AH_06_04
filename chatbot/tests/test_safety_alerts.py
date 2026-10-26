@@ -46,3 +46,43 @@ async def test_deleting_conversation_deletes_alerts(client):
     assert await SafetyAlert.all().count() == 1
     assert (await client.delete(f"/api/v1/chat/conversations/{cid}")).status_code in (200, 204)
     assert await SafetyAlert.all().count() == 0  # 사용자가 지우면 기록도 같이 (민감정보)
+
+
+def test_output_filter_gaps_from_review():
+    # [#22 리뷰 P2] 중단 지시·시간대별 횟수·약 이름 부류
+    from app.safety import is_bad_output
+
+    for bad in [
+        "You may stop the antibiotic after 3 days.",
+        "You can stop using the cream.",
+        "抗生素每日两次。",
+        "请在早上和晚上各吃一次抗生素。",
+        "抗生物質は1日2回飲んでください。",
+    ]:
+        assert is_bad_output(bad), bad
+    for ok in [
+        "세안은 하루 두 번 해 주세요.",
+        "早上和晚上洗脸两次。",
+        "Stop and call your doctor if you have trouble breathing.",
+    ]:
+        assert not is_bad_output(ok), ok
+
+
+def test_stop_advice_vs_side_effect_guidance():
+    # [#27 리뷰] 부작용 대처 안내("끊고 병원에 연락")는 통과, '좋아지면 끊어라'·'끊어도 된다'·'한 알 더' 는 차단
+    from app.safety import is_bad_output
+
+    for ok in [
+        "If redness gets worse, stop using the cream and contact your clinic.",
+        "Stop using it if you see swelling, and call your hospital.",
+        "Stop using the product and see your dermatologist if blistering appears.",
+    ]:
+        assert not is_bad_output(ok), ok
+    for bad in [
+        "Stop taking it when you feel better.",
+        "You can stop using the cream once the redness is gone.",
+        "You may stop taking it after a week.",
+        "Take one more pill tonight.",
+        "Take another tablet if it still hurts.",
+    ]:
+        assert is_bad_output(bad), bad

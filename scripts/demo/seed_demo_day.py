@@ -7,7 +7,8 @@
 #      - 가장 최근 진료기록으로 AI 가이드 1건 (이미 있으면 재사용 — AI 비용 1번)
 #      - 복약 알림 매일 09:00 (없을 때만)
 #      - 병원 연락 요청 1건 (데모 병원, 시술 기록 연결 — 진행 중 요청이 있으면 건너뜀)
-#   ③ 시연에 쓸 계정·화면 주소를 출력
+#   ③ 병원 접수대 역할 계정(demo.staff)을 만든다 — 관리자 권한은 app.commands.make_admin 으로 따로 준다
+#   ④ 시연에 쓸 계정·화면 주소를 출력
 # 실행 (서버가 켜져 있어야 함):
 #   DEMO_PASSWORD='원하는비밀번호' uv run python scripts/demo/seed_demo_day.py
 #   배포 서버에 넣을 때: BASE_URL=https://도메인 ... --yes  (가짜 데이터만 들어감, 실제 환자 정보 금지)
@@ -25,6 +26,27 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))  # 같은 폴더의 시
 import seed_fr01_fake_records as base  # noqa: E402
 
 HERO = "demo.cn01@example.com"  # 시연 주인공 (중국 · 위챗 · 중국어 화면)
+STAFF = "demo.staff@example.com"  # 병원 접수대 역할 (한국어 화면, 관리자 권한은 make_admin 으로)
+
+
+def ensure_staff(c: httpx.Client) -> None:
+    """병원 접수대 시연용 계정 — 이미 있으면 그대로 둔다"""
+    signup = {
+        "email": STAFF,
+        "password": base.PASSWORD,
+        "name": "데모 병원 접수대",
+        "gender": "FEMALE",
+        "birth_date": "1990-01-01",
+        "phone_number": "01000000099",
+        "nationality": "KR",
+        "preferred_language": "ko",
+        "messenger_type": "KAKAOTALK",
+        "messenger_id": "glowpass_demo_staff",  # 가입 필수 칸 (가짜 아이디)
+    }
+    r = c.post("/api/v1/auth/signup", json=signup)
+    if r.status_code not in (201, 409):
+        sys.exit(f"{STAFF} 가입 실패: {r.status_code} {r.text[:200]}")
+    print(f"- 병원 접수대 계정 {STAFF}: {'추가' if r.status_code == 201 else '이미 있음'}")
 
 
 def tomorrow_9am_iso() -> str:
@@ -75,11 +97,16 @@ def main() -> None:
             f"- 병원 연락 요청: {'추가' if r.status_code == 201 else '이미 있음/건너뜀 (' + str(r.status_code) + ')'}"
         )
 
+        ensure_staff(c)  # ③ 병원 접수대 역할 계정
+
     print()
     print("시연 준비 완료")
     print(f"  계정: {HERO} (비밀번호 = DEMO_PASSWORD)")
     print(f"  화면: {base.BASE_URL}/  → 로그인 후 #/home · #/guide/{guide_id} · #/contacts · #/reminders · #/chat")
     print("  응급 시연 문장 예: 打完针后咽不下东西")
+    print(
+        f"  병원 접수대: {STAFF} 로 로그인 → #/desk  (먼저 한 번만: uv run python -m app.commands.make_admin {STAFF})"
+    )
 
 
 if __name__ == "__main__":

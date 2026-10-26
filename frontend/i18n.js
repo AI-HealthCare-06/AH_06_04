@@ -343,3 +343,20 @@ Object.assign(window.I18N.ko, { hc_already: "이 병원에 이미 진행 중인 
 Object.assign(window.I18N.ja, { hc_already: "この病院にはすでに進行中のリクエストがあります。「連絡リクエスト一覧」でご確認ください。" });
 Object.assign(window.I18N.zh, { hc_already: "您对这家医院已有正在处理的请求，请在“我的联系请求”中查看。" });
 Object.assign(window.I18N.en, { hc_already: "You already have an open request for this clinic. See 'My contact requests'." });
+// 병원 접수대 화면 (데모: 관리자 계정이 병원 역할을 대신한다)
+Object.assign(window.I18N.ko, { hd_title: "병원 접수대", hd_desc: "환자가 보낸 연락 요청을 확인하고 상태를 바꿉니다. (데모: 관리자 계정이 병원 역할)",
+  hd_open_only: "진행 중만", hd_all: "끝난 것까지", hd_none: "처리할 요청이 없어요.", hd_requester: "요청자", hd_contact: "연락처", hd_lang: "언어",
+  hd_start: "확인 시작", hd_done: "연락 완료", hd_about_record: "시술 기록 문의", hd_about_alert: "⚠ 위험 신호에서 넘어온 요청 — 먼저 확인",
+  hd_refresh: "새로 고침" });
+Object.assign(window.I18N.ja, { hd_title: "病院受付", hd_desc: "患者からの連絡リクエストを確認し、状態を変更します。（デモ：管理者が病院役）",
+  hd_open_only: "進行中のみ", hd_all: "完了分も表示", hd_none: "処理するリクエストはありません。", hd_requester: "依頼者", hd_contact: "連絡先", hd_lang: "言語",
+  hd_start: "確認開始", hd_done: "連絡完了", hd_about_record: "施術記録の問い合わせ", hd_about_alert: "⚠ 危険サインからのリクエスト — 先に確認",
+  hd_refresh: "更新" });
+Object.assign(window.I18N.zh, { hd_title: "医院前台", hd_desc: "查看患者发送的联系请求并更新状态。（演示：管理员代替医院）",
+  hd_open_only: "仅进行中", hd_all: "含已结束", hd_none: "没有待处理的请求。", hd_requester: "请求者", hd_contact: "联系方式", hd_lang: "语言",
+  hd_start: "开始确认", hd_done: "已联系", hd_about_record: "治疗记录咨询", hd_about_alert: "⚠ 来自危险信号的请求 — 请优先处理",
+  hd_refresh: "刷新" });
+Object.assign(window.I18N.en, { hd_title: "Clinic front desk", hd_desc: "Review contact requests from patients and update their status. (Demo: an admin account plays the clinic.)",
+  hd_open_only: "Open only", hd_all: "Include closed", hd_none: "No requests to handle.", hd_requester: "Requester", hd_contact: "Contact", hd_lang: "Language",
+  hd_start: "Start checking", hd_done: "Contacted", hd_about_record: "About a treatment record", hd_about_alert: "⚠ Came from a safety alert — check first",
+  hd_refresh: "Refresh" });

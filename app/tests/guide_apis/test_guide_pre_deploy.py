@@ -11,7 +11,7 @@ from tortoise.contrib.test import TestCase
 from app.core import config
 from app.main import app
 from app.models.guides import Guide
-from app.services import guide_knowledge
+from app.services import guide_knowledge, guide_llm
 from app.tests.guide_apis.test_guide_apis import ACNE_RECORD
 from app.tests.medical_record_apis.test_medical_record_apis import signup_and_login
 
@@ -68,6 +68,17 @@ class TestGuidePreDeploy(TestCase):
         fresh = (await self.client.post(GUIDES, json={"record_id": record_id}, headers=headers)).json()
         assert fresh["guide_id"] != first["guide_id"]  # 기록이 바뀌면 새로 만든다
 
+    async def test_cache_is_not_reused_when_docs_or_model_change(self):
+        # [#22 리뷰] 안내문 묶음이나 AI 모델이 바뀌면 같은 기록이라도 새로 만든다
+        headers, record_id = await self._record("pd3b@example.com", "01050000013")
+        first = (await self.client.post(GUIDES, json={"record_id": record_id}, headers=headers)).json()
+        with patch.object(guide_knowledge, "kb_version", return_value="changed-docs"):
+            fresh = (await self.client.post(GUIDES, json={"record_id": record_id}, headers=headers)).json()
+        assert fresh["guide_id"] != first["guide_id"]
+        with patch.object(guide_llm, "current_model", return_value="gpt-other"):
+            fresh2 = (await self.client.post(GUIDES, json={"record_id": record_id}, headers=headers)).json()
+        assert fresh2["guide_id"] not in (first["guide_id"], fresh["guide_id"])
+
     async def test_daily_limit_and_global_budget(self):
         headers, record_id = await self._record("pd4@example.com", "01050000004")
         with patch.object(config, "GUIDE_DAILY_LIMIT", 1):
@@ -107,3 +118,23 @@ def test_source_docs_are_never_cut_by_the_safety_net():
                     doc.id,
                     lang,
                 )
+
+
+def test_safety_net_gaps_from_review():
+    # [#22 리뷰 P2] "you may stop the antibiotic" · 시간대별 횟수 · "take one more pill" 도 복약 칸에서 걸러진다
+    for bad in [
+        "You may stop the antibiotic after 3 days.",
+        "请在早上和晚上各吃一次。",
+        "If it hurts, take one more pill.",
+        "Stop using it once the redness is gone.",
+    ]:
+        assert guide_knowledge.remove_unsafe_sentences(bad, medication=True)[1] == 1, bad
+    for ok in [
+        "Keep using sunscreen every day.",
+        "Stop and call your doctor if you have trouble breathing.",
+        "出门前30分钟和临出门前各涂一次，之后每2小时补涂。",
+        # [#27 리뷰] 부작용 대처 안내는 사후관리에 꼭 필요하다 — 병원 연락이 같은 문장에 있으면 통과
+        "If redness gets worse, stop using the cream and contact your clinic.",
+        "Stop using it if you see swelling, and call your hospital.",
+    ]:
+        assert guide_knowledge.remove_unsafe_sentences(ok, medication=True)[1] == 0, ok

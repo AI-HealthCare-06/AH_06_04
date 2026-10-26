@@ -15,7 +15,10 @@
 | FR-03 AI 가이드 | 진료기록 + 근거 안내문 → 복약·생활관리 가이드 (출처·면책 문구 포함) | ✅ LLM 가이드 생성 |
 | FR-04 AI 챗봇 | 4개 언어 실시간 상담 (SSE 스트리밍, 이전 대화 반영, 응급·진단 요청 차단) | ✅ 실시간 챗봇 |
 | 피드백 | 가이드·챗봇 답에 👍/👎 + 이유 → 관리자 집계로 안내문·프롬프트 개선 | |
-| 다국어 | 한국어·日本語·中文(简体)·English, 해외 번호로 가입 | |
+| 위험 신호 기록 | 챗봇이 응급·진단 요청을 막으면 기록(`safety_alert`) → 병원 연락 요청에 이어 붙는다 | |
+| 병원 연락 요청 | 병원 목록(추천·배정 없음)에서 사용자가 골라 연락 요청 → 병원 접수대 화면(`#/desk`, 관리자)에서 확인·완료 처리 | |
+| 복약·관리 알림 | 복약 시간·가이드 확인 알림 등록, 화면이 열려 있으면 시간에 맞춰 알림 | |
+| 다국어 | 한국어·日本語·中文(简体)·English, 해외 번호로 가입 · 가이드 읽어주기(음성)·이미지 카드 저장 | |
 
 ## 구조
 
@@ -45,7 +48,9 @@ flowchart LR
 | OCR | `POST /ocr/prescriptions` (202) · `GET /ocr/prescriptions/{job_id}` |
 | AI 가이드 | `POST /guides` (202) · `GET /guides` · `GET /guides/{id}` · `GET /guides/{id}/sources` · `PUT /guides/{id}/feedback` · `GET /guides/feedback/summary` (관리자) |
 | 챗봇 | `GET /chat/langs` · `POST /chat/conversations` · `POST /chat/conversations/{id}/stream` (SSE) · `GET /chat/conversations/{id}/messages` · `DELETE /chat/conversations/{id}` · `GET /chat/usage` · `PUT /chat/conversations/{id}/messages/{mid}/feedback` |
-| 리마인더 · 콘텐츠 | `/reminders` · `/content-assets` |
+| 병원 · 연락 요청 | `GET /hospitals` · `POST/GET /hospital-contacts` · `GET/PATCH /hospital-contacts/{id}` (본인: 취소 · 관리자: 진행 중/완료) · `GET /hospital-contacts?scope=all` (관리자 접수대) |
+| 위험 신호 | `GET /chat/safety-alerts` · `GET /chat/safety-alerts/{id}` |
+| 리마인더 · 콘텐츠 · 서비스 정보 | `/reminders` · `/content-assets` · `GET /service-info` (데모 모드 표시용) |
 
 자세한 요청·응답은 서버 실행 후 `/api/docs` (Swagger).
 
@@ -63,9 +68,9 @@ flowchart LR
 
 | 번호 | 항목 | 어디서 |
 |---|---|---|
-| 3-1 | 모델 성능 검증·개선 | `chatbot/eval/` 골든셋 + `chatbot/scripts/eval.py`·`eval_search.py` (답·검색 품질 측정), 안전 규칙 테스트 |
+| 3-1 | 모델 성능 검증·개선 | `chatbot/eval/` 골든셋 + `chatbot/scripts/eval.py`·`eval_search.py`·`eval_emergency.py` (답·검색·응급 판정 품질 측정), 안전 규칙 테스트 |
 | 3-2 | 비동기 추론 | 가이드·OCR 백그라운드 처리(202), 챗봇 SSE 스트리밍 |
-| 3-3 | 결과 편차 최소화 | `temperature=0`, JSON 응답 형식, 챗봇: 같은 첫 질문 캐시 · 가이드: 같은 기록·언어면 만든 가이드 재사용, OCR 결과 값 정리(`clean_draft`) |
+| 3-3 | 결과 편차 최소화 | `temperature=0`, JSON 응답 형식, 챗봇: 같은 첫 질문 캐시 · 가이드: 같은 기록·언어·안내문 버전·모델이면 만든 가이드 재사용(`kb_version`), OCR 결과 값 정리(`clean_draft`) |
 | 3-4 | 사용자 피드백 반영 구조 | 👍/👎 + 이유 → `GET /guides/feedback/summary` (근거 안내문·모델별 집계, 관리자 지정: `python -m app.commands.make_admin`) |
 | 4-2 | 일관된 경험 | 4개 언어 같은 화면, 계정 언어 저장 |
 | 5-1 | P95 3초 | `scripts/perf/measure_p95.py` — 사전 측정(개발 PC·가짜 AI) 전체 P95 621ms, 배포 후 재측정 |
@@ -73,7 +78,15 @@ flowchart LR
 | 5-4 | 인증·인가 | JWT, 본인 데이터만(남의 것은 404), 관리자 집계 403 |
 | 5-5 | 비동기 서버 | FastAPI + Tortoise ORM(async) + httpx(async) |
 
-알려진 한계와 배포 절차: [`docs/배포-체크리스트.md`](docs/배포-체크리스트.md)
+## 데모 시연 준비
+
+```bash
+# 서버를 켠 뒤 (가짜 데이터만 들어감 — 실제 환자 정보 금지)
+DEMO_PASSWORD='원하는비밀번호' uv run python scripts/demo/seed_demo_day.py   # 시연 계정·기록·가이드·알림·연락 요청
+uv run python -m app.commands.make_admin demo.staff@example.com            # 병원 접수대 역할 계정에 관리자 권한 (한 번만)
+```
+
+시연 순서는 [`docs/데모-시연-대본.md`](docs/데모-시연-대본.md), 알려진 한계와 배포 절차는 [`docs/배포-체크리스트.md`](docs/배포-체크리스트.md), EC2·Docker Hub 를 처음부터 마련해야 하면 [`docs/배포-준비-처음부터.md`](docs/배포-준비-처음부터.md).
 
 ---
 

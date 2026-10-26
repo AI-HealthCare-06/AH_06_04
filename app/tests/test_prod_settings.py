@@ -43,5 +43,6 @@ class TestMakeAdmin(TestCase):
         )
         assert await set_admin("admin@example.com", True)
         assert (await User.get(email="admin@example.com")).is_admin
+        assert await set_admin("admin@example.com", True)  # 이미 관리자여도 '실패' 가 아니다 (MySQL 바뀐 줄 0 문제)
         assert await set_admin("admin@example.com", False)
         assert not await set_admin("nobody@example.com", True)

@@ -41,3 +41,11 @@ class HospitalContactResponse(BaseModel):
     safety_alert_id: int | None
     created_at: datetime
     updated_at: datetime
+
+
+class HospitalContactAdminItem(HospitalContactResponse):
+    """GET /hospital-contacts?scope=all — 병원 접수대(관리자) 화면용: 요청자 정보가 더 붙는다"""
+
+    requester_name: str
+    requester_language: str  # 병원 쪽에서 어떤 언어로 연락해야 하는지
+    requester_contact: str | None  # 고른 연락 방법에 맞는 연락처 (전화번호 / 메신저 ID / 이메일)

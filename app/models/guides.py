@@ -47,6 +47,8 @@ class Guide(models.Model):
     medication_guide = fields.TextField(null=True)  # 복약 안내 (AI가 근거에서 정리)
     lifestyle_guide = fields.TextField(null=True)  # 생활관리 안내
     llm_model = fields.CharField(max_length=50, null=True)  # 어떤 AI로 만들었는지 (fake / gpt-4o-mini 등)
+    # [#22 리뷰] 어떤 안내문 묶음으로 만들었는지 (내용 해시) — 안내문·AI 가 바뀌면 재사용하지 않고 다시 만든다
+    kb_version = fields.CharField(max_length=16, null=True)
     error_message = fields.CharField(max_length=200, null=True)  # 실패 이유 (사용자 글·키는 넣지 않음)
     created_at = fields.DatetimeField(auto_now_add=True)
     generated_at = fields.DatetimeField(null=True)  # 완성 시각

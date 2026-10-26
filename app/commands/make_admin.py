@@ -15,9 +15,14 @@ from app.models.users import User
 
 
 async def set_admin(email: str, admin: bool) -> bool:
-    """이메일로 찾아 is_admin 을 바꾼다 → 찾았으면 True"""
-    updated = await User.filter(email=email).update(is_admin=admin)
-    return updated == 1
+    """이메일로 찾아 is_admin 을 바꾼다 → 찾았으면 True
+    (update() 의 반환값으로 판단하면 안 된다: MySQL 은 값이 이미 같으면 '바뀐 줄 0' 이라 두 번째 실행이 실패로 보인다)"""
+    user = await User.get_or_none(email=email)
+    if user is None:
+        return False
+    user.is_admin = admin
+    await user.save(update_fields=["is_admin"])
+    return True
 
 
 async def main() -> None:
