@@ -108,3 +108,11 @@ async def test_purge_after_retention_also_removes_safety_alerts(monkeypatch):
     assert await purge_expired(now) == 1
     assert await Message.filter(conversation_id=old.id).count() == 0
     assert [a.conversation_id for a in await SafetyAlert.all()] == [recent.id]  # 30일 안 된 기록은 남는다
+
+
+def test_my_records_context_is_masked_before_llm():
+    # [5회 통독 8] 화면이 보내는 '내 약 이름' 칸도 질문처럼 연락처를 가린다
+    msgs = build_messages("ko", "이 약 먹어도 돼요?", [], [], ["세티리진 010-1234-5678", "a.b@mail.cn"])
+    sent = msgs[-1]["content"]
+    assert "010-1234-5678" not in sent and "a.b@mail.cn" not in sent
+    assert "세티리진" in sent and "[전화번호]" in sent

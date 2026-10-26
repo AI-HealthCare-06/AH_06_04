@@ -33,6 +33,7 @@ def build_messages(
         else:
             msgs.append({"role": "assistant", "content": content})
     # [리뷰 #19] 내 기록(화면이 보낸 값 = 누구나 바꿀 수 있음)은 system 이 아니라 user 메시지의 '데이터' 칸으로
-    records = f"<my_records>{', '.join(context)}</my_records>\n" if context else ""
+    #   [5회 통독 8] 이 칸도 사용자가 바꿀 수 있는 글이라 질문과 똑같이 연락처를 가린다
+    records = f"<my_records>{mask_pii(', '.join(context))}</my_records>\n" if context else ""
     msgs.append({"role": "user", "content": f"{records}<user_question>{mask_pii(question)}</user_question>"})
     return msgs

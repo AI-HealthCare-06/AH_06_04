@@ -2,17 +2,22 @@
 # 머지 후 5회 통독(2026-10-26)에서 고친 것 — 고친 내용마다 '실패해야 하는 경우' 까지 확인한다
 #   1: 탈퇴 시 콘텐츠 변환 기록도 삭제 · 잘못된 토큰은 401 · 이메일 없는 가입은 422
 #   2: 미완성 가이드 변환은 409 · 동시 변환 요청에도 500 없음 · 알림 삭제 204 는 본문 없음
+#   6: AI 가 null 을 주면 가이드에 'None' 글자가 저장되지 않게
 # ─────────────────────────────────────────────
 import asyncio
+from unittest.mock import patch
 
+import httpx
 import jwt
 from httpx import ASGITransport, AsyncClient
 from starlette import status
 from tortoise.contrib.test import TestCase
 
+from app.core import config
 from app.main import app
 from app.models.content_assets import ContentFormatAsset
 from app.models.guides import Guide, GuideStatus
+from app.services import guide_llm
 from app.tests.content_format_apis.test_content_format_apis import signup_and_login
 
 
@@ -89,3 +94,21 @@ class TestReview5Pass(TestCase):
         assert rem.status_code == status.HTTP_201_CREATED
         res = await self.client.delete(f"/api/v1/reminders/{rem.json()['id']}", headers=headers)
         assert res.status_code == status.HTTP_204_NO_CONTENT and res.content == b""
+
+    # ── 6회차: AI 가 빈 값(null)을 주면 'None' 글자가 아니라 빈 안내 ──
+    async def test_guide_llm_null_field_is_empty_not_none_text(self):
+        def reply(_request):
+            content = '{"medication_guide": null, "lifestyle_guide": "Generally avoid strong sun."}'
+            return httpx.Response(200, json={"choices": [{"message": {"content": content}}]})
+
+        real_client = httpx.AsyncClient
+
+        def fake_client(*args, **kwargs):
+            return real_client(*args, transport=httpx.MockTransport(reply), **kwargs)
+
+        with (
+            patch.object(guide_llm.httpx, "AsyncClient", fake_client),
+            patch.object(config, "OPENAI_API_KEY", "test-not-a-real-key"),
+        ):
+            medication, lifestyle = await guide_llm._openai("record", [], "en")
+        assert medication == "" and lifestyle == "Generally avoid strong sun."
