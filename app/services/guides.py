@@ -89,8 +89,14 @@ class GuideService:
             # [리뷰 #11 · 평가 3-3] 같은 기록·언어로 이미 만든 가이드가 있고 기록이 그 뒤로 안 바뀌었으면 그대로 돌려준다
             #   → 같은 입력엔 같은 결과 + AI 비용 0
             cached = await self.repo.latest_done(user.id, data.record_id, str(data.language))
-            if cached is not None and not _record_changed(
-                cached, await self.record_repo.get_user_record(record_id=data.record_id, user_id=user.id)
+            if (
+                cached is not None
+                and not _record_changed(
+                    cached, await self.record_repo.get_user_record(record_id=data.record_id, user_id=user.id)
+                )
+                # [#22 리뷰] 안내문 묶음이나 AI 모델이 바뀌었으면 예전 결과를 재사용하지 않는다
+                and cached.kb_version == guide_knowledge.kb_version()
+                and cached.llm_model == guide_llm.current_model()
             ):
                 return cached
         # [리뷰 #11] 비용 보호: 사용자별 하루 한도 → 서비스 전체 상한
@@ -149,6 +155,7 @@ class GuideService:
             sources if final_status == GuideStatus.DONE else [],
             medication_guide=medication or None,
             lifestyle_guide=lifestyle or None,
+            kb_version=guide_knowledge.kb_version(),
             llm_model=model,
         )
 

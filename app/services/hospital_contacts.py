@@ -6,8 +6,12 @@
 from fastapi import HTTPException, status
 
 from app.core import config
-from app.dtos.hospital_contacts import HospitalContactCreateRequest, HospitalContactResponse
-from app.models.hospital_contacts import ContactStatus, HospitalContact
+from app.dtos.hospital_contacts import (
+    HospitalContactAdminItem,
+    HospitalContactCreateRequest,
+    HospitalContactResponse,
+)
+from app.models.hospital_contacts import ContactMethod, ContactStatus, HospitalContact
 from app.models.medical_records import MedicalRecord
 from app.models.users import User
 from app.services import hospitals
@@ -29,6 +33,30 @@ def to_response(c: HospitalContact) -> HospitalContactResponse:
         safety_alert_id=c.safety_alert_id,
         created_at=c.created_at,
         updated_at=c.updated_at,
+    )
+
+
+def requester_contact(user: User, method: ContactMethod) -> str | None:
+    """고른 연락 방법에 맞는 연락처 하나만 병원에 보여준다 (필요 이상의 개인정보는 안 넘김)"""
+    if method == ContactMethod.PHONE:
+        return user.phone_number
+    if method == ContactMethod.MESSENGER:
+        return (
+            f"{user.messenger_type.value}: {user.messenger_id}" if user.messenger_type and user.messenger_id else None
+        )
+    if method == ContactMethod.EMAIL:
+        return user.email
+    return None  # 방문 안내는 연락처가 필요 없다
+
+
+def to_admin_item(c: HospitalContact) -> HospitalContactAdminItem:
+    """관리자 목록 한 줄 — c.user 가 미리 불러와져 있어야 한다 (prefetch_related)"""
+    base = to_response(c).model_dump()
+    return HospitalContactAdminItem(
+        **base,
+        requester_name=c.user.name,
+        requester_language=c.user.preferred_language.value,
+        requester_contact=requester_contact(c.user, c.contact_method),
     )
 
 
@@ -74,6 +102,20 @@ class HospitalContactService:
 
     async def list_mine(self, user: User) -> list[HospitalContact]:
         return await HospitalContact.filter(user_id=user.id).order_by("-created_at", "-id").limit(50)
+
+    async def list_all(self, user: User, only_open: bool = True) -> list[HospitalContact]:
+        """병원 접수대 화면(데모: 관리자가 병원 역할) — 모든 사용자의 요청을 본다"""
+        if not user.is_admin:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN, detail="병원 접수대 화면은 관리자만 볼 수 있습니다."
+            )
+        qs = HospitalContact.all().prefetch_related("user")
+        if only_open:
+            qs = qs.filter(status__in=OPEN_STATUSES)
+        # 위험 신호(챗봇 응급 안내)에서 넘어온 요청은 따로 먼저 조회해 맨 위에 — 200건 상한에 잘려 빠지지 않게 [#27 리뷰]
+        urgent = await qs.filter(safety_alert_id__isnull=False).order_by("-created_at", "-id").limit(200)
+        normal = await qs.filter(safety_alert_id__isnull=True).order_by("-created_at", "-id").limit(200)
+        return list(urgent) + list(normal)
 
     async def change_status(self, user: User, contact_id: int, new_status: ContactStatus) -> HospitalContact:
         contact = await self.get(user, contact_id)

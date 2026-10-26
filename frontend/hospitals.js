@@ -96,3 +96,45 @@ async function contactsView() {
       h("a", { class: "btn secondary", href: "#/hospitals" }, t("hosp_title")),
       h("p", { class: "muted small" }, t("hc_demo"))));
 }
+
+// ── 병원 접수대 (#/desk) — 관리자 계정이 병원 역할을 대신해 요청 상태를 바꾼다 (데모) ──
+//   서버가 scope=all 을 관리자에게만 허용하므로(403) 화면은 그 결과를 보여주기만 한다
+async function deskView(params = new URLSearchParams()) {
+  if (!store.token) return (location.hash = "#/login");
+  const showAll = params.get("all") === "1";
+  const err = errorBox();
+  let items = [];
+  try { ({ data: { items } } = await api("GET", `/hospital-contacts?scope=all&open=${showAll ? "false" : "true"}`)); }
+  catch (ex) {
+    if (ex.status === 403) return (location.hash = "#/home");  // 일반 사용자는 접수대에 들어올 수 없다
+    err.textContent = ex.message;
+  }
+  const setStatus = async (c, next, btn) => {
+    btn.disabled = true;
+    try { await api("PATCH", `/hospital-contacts/${c.contact_id}`, { status: next }); deskView(params); }
+    catch (ex) { err.textContent = ex.message; btn.disabled = false; }
+  };
+  const row = (c) => {
+    const start = h("button", { class: "btn", type: "button" }, t("hd_start"));
+    const done = h("button", { class: "btn secondary", type: "button" }, t("hd_done"));
+    start.onclick = () => setStatus(c, "in_progress", start);
+    done.onclick = () => setStatus(c, "completed", done);
+    return h("div", { class: "item" + (c.safety_alert_id ? " urgent" : "") },
+      c.safety_alert_id ? h("div", { class: "error" }, t("hd_about_alert")) : null,
+      h("strong", {}, `#${c.contact_id} · ${c.hospital_name}`), " ", h("span", { class: "badge" }, t(`hc_status_${c.status}`)),
+      h("div", { class: "muted small" }, `${c.created_at.slice(0, 16).replace("T", " ")} · ${t(`hc_m_${c.contact_method}`)}`),
+      h("div", {}, `${t("hd_requester")}: ${c.requester_name} · ${t("hd_lang")}: ${c.requester_language}`),
+      c.requester_contact ? h("div", {}, `${t("hd_contact")}: ${c.requester_contact}`) : null,
+      c.record_id ? h("div", { class: "muted small" }, `${t("hd_about_record")} #${c.record_id}`) : null,
+      c.memo ? h("div", {}, c.memo) : null,  // 사용자 글은 textContent 로만 (XSS 방지)
+      c.status === "requested" ? h("div", { class: "row" }, start, done) : null,
+      c.status === "in_progress" ? h("div", { class: "row" }, done) : null);
+  };
+  render(h("a", { href: "#/home" }, t("back")),
+    h("div", { class: "card" }, h("h1", {}, t("hd_title")), h("p", { class: "muted small" }, t("hd_desc")), err,
+      h("div", { class: "row" },
+        h("a", { class: "btn secondary", href: showAll ? "#/desk" : "#/desk?all=1" }, showAll ? t("hd_open_only") : t("hd_all")),
+        h("button", { class: "btn secondary", type: "button", onclick: () => deskView(params) }, t("hd_refresh"))),
+      items.length ? items.map(row) : h("p", { class: "muted" }, t("hd_none")),
+      h("p", { class: "muted small" }, t("hc_demo"))));
+}
