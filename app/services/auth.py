@@ -1,3 +1,5 @@
+import asyncio
+
 from fastapi.exceptions import HTTPException
 from pydantic import EmailStr
 from starlette import status
@@ -25,11 +27,15 @@ class AuthService:
         normalized_phone_number = normalize_phone_number(data.phone_number)
         await self.check_phone_number_exists(normalized_phone_number)
 
+        # [최종 점검 3회차] bcrypt 는 일부러 느리다(수백 ms) → async 안에서 바로 부르면 그동안 서버 전체가 멈춘다
+        #   별도 스레드에서 돌리고, DB 트랜잭션을 열기 '전에' 끝낸다 (트랜잭션을 오래 잡지 않게)
+        hashed_password = await asyncio.to_thread(hash_password, data.password)
+
         # 유저 생성
         async with in_transaction():
             user = await self.user_repo.create_user(
                 email=data.email,
-                hashed_password=hash_password(data.password),  # 해시화된 비밀번호를 사용
+                hashed_password=hashed_password,  # 해시화된 비밀번호를 사용
                 name=data.name,
                 phone_number=normalized_phone_number,
                 gender=data.gender,
@@ -52,7 +58,7 @@ class AuthService:
             )
 
         # 비밀번호 검증
-        if not verify_password(data.password, user.hashed_password):
+        if not await asyncio.to_thread(verify_password, data.password, user.hashed_password):  # [최종 점검 3회차]
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST, detail="이메일 또는 비밀번호가 올바르지 않습니다."
             )

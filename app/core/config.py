@@ -29,6 +29,9 @@ class Config(BaseSettings):
     DB_NAME: str = "ai_health"
     DB_CONNECT_TIMEOUT: int = 5
     DB_CONNECTION_POOL_MAXSIZE: int = 10
+    # [최종 점검 9회차] AWS RDS 로 TLS 접속 — RDS 인증서 묶음(global-bundle.pem) 경로. 비우면 TLS 없이 (도커 mysql·로컬)
+    #   값을 넣으면 인증서와 호스트 이름(RDS 엔드포인트)까지 확인한다
+    DB_SSL_CA: str = ""
 
     COOKIE_DOMAIN: str = "localhost"
 
@@ -68,6 +71,8 @@ class Config(BaseSettings):
     OCR_MAX_BYTES: int = 5 * 1024 * 1024  # 사진 1장 최대 5MB
     OCR_TIMEOUT_S: float = 30.0
     OCR_DAILY_LIMIT: int = 20  # 한 사용자 하루 OCR 횟수 (비용 보호)
+    # [최종 점검 3회차] 서버 재시작 등으로 백그라운드 작업이 사라지면 PENDING 이 영원히 남는다 → 이 시간이 지나면 실패로
+    OCR_PENDING_TIMEOUT_S: int = 120
     OPENAI_VISION_MODEL: str = "gpt-4o-mini"
     OCR_LLM_MAX_TOKENS: int = 800  # [리뷰 #14] 약 30줄 JSON 여유
     CLOVA_OCR_SECRET_KEY: str = ""  # .env 에만 (공개 레포)

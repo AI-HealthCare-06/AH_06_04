@@ -34,7 +34,7 @@ async def test_only_owner_can_read_and_list_is_per_user(client):
     cid = await new_conv(client, "ko")
     aid = done(await ask(client, cid, "필러 맞고 숨이 안 쉬어져요"))["safety_alert_id"]
     async with make_client(2) as other:
-        assert (await other.get(f"{URL}/{aid}")).status_code == 403
+        assert (await other.get(f"{URL}/{aid}")).status_code == 404  # [최종 점검 4회차] 403 → 404
         assert (await other.get(URL)).json()["data"]["total"] == 0
     assert (await client.get(f"{URL}/999999")).status_code == 404
     assert (await client.get(URL, params={"limit": 0})).status_code == 422
