@@ -2,8 +2,10 @@
 
 | 파일 | 내용 | 쓰는 곳 |
 |---|---|---|
-| `glowpass-intro.mp4` | GlowPass 소개 모션그래픽 33초 · 1920×1080 · 소리 없음 · H.264(yuv420p, faststart) | 랜딩 페이지 메인 화면 자동 재생, 발표 오프닝 |
-| `glowpass-intro-poster.jpg` | 영상이 뜨기 전·재생 안 될 때 보여줄 정지 화면 (마지막 장면) | `<video poster>` |
+| `glowpass-intro.mp4` | **GlowPass 소개 영상 80초** · 1920×1080 · 30fps · 소리 있음(AAC) · H.264(yuv420p, faststart) · 7.8MB (원본 19MB 를 웹용으로 다시 인코딩) | 랜딩 페이지 메인 화면 자동 재생 |
+| `glowpass-intro-poster.jpg` | 80초 영상 마지막 장면 (팀원 이름) — 영상이 뜨기 전·재생 안 될 때 | `<video poster>` |
+| `glowpass-intro-33s.mp4` | 발표 오프닝용 짧은 모션그래픽 33초 · 무음 · 1MB | 데모데이 발표 첫 장 |
+| `glowpass-intro-33s-poster.jpg` | 33초 영상 마지막 장면 | |
 
 배포된 앱에서는 `/static/assets/glowpass-intro.mp4` 로 나온다 (`app/main.py` 가 `frontend/` 를 `/static` 에 올림).
 
@@ -16,7 +18,6 @@
 </video>
 ```
 
-- `muted` 가 없으면 브라우저(크롬·사파리·모바일)가 자동 재생을 막는다. 소리 없는 영상이라 문제 없음.
+- `muted` 가 없으면 브라우저(크롬·사파리·모바일)가 자동 재생을 막는다. 소리는 들어 있으니 사용자가 켜고 싶으면 `controls` 를 붙이면 된다.
 - `playsinline` 은 아이폰에서 전체 화면으로 튀지 않게.
-- 다른 서버(별도 랜딩 페이지)에 올릴 땐 파일 두 개를 복사하고 `src`·`poster` 경로만 바꾸면 된다.
-- 원본 소스는 HTML+CSS 애니메이션(`docs/` 가 아니라 발표 자료 쪽, 조태희 보관). 문구·숫자 수정이 필요하면 영상을 다시 뽑는다.
+- 다른 서버(별도 랜딩 페이지)에 올릴 땐 mp4 와 poster 두 파일을 복사하고 `src`·`poster` 경로만 바꾸면 된다.
