@@ -2,14 +2,10 @@
 # FR-05 사진 → 진료기록 초안 (OCR 엔진)
 #   fake   : 고정된 가짜 결과 — 키·비용 0, 테스트·데모용 (병원 이름에 '가짜'가 붙는다)
 #   openai : 사진을 gpt-4o-mini(비전)에 보내 칸별 JSON 으로 받는다 — 1번 호출
-#   clova  : CLOVA General OCR 로 글자를 뽑고 → OPENAI 키가 있으면 AI 로 칸 정리, 없으면 날짜·병원만 규칙으로
 # 원칙: 사진에 '적힌 것만' 옮긴다. 안 보이면 비운다. 용량·횟수를 추측해서 채우지 않는다
 # ─────────────────────────────────────────────
 import base64
 import json
-import re
-import time
-import uuid
 from datetime import datetime
 from typing import Any
 
@@ -50,14 +46,12 @@ def detect_format(data: bytes) -> str | None:
 def engine_name() -> str:
     if config.OCR_MODE == "openai":
         return f"openai:{config.OPENAI_VISION_MODEL}"
-    if config.OCR_MODE == "clova":
-        return "clova+openai" if config.OPENAI_API_KEY else "clova"
     return "fake"
 
 
 def allowed_formats() -> set[str]:
-    """PDF 는 CLOVA 만 읽을 수 있다 (AI 비전은 사진만)"""
-    return {"jpg", "png", "pdf"} if config.OCR_MODE == "clova" else {"jpg", "png"}
+    """AI 비전은 사진만 읽는다 (PDF 는 받지 않는다)"""
+    return {"jpg", "png"}
 
 
 # ── fake ───────────────────────────────────────
@@ -116,72 +110,8 @@ async def _openai_vision(data: bytes, fmt: str) -> OcrDraft:
     return clean_draft(await _openai_json(content, config.OPENAI_VISION_MODEL))
 
 
-# ── CLOVA ──────────────────────────────────────
-async def clova_text(data: bytes, fmt: str) -> str:
-    """CLOVA General OCR (V2) → 줄 단위 글자. 공식 문서: api.ncloud-docs.com ai-application-service-ocr-ocr"""
-    if not (config.CLOVA_OCR_SECRET_KEY and config.CLOVA_OCR_INVOKE_URL):
-        raise OcrEngineError("CLOVA_OCR 키가 비어 있음")
-    body = {
-        "version": "V2",
-        "requestId": str(uuid.uuid4()),
-        "timestamp": int(time.time() * 1000),
-        "lang": "ko",  # 한국에서 받은 처방전·약봉투
-        "images": [{"format": fmt, "name": "prescription", "data": base64.b64encode(data).decode()}],
-    }
-    try:
-        async with httpx.AsyncClient(timeout=config.OCR_TIMEOUT_S) as client:
-            res = await client.post(
-                config.CLOVA_OCR_INVOKE_URL, json=body, headers={"X-OCR-SECRET": config.CLOVA_OCR_SECRET_KEY}
-            )
-    except httpx.HTTPError as e:
-        raise OcrEngineError(f"clova network {type(e).__name__}") from e
-    if res.status_code != 200:
-        raise OcrEngineError(f"clova status {res.status_code}")
-    try:
-        image = res.json()["images"][0]
-    except (KeyError, IndexError, TypeError, ValueError) as e:
-        raise OcrEngineError("clova bad response") from e
-    if image.get("inferResult") != "SUCCESS":
-        raise OcrEngineError("clova infer failed")
-    lines, current = [], []
-    for field in image.get("fields", []):  # lineBreak=True 면 그 낱말에서 줄이 끝난다
-        current.append(str(field.get("inferText", "")))
-        if field.get("lineBreak"):
-            lines.append(" ".join(current))
-            current = []
-    if current:
-        lines.append(" ".join(current))
-    return "\n".join(lines)
-
-
-DATE_RE = re.compile(r"(20\d{2})\s*[.\-/년]\s*(\d{1,2})\s*[.\-/월]\s*(\d{1,2})")
-HOSPITAL_RE = re.compile(r"[가-힣A-Za-z0-9]+(?:의원|병원|클리닉|피부과)")
-
-
-def rule_parse(text: str) -> OcrDraft:
-    """AI 없이: 날짜·병원 이름만 규칙으로 찾는다. 약 목록은 사용자가 직접 확인해 입력"""
-    raw: dict[str, Any] = {"items": []}
-    if m := DATE_RE.search(text):
-        raw["visit_date"] = f"{m.group(1)}-{int(m.group(2)):02d}-{int(m.group(3)):02d}"
-    if m := HOSPITAL_RE.search(text):
-        raw["hospital_name"] = m.group(0)
-    return clean_draft(raw, warnings=["items_not_read"])
-
-
-async def _clova(data: bytes, fmt: str) -> OcrDraft:
-    text = await clova_text(data, fmt)
-    if not text.strip():
-        raise OcrEngineError("clova empty")
-    if config.OPENAI_API_KEY:  # 뽑은 글자를 AI 가 칸별로 정리 (사진은 보내지 않는다)
-        user = f"<ocr_text>\n{text[:6000]}\n</ocr_text>\nReturn the JSON."
-        return clean_draft(await _openai_json(user, config.OPENAI_CHAT_MODEL))
-    return rule_parse(text)
-
-
 async def read(data: bytes, fmt: str) -> OcrDraft:
     """사진 → 초안. 실패하면 OcrEngineError"""
     if config.OCR_MODE == "openai":
         return await _openai_vision(data, fmt)
-    if config.OCR_MODE == "clova":
-        return await _clova(data, fmt)
     return _fake()

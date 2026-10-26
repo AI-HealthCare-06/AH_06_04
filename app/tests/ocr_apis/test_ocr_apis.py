@@ -76,7 +76,7 @@ class TestOcrApis(TestCase):
         text = await self.client.post(OCR, files=upload(b"hello world", "a.png"), headers=headers)
         assert text.status_code == status.HTTP_415_UNSUPPORTED_MEDIA_TYPE  # 확장자가 아니라 내용으로 판단
         pdf = await self.client.post(OCR, files=upload(b"%PDF-1.7 ...", "a.pdf"), headers=headers)
-        assert pdf.status_code == status.HTTP_415_UNSUPPORTED_MEDIA_TYPE  # PDF 는 clova 모드에서만
+        assert pdf.status_code == status.HTTP_415_UNSUPPORTED_MEDIA_TYPE  # PDF 는 받지 않는다
         empty = await self.client.post(OCR, files=upload(b""), headers=headers)
         assert empty.status_code == status.HTTP_400_BAD_REQUEST
         with patch.object(config, "OCR_MAX_BYTES", 32):
@@ -147,36 +147,6 @@ async def test_openai_vision_sends_image_and_cleans_result():
     assert draft.hospital_name == "글로우피부과의원"
     assert draft.visit_date is None  # 미래 날짜는 버림
     assert len(draft.items) == 1 and draft.items[0].times_per_day is None and draft.items[0].days == 14
-
-
-async def test_clova_text_and_rule_parse_without_ai():
-    # CLOVA 로 글자 추출 → AI 키가 없으면 날짜·병원만 규칙으로 (약은 사용자가 확인해 입력)
-    seen = {}
-
-    def handler(request: httpx.Request) -> httpx.Response:
-        seen["secret"] = request.headers["X-OCR-SECRET"]
-        seen["body"] = json.loads(request.content)
-        fields = [
-            {"inferText": "명동밝은피부과의원", "lineBreak": True},
-            {"inferText": "교부일자", "lineBreak": False},
-            {"inferText": "2026.10.05", "lineBreak": True},
-            {"inferText": "세티리진정", "lineBreak": True},
-        ]
-        return httpx.Response(200, json={"images": [{"inferResult": "SUCCESS", "fields": fields}]})
-
-    with (
-        patch.object(config, "OCR_MODE", "clova"),
-        patch.object(config, "OPENAI_API_KEY", ""),
-        patch.object(config, "CLOVA_OCR_SECRET_KEY", "clova-test"),
-        patch.object(config, "CLOVA_OCR_INVOKE_URL", "https://clova.example/general"),
-        patch.object(ocr_engine.httpx, "AsyncClient", _mock_client(handler)),
-    ):
-        assert ocr_engine.engine_name() == "clova" and "pdf" in ocr_engine.allowed_formats()
-        draft = await ocr_engine.read(JPG, "jpg")
-    assert seen["secret"] == "clova-test" and seen["body"]["version"] == "V2"
-    assert seen["body"]["images"][0]["format"] == "jpg"
-    assert draft.hospital_name == "명동밝은피부과의원" and str(draft.visit_date) == "2026-10-05"
-    assert draft.items == [] and "items_not_read" in draft.warnings
 
 
 def test_clean_draft_limits():

@@ -28,7 +28,7 @@ class OcrJob(models.Model):
         "models.User", related_name="ocr_jobs", on_delete=fields.CASCADE
     )
     status = fields.CharEnumField(enum_type=OcrStatus, default=OcrStatus.PENDING)
-    engine = fields.CharField(max_length=30)  # 어떤 방식으로 읽었는지 (fake / openai:gpt-4o-mini / clova)
+    engine = fields.CharField(max_length=30)  # 어떤 방식으로 읽었는지 (fake / openai:gpt-4o-mini)
     draft: Any = fields.JSONField(null=True)  # 인식 결과 초안 — 진료기록으로 저장하면 지운다
     error_message = fields.CharField(max_length=200, null=True)  # 실패 이유 (사진 내용·키는 넣지 않음)
     created_at = fields.DatetimeField(auto_now_add=True)
