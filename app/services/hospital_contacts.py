@@ -95,7 +95,7 @@ class HospitalContactService:
     async def get(self, user: User, contact_id: int) -> HospitalContact:
         contact = await HospitalContact.get_or_none(id=contact_id)
         # [최종 점검 4회차] 남의 요청은 '없음'과 똑같이 404 — 403 이면 그 번호의 요청이 '있다'는 것이 드러난다
-        #   (진료기록·가이드·OCR 과 같은 규칙. API 명세서 24번의 403 문구도 같이 고쳐야 함)
+        #   (진료기록·가이드·OCR 과 같은 규칙. API 명세서 21·24번도 404 로 맞춤 — 10/26 팀 결정, PR #34)
         if contact is None or (contact.user_id != user.id and not user.is_admin):
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="해당 contact_id를 찾을 수 없습니다.")
         return contact
