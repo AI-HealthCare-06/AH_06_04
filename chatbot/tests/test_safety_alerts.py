@@ -66,3 +66,23 @@ def test_output_filter_gaps_from_review():
         "Stop and call your doctor if you have trouble breathing.",
     ]:
         assert not is_bad_output(ok), ok
+
+
+def test_stop_advice_vs_side_effect_guidance():
+    # [#27 리뷰] 부작용 대처 안내("끊고 병원에 연락")는 통과, '좋아지면 끊어라'·'끊어도 된다'·'한 알 더' 는 차단
+    from app.safety import is_bad_output
+
+    for ok in [
+        "If redness gets worse, stop using the cream and contact your clinic.",
+        "Stop using it if you see swelling, and call your hospital.",
+        "Stop using the product and see your dermatologist if blistering appears.",
+    ]:
+        assert not is_bad_output(ok), ok
+    for bad in [
+        "Stop taking it when you feel better.",
+        "You can stop using the cream once the redness is gone.",
+        "You may stop taking it after a week.",
+        "Take one more pill tonight.",
+        "Take another tablet if it still hurts.",
+    ]:
+        assert is_bad_output(bad), bad

@@ -112,9 +112,10 @@ class HospitalContactService:
         qs = HospitalContact.all().prefetch_related("user")
         if only_open:
             qs = qs.filter(status__in=OPEN_STATUSES)
-        items = await qs.order_by("-created_at", "-id").limit(200)
-        # 위험 신호(챗봇 응급 안내)에서 넘어온 요청은 맨 위로 — 접수대가 먼저 보게 (안정 정렬이라 나머지는 최신순 유지)
-        return sorted(items, key=lambda c: c.safety_alert_id is None)
+        # 위험 신호(챗봇 응급 안내)에서 넘어온 요청은 따로 먼저 조회해 맨 위에 — 200건 상한에 잘려 빠지지 않게 [#27 리뷰]
+        urgent = await qs.filter(safety_alert_id__isnull=False).order_by("-created_at", "-id").limit(200)
+        normal = await qs.filter(safety_alert_id__isnull=True).order_by("-created_at", "-id").limit(200)
+        return list(urgent) + list(normal)
 
     async def change_status(self, user: User, contact_id: int, new_status: ContactStatus) -> HospitalContact:
         contact = await self.get(user, contact_id)

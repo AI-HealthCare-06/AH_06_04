@@ -108,10 +108,16 @@ def load_docs() -> tuple[KnowledgeDoc, ...]:
     return _load_docs(str(kb_dir()))
 
 
+@lru_cache(maxsize=4)
+def _kb_version(directory: str) -> str:
+    """폴더별로 한 번만 계산 — 안내문은 _load_docs 처럼 서버가 켜져 있는 동안 바뀌지 않는다 [#27 리뷰 사소]"""
+    raw = "\n".join(f"{d.id}|{d.reviewed}|{d.source}|{d.body('ko')}|{d.body('en')}" for d in _load_docs(directory))
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:16]
+
+
 def kb_version() -> str:
     """안내문 묶음의 '내용 지문' (짧은 해시). 안내문이 하나라도 바뀌면 값이 바뀐다 → 가이드 재사용 판단에 쓴다"""
-    raw = "\n".join(f"{d.id}|{d.reviewed}|{d.source}|{d.body('ko')}|{d.body('en')}" for d in load_docs())
-    return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:16]
+    return _kb_version(str(kb_dir()))
 
 
 def _keyword_hit(keyword: str, text: str) -> bool:
@@ -182,8 +188,7 @@ _ALWAYS_BAD = re.compile(
     "|".join(
         [
             r"(약을?|복용을?)\s*(끊어도|중단해도|그만\s*(먹어|드셔)도)\s*(됩니다|돼요|괜찮)",
-            r"\byou\s+(may|can|could|should)\s+(safely\s+)?stop\s+(taking|using|the|your|it)\b",  # "you may stop the antibiotic" 도 [#22 리뷰 P2]
-            r"\bstop\s+(taking|using)\s+(it|them|the|your)\b[^.!?]*\b(when|once|after|if)\b",
+            # en 의 '약을 끊어라' 는 챗봇 safety.is_stop_advice 가 맡는다 (병원 연락 예외 포함 — is_bad_output 안에서 호출됨) [#27 리뷰]
             r"\bit'?s\s+(ok|okay|fine)\s+to\s+stop\b",
             r"(飲むのを|服用を)?やめても(大丈夫|いい|かまい)",
             r"可以停(药|止(服用|用药))",

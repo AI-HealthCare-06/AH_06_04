@@ -186,10 +186,9 @@ _BAD_OUTPUT = [
     r"진단(됩니다|입니다|으로\s*보입니다)",
     r"처방(합니다|해\s*드립니다)",
     r"\byou\s+(have|probably\s+have)\s+(a|an)?\s*\w*\s*(infection|disease|disorder|condition)",
-    r"\b(take|stop\s+taking|increase|double)\s+(your|the|this)?\s*(medicine|medication|dose|pills?)",
-    # [#22 리뷰 P2] "you can stop using the cream" · "stop the antibiotic" 같은 중단 지시
-    r"\byou\s+(may|can|could|should)\s+(safely\s+)?stop\s+(taking|using|the|your|it)\b",
-    r"\bstop\s+(taking|using)\s+(it|them|the|your)\b",
+    r"\b(take|increase|double)\s+(your|the|this)?\s*(medicine|medication|dose|pills?)",
+    r"\btake\b[^.!?]*\b(one|another|an\s+extra|\d+)\s+more\b",  # [#27 리뷰] "take one more pill tonight"
+    r"\btake\s+another\s+(pill|tablet|capsule|dose)\b",
     r"safe\s+to\s+take",
     r"i\s+(diagnose|prescribe|recommend\s+taking)",
     r"服用",
@@ -199,6 +198,20 @@ _BAD_OUTPUT = [
     r"診斷為",
     r"処方します",
 ]
+
+# ③-1-b 약을 끊으라는 지시 — 단, 같은 문장에서 병원·의사에게 연락하라고 하면 통과 [#27 리뷰]
+#   "If redness gets worse, stop using the cream and contact your clinic." 은 사후관리에 꼭 필요한 문장이다.
+#   막는 것: "you can stop taking it" (허락) · "stop taking it when you feel better" (좋아지면 끊어라)
+_STOP_ADVICE = (
+    r"\byou\s+(may|can|could|should)\s+(safely\s+)?stop\s+(taking|using|the|your|it)\b"
+    r"|\bstop\s+(taking|using)\s+(it|them|the|your)\b[^.!?]*\b(when|once|as\s+soon\s+as|after)\b[^.!?]*"
+    r"\b(better|improves?|improved|heals?|healed|clears?|cleared|gone|fine|okay|ok|normal|disappears?)\b"
+    r"|\bstop\s+(taking|using)\s+(it|them|the|your)\b[^.!?]*\b(no\s+longer|don'?t)\s+need\b"
+)
+_CLINIC_REFERRAL = (
+    r"\b(contact|call|see|visit|consult|ask|tell|inform|go\s+to|return\s+to)\s+(your|the|a)?\s*"
+    r"(clinic|doctor|hospital|dermatologist|physician|pharmacist|nurse|medical\s+team|provider)\b"
+)
 
 # ③-2 [리뷰 P1-3] '하루 두 번' 같은 횟수는 생활관리에도 쓴다 (세안 · 보습제) → '약' 낱말과 같은 문장일 때만 막는다
 #   '예약' · '약간' · '약하게' · '약해지다' 는 약이 아니다
@@ -235,6 +248,8 @@ _PROCEDURE_CONTEXT_RE = re.compile(_PROCEDURE_CONTEXT, re.IGNORECASE)
 _EMERGENCY_IF_PROCEDURE_RE = re.compile("|".join(_EMERGENCY_IF_PROCEDURE), re.IGNORECASE)
 _ASK_MEDICAL_RE = re.compile("|".join(_ASK_MEDICAL), re.IGNORECASE)
 _BAD_OUTPUT_RE = re.compile("|".join(_BAD_OUTPUT), re.IGNORECASE)
+_STOP_ADVICE_RE = re.compile(_STOP_ADVICE, re.IGNORECASE)
+_CLINIC_REFERRAL_RE = re.compile(_CLINIC_REFERRAL, re.IGNORECASE)
 _MED_WORD_RE = re.compile(_MED_WORD, re.IGNORECASE)
 _FREQUENCY_RE = re.compile(_FREQUENCY, re.IGNORECASE)
 _MED_ORDER_RE = re.compile(_MED_ORDER)
@@ -277,8 +292,13 @@ def asks_for_medical_decision(text: str) -> bool:
     return bool(_ASK_MEDICAL_RE.search(text))
 
 
+def is_stop_advice(sentence: str) -> bool:
+    """약을 끊으라는 지시인가 — 병원·의사에게 연락하라는 말이 같은 문장에 있으면 부작용 대처 안내라 통과 [#27 리뷰]"""
+    return bool(_STOP_ADVICE_RE.search(sentence)) and not _CLINIC_REFERRAL_RE.search(sentence)
+
+
 def is_bad_output(sentence: str) -> bool:
-    if _BAD_OUTPUT_RE.search(sentence):
+    if _BAD_OUTPUT_RE.search(sentence) or is_stop_advice(sentence):
         return True
     if _MED_WORD_RE.search(sentence):
         return bool(_FREQUENCY_RE.search(sentence) or _MED_ORDER_RE.search(sentence))

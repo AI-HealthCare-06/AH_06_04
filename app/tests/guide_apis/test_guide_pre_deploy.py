@@ -133,5 +133,8 @@ def test_safety_net_gaps_from_review():
         "Keep using sunscreen every day.",
         "Stop and call your doctor if you have trouble breathing.",
         "出门前30分钟和临出门前各涂一次，之后每2小时补涂。",
+        # [#27 리뷰] 부작용 대처 안내는 사후관리에 꼭 필요하다 — 병원 연락이 같은 문장에 있으면 통과
+        "If redness gets worse, stop using the cream and contact your clinic.",
+        "Stop using it if you see swelling, and call your hospital.",
     ]:
         assert guide_knowledge.remove_unsafe_sentences(ok, medication=True)[1] == 0, ok
