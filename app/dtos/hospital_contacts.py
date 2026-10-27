@@ -5,6 +5,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.dtos.base import MAX_DB_ID
 from app.models.hospital_contacts import ContactMethod, ContactStatus
 
 
@@ -13,11 +14,11 @@ class HospitalContactCreateRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")  # 정해진 칸 말고는 받지 않는다
 
-    hospital_id: int = Field(gt=0)
+    hospital_id: int = Field(gt=0, le=MAX_DB_ID)
     contact_method: ContactMethod
     memo: str | None = Field(default=None, max_length=500)
-    record_id: int | None = Field(default=None, gt=0)  # 내 시술 기록에 대한 문의면 그 번호
-    safety_alert_id: int | None = Field(default=None, gt=0)  # 챗봇 위험 신호에서 넘어온 경우
+    record_id: int | None = Field(default=None, gt=0, le=MAX_DB_ID)  # 내 시술 기록에 대한 문의면 그 번호
+    safety_alert_id: int | None = Field(default=None, gt=0, le=MAX_DB_ID)  # 챗봇 위험 신호에서 넘어온 경우
 
 
 class HospitalContactStatusRequest(BaseModel):

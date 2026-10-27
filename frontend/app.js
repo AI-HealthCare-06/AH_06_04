@@ -4,12 +4,20 @@
 // 보안: 사용자 글은 항상 textContent 로 넣는다 (innerHTML 금지 → XSS 방지)
 // ─────────────────────────────────────────────
 const API = "/api/v1";
+// [배포 전 v2 F5] 내 정보(/users/me)는 로그인 동안 한 번만 받아 둔다 — 홈·병원 카드를 열 때마다 다시 부르지 않게
+//   로그인 · 로그아웃 · 만료 · 탈퇴(= 토큰이 바뀔 때) 비운다. 화면에서 내 정보를 고치는 곳이 생기면 그때도 비울 것
+let meCache = null;
+async function getMe() {
+  if (!meCache) meCache = await api("GET", "/users/me");
+  return meCache;
+}
 const store = {
   get lang() { return localStorage.getItem("gp_lang") || "ko"; },
   set lang(v) { localStorage.setItem("gp_lang", v); },
   get token() { return sessionStorage.getItem("gp_token"); },  // 탭을 닫으면 사라지는 저장소
   // [최종 점검 5회차] 로그아웃·만료 때 이 탭의 챗봇 대화방 번호도 지운다 (같은 탭의 다음 사람이 앞사람 대화방을 열지 않게)
   set token(v) {
+    meCache = null;
     if (v) { sessionStorage.setItem("gp_token", v); return; }
     sessionStorage.removeItem("gp_token");
     sessionStorage.removeItem("gp_conv");
@@ -95,7 +103,7 @@ function loginView(message) {
       const data = await api("POST", "/auth/login", { email: email.value, password: pw.value });
       store.token = data.access_token;
       // 계정에 저장된 언어로 화면을 맞춘다 (다른 기기에서 로그인해도 같은 언어)
-      const me = await api("GET", "/users/me").catch(() => null);
+      const me = await getMe().catch(() => null);
       if (me && me.preferred_language && me.preferred_language !== store.lang) setLang(me.preferred_language);
       location.hash = "#/home";
     } catch (ex) {
@@ -127,10 +135,21 @@ function signupView() {
   inputs.nationality.addEventListener("change", () => { inputs.messenger_type.value = MESSENGER_BY_COUNTRY[inputs.nationality.value] || "WHATSAPP"; });
   inputs.messenger_type.value = MESSENGER_BY_COUNTRY[inputs.nationality.value] || "WHATSAPP";
   const err = errorBox();
+  // [배포 전 v2 F1] 필수 동의 2개 — 둘 다 체크해야 가입 버튼이 눌린다 (서버도 둘 다 true 가 아니면 422)
+  const submit = h("button", { class: "btn", type: "submit", disabled: true }, t("signup"));
+  const agrees = { agree_privacy: h("input", { type: "checkbox" }), agree_terms: h("input", { type: "checkbox" }) };
+  const syncSubmit = () => { submit.disabled = !(agrees.agree_privacy.checked && agrees.agree_terms.checked); };
+  Object.values(agrees).forEach((box) => box.addEventListener("change", syncSubmit));
+  const agreeRow = (key, fullKey) => h("div", {},
+    h("label", { class: "check" }, agrees[key], " ", t(key)),
+    h("details", {}, h("summary", {}, t("agree_view")), h("p", { class: "muted small agree-text" }, t(fullKey))));
   const form = h("form", { onsubmit: async (e) => {
     e.preventDefault();
+    if (submit.disabled) { err.textContent = t("agree_needed"); return; }
     const body = Object.fromEntries(Object.entries(inputs).map(([k, el]) => [k, el.value.trim() || null]));
     body.preferred_language = store.lang;  // 고른 화면 언어를 계정에 저장
+    body.agree_privacy = agrees.agree_privacy.checked;
+    body.agree_terms = agrees.agree_terms.checked;
     try { await api("POST", "/auth/signup", body); loginView(t("signup_done")); history.replaceState(null, "", "#/login"); }
     catch (ex) { err.textContent = ex.message; }
   } },
@@ -138,8 +157,9 @@ function signupView() {
   h("div", { class: "row" }, h("div", {}, field("gender", inputs.gender)), h("div", {}, field("birth", inputs.birth_date))),
   field("nationality", inputs.nationality), field("phone", inputs.phone_number),
   h("div", { class: "row" }, h("div", {}, field("messenger", inputs.messenger_type)), h("div", {}, field("messenger_id", inputs.messenger_id))),
-  h("p", { class: "muted small" }, t("ai_privacy_notice")),
-  h("button", { class: "btn", type: "submit" }, t("signup")), err);
+  // 외부 AI(OpenAI)로 갈 수 있다는 안내는 개인정보 동의 전문의 '국외 이전' 항목으로 옮김
+  agreeRow("agree_privacy", "privacy_full"), agreeRow("agree_terms", "terms_full"),
+  submit, err);
   render(h("div", { class: "card" }, h("h1", {}, t("signup")), form,
     h("p", { class: "muted" }, t("have_account"), " ", h("a", { href: "#/login" }, t("login")))));
 }
@@ -148,7 +168,7 @@ function signupView() {
 async function home() {
   if (!store.token) return (location.hash = "#/login");
   const [records, guides, me] = await Promise.all([
-    api("GET", "/medical-records"), api("GET", "/guides"), api("GET", "/users/me").catch(() => null),
+    api("GET", "/medical-records"), api("GET", "/guides"), getMe().catch(() => null),
   ]);
   const recordList = records.length
     ? records.map((r) => h("div", { class: "item" },
@@ -171,11 +191,15 @@ async function home() {
     me && me.is_admin ? h("a", { class: "btn secondary", href: "#/desk" }, t("hd_title")) : null,  // 병원 접수대 (관리자만)
     h("div", { class: "card" }, h("h2", {}, t("my_records")), recordList),
     guides.length ? h("div", { class: "card" }, h("h2", {}, t("my_guides")), guideList) : null,
-    h("button", { class: "btn secondary", onclick: () => { store.token = null; location.hash = "#/"; } }, t("logout")),
+    // [배포 전 v2 통독 4] 서버에도 알려 refresh 쿠키를 지운다 (실패해도 이 탭에서는 로그아웃)
+    h("button", { class: "btn secondary", onclick: async () => {
+      await api("POST", "/auth/logout").catch(() => null);
+      store.token = null; location.hash = "#/";
+    } }, t("logout")),
     // [최종 점검 5회차] 회원 탈퇴 — 한 번 더 묻고, 지운 뒤 첫 화면으로
     h("button", { class: "btn secondary", type: "button", onclick: async () => {
       if (!confirm(t("withdraw_confirm"))) return;
-      try { await api("DELETE", "/users/me"); store.token = null; alert(t("withdraw_done")); location.hash = "#/"; }
+      try { await api("DELETE", "/users/me"); await api("POST", "/auth/logout").catch(() => null); store.token = null; alert(t("withdraw_done")); location.hash = "#/"; }
       catch (ex) { alert(ex.message); }
     } }, t("withdraw")),
   );

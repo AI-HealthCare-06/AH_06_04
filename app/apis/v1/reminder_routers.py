@@ -1,10 +1,11 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Path, status
 from fastapi import Response as EmptyResponse
 from fastapi.responses import ORJSONResponse as Response
 
 from app.dependencies.security import get_request_user
+from app.dtos.base import MAX_DB_ID
 from app.dtos.reminders import ReminderCreateRequest, ReminderResponse, ReminderUpdateRequest
 from app.models.users import User
 from app.services.reminders import ReminderService
@@ -34,7 +35,7 @@ async def get_reminders(
 
 @reminder_router.patch("/{reminder_id}", response_model=ReminderResponse, status_code=status.HTTP_200_OK)
 async def update_reminder(
-    reminder_id: int,
+    reminder_id: Annotated[int, Path(le=MAX_DB_ID)],
     update_data: ReminderUpdateRequest,
     user: Annotated[User, Depends(get_request_user)],
     reminder_service: Annotated[ReminderService, Depends(ReminderService)],
@@ -45,7 +46,7 @@ async def update_reminder(
 
 @reminder_router.delete("/{reminder_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_reminder(
-    reminder_id: int,
+    reminder_id: Annotated[int, Path(le=MAX_DB_ID)],
     user: Annotated[User, Depends(get_request_user)],
     reminder_service: Annotated[ReminderService, Depends(ReminderService)],
 ) -> EmptyResponse:

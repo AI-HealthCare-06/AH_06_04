@@ -15,6 +15,8 @@ class TestUserMeApis(TestCase):
             "name": "내정보테스터",
             "gender": "FEMALE",
             "birth_date": "1992-02-02",
+            "agree_privacy": True,
+            "agree_terms": True,
             "phone_number": "01055556666",
             "messenger_type": "WECHAT",
             "messenger_id": "glowpass_test",
@@ -29,7 +31,7 @@ class TestUserMeApis(TestCase):
             headers = {"Authorization": f"Bearer {access_token}"}
             response = await client.get("/api/v1/users/me", headers=headers)
         assert response.status_code == status.HTTP_200_OK
-        assert response.json()["email"] == email
+        assert response.json()["email"] == "m***@example.com"  # [배포 전 v2 F2] 가린 값 (짧으면 절반까지만)
         assert response.json()["name"] == "내정보테스터"
 
     async def test_update_user_me_success(self):
@@ -41,6 +43,8 @@ class TestUserMeApis(TestCase):
             "name": "수정전",
             "gender": "MALE",
             "birth_date": "1990-10-10",
+            "agree_privacy": True,
+            "agree_terms": True,
             "phone_number": "01077778888",
             "messenger_type": "WECHAT",
             "messenger_id": "glowpass_test",
@@ -72,6 +76,8 @@ class TestUserMeApis(TestCase):
             "name": "이메일테스터",
             "gender": "FEMALE",
             "birth_date": "1995-05-05",
+            "agree_privacy": True,
+            "agree_terms": True,
             "phone_number": "01022223333",
             "messenger_type": "WECHAT",
             "messenger_id": "glowpass_test",

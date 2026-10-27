@@ -34,6 +34,8 @@ def _signup_body(email: str, phone: str) -> dict:
         "name": "최종점검",
         "gender": "FEMALE",
         "birth_date": "1994-11-11",
+        "agree_privacy": True,
+        "agree_terms": True,
         "phone_number": phone,
         "messenger_type": "WECHAT",
         "messenger_id": "glowpass_test",

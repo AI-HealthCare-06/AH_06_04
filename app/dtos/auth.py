@@ -1,7 +1,7 @@
 from datetime import date
 from typing import Annotated
 
-from pydantic import AfterValidator, BaseModel, EmailStr, Field
+from pydantic import AfterValidator, BaseModel, EmailStr, Field, StrictBool
 
 from app.core.validators import (
     optional_after_validator,
@@ -12,6 +12,13 @@ from app.core.validators import (
     validate_phone_number,
 )
 from app.models.users import Gender, Language, Messenger
+
+
+def _must_agree(v: bool) -> bool:
+    """[배포 전 v2 F1] 필수 동의 — false 면 가입하지 않는다"""
+    if not v:
+        raise ValueError("필수 동의 항목입니다.")
+    return v
 
 
 class SignUpRequest(BaseModel):
@@ -31,6 +38,10 @@ class SignUpRequest(BaseModel):
     messenger_id: Annotated[str, Field(examples=["wxid_glowpass"]), AfterValidator(validate_messenger_id)]
     nationality: Annotated[str | None, Field(None, examples=["CN"]), optional_after_validator(validate_nationality)]
     preferred_language: Language = Language.KO
+    # [배포 전 v2 F1] 10/26 멘토링 「개인정보 동의를 해야만 가입되게」 (없으면 앱 심사 반려) — 둘 다 true 여야 함, 아니면 422
+    #   [10회 1] strict — 숫자 1 도 true 로 받던 것을 막는다 (동의는 분명한 true 만)
+    agree_privacy: Annotated[StrictBool, AfterValidator(_must_agree)]
+    agree_terms: Annotated[StrictBool, AfterValidator(_must_agree)]
 
 
 class LoginRequest(BaseModel):

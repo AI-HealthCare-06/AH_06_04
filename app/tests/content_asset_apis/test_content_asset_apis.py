@@ -16,6 +16,8 @@ async def signup_and_login(client: AsyncClient, email: str, phone_number: str, *
         "name": "콘텐츠테스터",
         "gender": "FEMALE",
         "birth_date": "1992-02-02",
+        "agree_privacy": True,
+        "agree_terms": True,
         "phone_number": phone_number,
         "messenger_type": "WECHAT",
         "messenger_id": "glowpass_test",

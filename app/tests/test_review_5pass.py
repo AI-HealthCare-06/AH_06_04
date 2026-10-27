@@ -78,6 +78,8 @@ class TestReview5Pass(TestCase):
             "name": "이메일없음",
             "gender": "FEMALE",
             "birth_date": "1990-01-01",
+            "agree_privacy": True,
+            "agree_terms": True,
             "phone_number": "01083000005",
             "messenger_type": "WECHAT",
             "messenger_id": "glowpass_test",

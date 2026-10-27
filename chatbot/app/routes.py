@@ -20,7 +20,7 @@ import json
 import uuid
 from typing import Annotated, Literal
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, Request, Response
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field, field_validator
 from tortoise.exceptions import IntegrityError
@@ -34,6 +34,8 @@ from app.service import questions_today, run_turn
 
 router = APIRouter(prefix="/api/v1/chat", tags=["chat"])
 UserId = Annotated[int, Depends(current_user_id)]  # 팀 레포에서는 Annotated[User, Depends(get_request_user)]
+# [배포 전 v2 통독 3] 번호가 SQLite 정수 한계를 넘으면 OverflowError → 500 이었다 → 상한 (넘으면 422)
+DbId = Annotated[int, Path(le=2**63 - 1)]
 
 
 def get_llm():
@@ -153,7 +155,7 @@ class FeedbackIn(BaseModel):
 
 
 @router.put("/conversations/{conversation_id}/messages/{message_id}/feedback")
-async def feedback(conversation_id: str, message_id: int, body: FeedbackIn, user_id: UserId):
+async def feedback(conversation_id: str, message_id: DbId, body: FeedbackIn, user_id: UserId):
     """내 대화의 AI 답에만 (고정 문구·질문에는 못 단다). 다시 보내면 바뀐다."""
     conv = await _own(conversation_id, user_id)
     msg = await Message.get_or_none(id=message_id, conversation=conv, role="assistant")
@@ -187,7 +189,7 @@ def _alert_out(a: SafetyAlert) -> dict:
 async def my_safety_alerts(
     user_id: UserId,
     limit: Annotated[int, Query(ge=1, le=100)] = 20,
-    offset: Annotated[int, Query(ge=0)] = 0,
+    offset: Annotated[int, Query(ge=0, le=2**63 - 1)] = 0,  # [10회 8] 한계를 넘으면 OverflowError → 500 이었다
     severity: Literal["high", "medium"] | None = None,
 ):
     """내 감지 이력 (최신순)"""
@@ -203,7 +205,7 @@ async def my_safety_alerts(
 
 
 @router.get("/safety-alerts/{alert_id}")
-async def safety_alert(alert_id: int, user_id: UserId):
+async def safety_alert(alert_id: DbId, user_id: UserId):
     """감지 1건 상세 — 본인 것만"""
     # [최종 점검 4회차] 남의 기록은 '없음'과 똑같이 404 (대화 _own() 과 같은 규칙 — 번호로 남의 기록 유무를 알 수 없게)
     a = await SafetyAlert.get_or_none(id=alert_id, user_id=user_id)

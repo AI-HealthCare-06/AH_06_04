@@ -54,20 +54,17 @@ function eulReul(word) {
 const CARD = {
   ko: { hello: "안녕하세요. 외국인 환자입니다. 한국어가 서툴러 이 메시지로 문의드립니다.",
     visit: (r) => { const what = r.procedure_name || "진료"; return `${r.visit_date}에 ${r.hospital_name}에서 ${what}${eulReul(what)} 받았습니다.`; },
-    meds: "처방약", now: (since) => `${since} 아래 증상이 있습니다.`, ask: "진료가 필요한지 확인 부탁드립니다. 감사합니다.",
-    contact: "회신 연락처", urgent: "【긴급】 응급일 수 있는 증상이 있습니다. 바로 확인 부탁드립니다." },
+    meds: "처방약", now: (since) => `${since} 아래 증상이 있습니다.`, ask: "진료가 필요한지 확인 부탁드립니다. 감사합니다.", urgent: "【긴급】 응급일 수 있는 증상이 있습니다. 바로 확인 부탁드립니다." },
   ja: { hello: "こんにちは。外国人の患者です。韓国語が苦手なため、このメッセージでお問い合わせします。",
     visit: (r) => `${r.visit_date}に${r.hospital_name}で${r.procedure_name || "診療"}を受けました。`,
-    meds: "処方薬", now: (since) => `${since}、次の症状があります。`, ask: "受診が必要かどうか確認をお願いします。ありがとうございます。",
-    contact: "ご返信先", urgent: "【緊急】救急の可能性がある症状があります。至急ご確認ください。" },
+    meds: "処方薬", now: (since) => `${since}、次の症状があります。`, ask: "受診が必要かどうか確認をお願いします。ありがとうございます。", urgent: "【緊急】救急の可能性がある症状があります。至急ご確認ください。" },
   zh: { hello: "您好，我是外国患者。因为不太会说韩语，所以用这条信息咨询。",
     visit: (r) => `我于${r.visit_date}在${r.hospital_name}接受了${r.procedure_name || "诊疗"}。`,
-    meds: "处方药", now: (since) => `${since}，出现以下症状：`, ask: "请帮我确认是否需要就诊。谢谢。",
-    contact: "回复联系方式", urgent: "【紧急】出现可能属于急症的症状，请立即确认。" },
+    meds: "处方药", now: (since) => `${since}，出现以下症状：`, ask: "请帮我确认是否需要就诊。谢谢。", urgent: "【紧急】出现可能属于急症的症状，请立即确认。" },
   en: { hello: "Hello, I am a foreign patient. My Korean is limited, so I am contacting you with this message.",
     visit: (r) => `I had ${r.procedure_name || "a consultation"} at ${r.hospital_name} on ${r.visit_date}.`,
     meds: "Prescribed medicines", now: (since) => `${since}, I have the following symptoms:`,
-    ask: "Could you please check whether I need to see a doctor? Thank you.", contact: "Please reply to",
+    ask: "Could you please check whether I need to see a doctor? Thank you.",
     urgent: "[URGENT] I have symptoms that may be an emergency. Please check right away." },
 };
 
@@ -87,13 +84,20 @@ function clinicCardText(lang, record, picked, sinceKey, me = null) {
     picked.length ? c.now(since) : null,
     ...picked.map((s) => `- ${s.line[lang]}`),
     c.ask,
-    me ? `${c.contact}: ${[me.phone_number, me.messenger_type ? `${MESSENGER_NAME[me.messenger_type]} ${me.messenger_id}` : null].filter(Boolean).join(" / ")}` : null,
   ].filter(Boolean).join("\n");
+}
+
+// [배포 전 v2 F2] 서버가 가린 연락처(010****5678 · wx***)만 준다 → 카드 글에는 넣지 않고, 화면에서 미리보기로만 보여 준다
+//   원래 연락처는 '병원 연락 요청' 을 보내면 병원 접수대(관리자)만 받는다
+function maskedContactLine(me) {
+  if (!me) return null;
+  const parts = [me.phone_number, me.messenger_type ? `${MESSENGER_NAME[me.messenger_type]} ${me.messenger_id}` : null].filter(Boolean);
+  return parts.length ? `${parts.join(" / ")} — ${t("card_contact_note")}` : null;
 }
 
 async function clinicCardView(recordId) {
   if (!store.token) return (location.hash = "#/login");
-  const [record, me] = await Promise.all([api("GET", `/medical-records/${recordId}`), api("GET", "/users/me").catch(() => null)]);
+  const [record, me] = await Promise.all([api("GET", `/medical-records/${recordId}`), getMe().catch(() => null)]);
   const lang = store.lang;
   const picked = new Set();
   let sinceKey = "today";
@@ -115,6 +119,7 @@ async function clinicCardView(recordId) {
       } }, t("card_copy")),
       lang !== "ko" ? h("details", {}, h("summary", {}, t("card_my_lang")),
         h("pre", { class: "staff-card mine" }, clinicCardText(lang, record, chosen, sinceKey, me))) : null,
+      h("p", { class: "muted small" }, maskedContactLine(me)),
       h("p", { class: "muted small" }, t("card_note")),
     );
   };

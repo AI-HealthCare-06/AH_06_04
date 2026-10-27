@@ -2,10 +2,11 @@
 # FR-03 가이드 API 주문서 양식
 # ─────────────────────────────────────────────
 from datetime import datetime
+from typing import Annotated
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.dtos.base import BaseSerializerModel
+from app.dtos.base import MAX_DB_ID, BaseSerializerModel
 from app.models.guides import FeedbackRating, FeedbackReason, GuideLanguage, GuideStatus
 
 
@@ -14,7 +15,7 @@ class GuideCreateRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    record_id: int | None = None  # 비우면 최근 진료기록 3건으로 만든다
+    record_id: Annotated[int | None, Field(le=MAX_DB_ID)] = None  # 비우면 최근 진료기록 3건으로 만든다
     language: GuideLanguage = GuideLanguage.KO
 
 

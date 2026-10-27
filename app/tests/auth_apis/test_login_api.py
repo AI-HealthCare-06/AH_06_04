@@ -14,6 +14,8 @@ class TestLoginAPI(TestCase):
             "name": "로그인테스터",
             "gender": "FEMALE",
             "birth_date": "1995-05-05",
+            "agree_privacy": True,
+            "agree_terms": True,
             "phone_number": "01011112222",
             "messenger_type": "WECHAT",
             "messenger_id": "glowpass_test",

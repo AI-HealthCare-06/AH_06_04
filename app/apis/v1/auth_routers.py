@@ -1,6 +1,7 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Cookie, Depends, HTTPException, status
+from fastapi import Response as EmptyResponse
 from fastapi.responses import JSONResponse as Response
 
 from app.core import config
@@ -43,6 +44,23 @@ async def login(
         max_age=int(RefreshToken.lifetime.total_seconds()) if RefreshToken.lifetime else None,
         samesite="lax",
         path="/api/v1/auth",  # 재발급 주소에만 실려 가게 (다른 API 요청마다 붙지 않게)
+    )
+    return resp
+
+
+# [배포 전 v2 통독 4] 로그아웃 — 화면이 탭의 access 만 지우면 refresh 쿠키(14일)가 브라우저에 남아
+#   같은 브라우저의 다음 사람이 /auth/token/refresh 로 다시 로그인 상태가 된다 → 서버가 쿠키를 지운다
+#   (로그인 때와 같은 path · domain 이어야 브라우저가 같은 쿠키로 보고 지움. 토큰 자체를 무효로 만드는 목록은 아직 없음)
+@auth_router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
+async def logout() -> EmptyResponse:
+    resp = EmptyResponse(status_code=status.HTTP_204_NO_CONTENT)
+    resp.delete_cookie(
+        key="refresh_token",
+        path="/api/v1/auth",
+        domain=config.COOKIE_DOMAIN or None,
+        secure=config.ENV == Env.PROD,
+        httponly=True,
+        samesite="lax",
     )
     return resp
 

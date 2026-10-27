@@ -10,10 +10,11 @@
 # ─────────────────────────────────────────────
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Query, Response, status
+from fastapi import APIRouter, Depends, Path, Query, Response, status
 from fastapi.responses import ORJSONResponse
 
 from app.dependencies.security import get_request_user
+from app.dtos.base import MAX_DB_ID
 from app.dtos.medical_records import (
     GuideContextResponse,
     MedicalRecordCreateRequest,
@@ -41,7 +42,7 @@ async def list_medical_records(
     user: Annotated[User, Depends(get_request_user)],
     service: Annotated[MedicalRecordService, Depends(MedicalRecordService)],
     limit: Annotated[int, Query(ge=1, le=100)] = 20,  # 한 번에 몇 개 (기본 20개)
-    offset: Annotated[int, Query(ge=0)] = 0,  # 몇 개 건너뛰고
+    offset: Annotated[int, Query(ge=0, le=MAX_DB_ID)] = 0,  # 몇 개 건너뛰고
 ) -> ORJSONResponse:
     records = await service.list_records(user=user, limit=limit, offset=offset)
     return ORJSONResponse([record.model_dump() for record in records], status_code=status.HTTP_200_OK)
@@ -61,7 +62,7 @@ async def get_guide_context(
 
 @medical_record_router.get("/{record_id}", response_model=MedicalRecordResponse, status_code=status.HTTP_200_OK)
 async def get_medical_record(
-    record_id: int,
+    record_id: Annotated[int, Path(le=MAX_DB_ID)],
     user: Annotated[User, Depends(get_request_user)],
     service: Annotated[MedicalRecordService, Depends(MedicalRecordService)],
 ) -> ORJSONResponse:
@@ -71,7 +72,7 @@ async def get_medical_record(
 
 @medical_record_router.patch("/{record_id}", response_model=MedicalRecordResponse, status_code=status.HTTP_200_OK)
 async def update_medical_record(
-    record_id: int,
+    record_id: Annotated[int, Path(le=MAX_DB_ID)],
     request: MedicalRecordUpdateRequest,
     user: Annotated[User, Depends(get_request_user)],
     service: Annotated[MedicalRecordService, Depends(MedicalRecordService)],
@@ -82,7 +83,7 @@ async def update_medical_record(
 
 @medical_record_router.delete("/{record_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_medical_record(
-    record_id: int,
+    record_id: Annotated[int, Path(le=MAX_DB_ID)],
     user: Annotated[User, Depends(get_request_user)],
     service: Annotated[MedicalRecordService, Depends(MedicalRecordService)],
 ) -> Response:

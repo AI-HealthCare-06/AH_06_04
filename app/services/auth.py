@@ -1,10 +1,12 @@
 import asyncio
+from datetime import datetime
 
 from fastapi.exceptions import HTTPException
 from pydantic import EmailStr
 from starlette import status
 from tortoise.transactions import in_transaction
 
+from app.core import config
 from app.core.jwt.tokens import AccessToken, RefreshToken
 from app.core.utils.common import normalize_phone_number
 from app.core.utils.security import hash_password, verify_password
@@ -31,7 +33,8 @@ class AuthService:
         #   별도 스레드에서 돌리고, DB 트랜잭션을 열기 '전에' 끝낸다 (트랜잭션을 오래 잡지 않게)
         hashed_password = await asyncio.to_thread(hash_password, data.password)
 
-        # 유저 생성
+        # 유저 생성 — [배포 전 v2 F1] 동의 시각을 같이 남긴다 (언제 동의했는지가 기록돼야 함)
+        agreed_at = datetime.now(config.TIMEZONE)
         async with in_transaction():
             user = await self.user_repo.create_user(
                 email=data.email,
@@ -44,6 +47,8 @@ class AuthService:
                 preferred_language=data.preferred_language,
                 messenger_type=data.messenger_type,
                 messenger_id=data.messenger_id,
+                privacy_agreed_at=agreed_at,
+                terms_agreed_at=agreed_at,
             )
 
             return user

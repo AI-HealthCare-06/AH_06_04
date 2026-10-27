@@ -3,12 +3,12 @@ from typing import Annotated
 
 from pydantic import BaseModel, Field, field_validator
 
-from app.dtos.base import BaseSerializerModel
+from app.dtos.base import MAX_DB_ID, BaseSerializerModel
 from app.models.content_assets import ContentFormatType
 
 
 class ContentAssetCreateRequest(BaseModel):
-    guide_id: Annotated[int, Field(description="연결된 가이드 ID")]
+    guide_id: Annotated[int, Field(description="연결된 가이드 ID", le=MAX_DB_ID)]
     format_type: Annotated[
         ContentFormatType,
         Field(description="'AUDIO', 'VIDEO', 'IMAGE'"),

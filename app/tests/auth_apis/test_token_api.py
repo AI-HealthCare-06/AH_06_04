@@ -14,6 +14,8 @@ class TestJWTTokenRefreshAPI(TestCase):
             "name": "리프레시테스터",
             "gender": "MALE",
             "birth_date": "1990-01-01",
+            "agree_privacy": True,
+            "agree_terms": True,
             "phone_number": "01099998888",
             "messenger_type": "WECHAT",
             "messenger_id": "glowpass_test",

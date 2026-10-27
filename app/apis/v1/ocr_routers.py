@@ -6,11 +6,12 @@
 # ─────────────────────────────────────────────
 from typing import Annotated
 
-from fastapi import APIRouter, BackgroundTasks, Depends, File, UploadFile, status
+from fastapi import APIRouter, BackgroundTasks, Depends, File, Path, UploadFile, status
 from fastapi.responses import ORJSONResponse
 
 from app.core import config
 from app.dependencies.security import get_request_user
+from app.dtos.base import MAX_DB_ID
 from app.dtos.ocr import OcrJobAcceptedResponse, OcrJobResponse
 from app.models.users import User
 from app.services.ocr import OcrService
@@ -35,7 +36,7 @@ async def upload_prescription(
 
 @ocr_router.get("/prescriptions/{job_id}", response_model=OcrJobResponse, status_code=status.HTTP_200_OK)
 async def get_prescription_job(
-    job_id: int,
+    job_id: Annotated[int, Path(le=MAX_DB_ID)],
     user: Annotated[User, Depends(get_request_user)],
     service: Annotated[OcrService, Depends(OcrService)],
 ) -> ORJSONResponse:

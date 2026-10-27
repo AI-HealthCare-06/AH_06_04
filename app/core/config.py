@@ -1,11 +1,16 @@
+import logging
 import os
+import secrets
 import uuid
 import zoneinfo
 from dataclasses import field
 from enum import StrEnum
 from pathlib import Path
 
+from pydantic import ValidationInfo, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+logger = logging.getLogger(__name__)
 
 
 class Env(StrEnum):
@@ -77,6 +82,16 @@ class Config(BaseSettings):
     OCR_LLM_MAX_TOKENS: int = 800  # [리뷰 #14] 약 30줄 JSON 여유
     CLOVA_OCR_SECRET_KEY: str = ""  # .env 에만 (공개 레포)
     CLOVA_OCR_INVOKE_URL: str = ""  # 콘솔의 General OCR 'APIGW Invoke URL' (이것도 비밀값)
+
+    # [배포 전 v2 F3] 예시 env 의 SECRET_KEY 를 비웠다 → 빈 값으로 토큰을 찍지 않게
+    #   개발·테스트: 켤 때마다 무작위 키 + 경고 (서버를 다시 켜면 로그인이 풀림) / 운영: prod_setting_problems 가 막는다
+    @field_validator("SECRET_KEY")
+    @classmethod
+    def _empty_secret_key(cls, v: str, info: ValidationInfo) -> str:
+        if v or info.data.get("ENV") == Env.PROD:
+            return v
+        logger.warning("SECRET_KEY 가 비어 있어 임시 무작위 키를 씁니다 — .env 에 값을 넣으세요")
+        return secrets.token_hex(32)
 
 
 # 공개 레포에 올라간 예시 값 — 운영에서 이 값이면 누구나 로그인 토큰을 만들 수 있다 [리뷰 #20]

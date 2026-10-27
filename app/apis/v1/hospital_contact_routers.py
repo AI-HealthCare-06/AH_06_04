@@ -8,10 +8,11 @@
 # ─────────────────────────────────────────────
 from typing import Annotated, Literal
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, Path, Query, status
 from fastapi.responses import ORJSONResponse
 
 from app.dependencies.security import get_request_user
+from app.dtos.base import MAX_DB_ID
 from app.dtos.hospital_contacts import HospitalContactCreateRequest, HospitalContactStatusRequest
 from app.models.users import User
 from app.services.hospital_contacts import HospitalContactService, to_admin_item, to_response
@@ -47,7 +48,7 @@ async def list_contacts(
 
 @hospital_contact_router.get("/{contact_id}", status_code=status.HTTP_200_OK)
 async def get_contact(
-    contact_id: int,
+    contact_id: Annotated[int, Path(le=MAX_DB_ID)],
     user: Annotated[User, Depends(get_request_user)],
     service: Annotated[HospitalContactService, Depends(HospitalContactService)],
 ) -> ORJSONResponse:
@@ -58,7 +59,7 @@ async def get_contact(
 
 @hospital_contact_router.patch("/{contact_id}", status_code=status.HTTP_200_OK)
 async def change_contact_status(
-    contact_id: int,
+    contact_id: Annotated[int, Path(le=MAX_DB_ID)],
     data: HospitalContactStatusRequest,
     user: Annotated[User, Depends(get_request_user)],
     service: Annotated[HospitalContactService, Depends(HospitalContactService)],
