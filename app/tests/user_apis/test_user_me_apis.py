@@ -31,6 +31,9 @@ class TestUserMeApis(TestCase):
         assert response.status_code == status.HTTP_200_OK
         assert response.json()["email"] == email
         assert response.json()["name"] == "내정보테스터"
+        # 연락처는 가려서 돌려준다 (가운데 *) [10/26 멘토링]
+        assert response.json()["phone_number"] == "010-****-6666"
+        assert response.json()["messenger_id"] == "gl*********st"
 
     async def test_update_user_me_success(self):
         # 사용자 등록 및 로그인

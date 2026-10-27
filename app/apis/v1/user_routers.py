@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, status
 from fastapi import Response as EmptyResponse
 from fastapi.responses import ORJSONResponse as Response
 
+from app.core.utils.masking import mask_id, mask_phone
 from app.dependencies.security import get_request_user
 from app.dtos.users import UserInfoResponse, UserUpdateRequest
 from app.models.users import User
@@ -16,7 +17,7 @@ user_router = APIRouter(prefix="/users", tags=["users"])
 async def user_me_info(
     user: Annotated[User, Depends(get_request_user)],
 ) -> Response:
-    return Response(UserInfoResponse.model_validate(user).model_dump(), status_code=status.HTTP_200_OK)
+    return Response(_masked(user), status_code=status.HTTP_200_OK)
 
 
 @user_router.patch("/me", response_model=UserInfoResponse, status_code=status.HTTP_200_OK)
@@ -26,7 +27,15 @@ async def update_user_me_info(
     user_manage_service: Annotated[UserManageService, Depends(UserManageService)],
 ) -> Response:
     updated_user = await user_manage_service.update_user(user=user, data=update_data)
-    return Response(UserInfoResponse.model_validate(updated_user).model_dump(), status_code=status.HTTP_200_OK)
+    return Response(_masked(updated_user), status_code=status.HTTP_200_OK)
+
+
+def _masked(user: User) -> dict:
+    """내 정보 응답 — 전화번호·메신저 ID 는 가운데를 가린다 (화면·Swagger 에 통째로 안 보이게) [10/26 멘토링]"""
+    body = UserInfoResponse.model_validate(user).model_dump()
+    body["phone_number"] = mask_phone(body["phone_number"])
+    body["messenger_id"] = mask_id(body["messenger_id"])
+    return body
 
 
 # [최종 점검 5회차] 회원 탈퇴 — 건강정보(민감정보)는 탈퇴 시 삭제 (팀 규칙 CLAUDE.md §2)

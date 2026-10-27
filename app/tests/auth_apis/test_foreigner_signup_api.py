@@ -10,6 +10,7 @@ from tortoise.contrib.test import TestCase
 from app.core.utils.common import normalize_phone_number
 from app.core.validators import validate_phone_number
 from app.main import app
+from app.models.users import User
 
 BASE = {
     "password": "Password123!",
@@ -46,8 +47,11 @@ class TestForeignerSignup(TestCase):
         res = await self.client.post("/api/v1/auth/signup", json=body)
         assert res.status_code == status.HTTP_201_CREATED, res.text
         _, me = await self._login_me("cn1@example.com")
-        assert me["phone_number"] == "+8613812345678" and me["nationality"] == "CN" and me["preferred_language"] == "zh"
-        assert me["messenger_type"] == "WECHAT" and me["messenger_id"] == "wxid_xiaomei"
+        # /users/me 는 연락처를 가려서 돌려준다 [10/26 멘토링] — 저장된 값은 DB 로 확인
+        assert me["phone_number"] == "+8613******678" and me["nationality"] == "CN" and me["preferred_language"] == "zh"
+        assert me["messenger_type"] == "WECHAT" and me["messenger_id"] == "wx********ei"
+        saved = await User.get(email="cn1@example.com")
+        assert saved.phone_number == "+8613812345678" and saved.messenger_id == "wxid_xiaomei"
         dup = {**body, "email": "cn2@example.com", "phone_number": "+8613812345678"}
         assert (await self.client.post("/api/v1/auth/signup", json=dup)).status_code == status.HTTP_409_CONFLICT
 

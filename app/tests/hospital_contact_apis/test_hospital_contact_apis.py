@@ -90,9 +90,14 @@ class TestHospitalContactApis(TestCase):
         assert res.status_code == 200, res.text
         items = res.json()["data"]["items"]
         mine = [i for i in items if i["requester_name"] and i["hospital_id"] == 1 and i["contact_method"] == "phone"]
-        assert mine and mine[0]["requester_contact"] == "01050000011" and mine[0]["requester_language"]
-        # 완료 처리하면 '진행 중만' 목록에서 빠지고, open=false 로는 보인다
+        # 아직 맡지 않은 요청은 연락처가 가려져 있다 [10/26 멘토링]
+        assert mine and mine[0]["requester_contact"] == "010-****-0011" and mine[0]["requester_language"]
         cid = mine[0]["contact_id"]
+        # '확인 시작'(in_progress) 뒤에는 전체 연락처
+        await self.client.patch(f"{URL}/{cid}", json={"status": "in_progress"}, headers=staff)
+        now = (await self.client.get(f"{URL}?scope=all", headers=staff)).json()["data"]["items"]
+        assert [i for i in now if i["contact_id"] == cid][0]["requester_contact"] == "01050000011"
+        # 완료 처리하면 '진행 중만' 목록에서 빠지고, open=false 로는 보인다
         await self.client.patch(f"{URL}/{cid}", json={"status": "completed"}, headers=staff)
         open_ids = [
             i["contact_id"] for i in (await self.client.get(f"{URL}?scope=all", headers=staff)).json()["data"]["items"]
