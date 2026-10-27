@@ -87,13 +87,20 @@ function clinicCardText(lang, record, picked, sinceKey, me = null) {
     picked.length ? c.now(since) : null,
     ...picked.map((s) => `- ${s.line[lang]}`),
     c.ask,
-    me ? `${c.contact}: ${[me.phone_number, me.messenger_type ? `${MESSENGER_NAME[me.messenger_type]} ${me.messenger_id}` : null].filter(Boolean).join(" / ")}` : null,
   ].filter(Boolean).join("\n");
+}
+
+// [배포 전 v2 F2] 서버가 가린 연락처(010****5678 · wx***)만 준다 → 카드 글에는 넣지 않고, 화면에서 미리보기로만 보여 준다
+//   원래 연락처는 '병원 연락 요청' 을 보내면 병원 접수대(관리자)만 받는다
+function maskedContactLine(me) {
+  if (!me) return null;
+  const parts = [me.phone_number, me.messenger_type ? `${MESSENGER_NAME[me.messenger_type]} ${me.messenger_id}` : null].filter(Boolean);
+  return parts.length ? `${parts.join(" / ")} — ${t("card_contact_note")}` : null;
 }
 
 async function clinicCardView(recordId) {
   if (!store.token) return (location.hash = "#/login");
-  const [record, me] = await Promise.all([api("GET", `/medical-records/${recordId}`), api("GET", "/users/me").catch(() => null)]);
+  const [record, me] = await Promise.all([api("GET", `/medical-records/${recordId}`), getMe().catch(() => null)]);
   const lang = store.lang;
   const picked = new Set();
   let sinceKey = "today";
@@ -115,6 +122,7 @@ async function clinicCardView(recordId) {
       } }, t("card_copy")),
       lang !== "ko" ? h("details", {}, h("summary", {}, t("card_my_lang")),
         h("pre", { class: "staff-card mine" }, clinicCardText(lang, record, chosen, sinceKey, me))) : null,
+      h("p", { class: "muted small" }, maskedContactLine(me)),
       h("p", { class: "muted small" }, t("card_note")),
     );
   };
