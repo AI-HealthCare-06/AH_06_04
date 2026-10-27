@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 자동 생성: scripts/app_strings.js — 앱에만 있는 문구 (4개 언어) -->
+<resources>
+    <string name="features" formatted="false">機能一覧</string>
+    <string name="profile_title" formatted="false">マイ情報</string>
+    <string name="profile_save" formatted="false">保存</string>
+    <string name="profile_saved" formatted="false">保存しました。</string>
+    <string name="profile_masked_note" formatted="false">連絡先は一部を隠して表示します。変更するときだけ新しく入力してください。</string>
+    <string name="profile_lang" formatted="false">表示言語</string>
+    <string name="edit" formatted="false">編集</string>
+    <string name="delete" formatted="false">削除</string>
+    <string name="cancel" formatted="false">キャンセル</string>
+    <string name="ok" formatted="false">OK</string>
+    <string name="retry" formatted="false">再試行</string>
+    <string name="loading" formatted="false">読み込み中…</string>
+    <string name="record_edit_title" formatted="false">診療記録の編集</string>
+    <string name="record_update" formatted="false">変更を保存</string>
+    <string name="record_delete_confirm" formatted="false">この診療記録を削除しますか？元に戻せません。</string>
+    <string name="record_deleted" formatted="false">診療記録を削除しました。</string>
+    <string name="record_detail" formatted="false">記録を見る</string>
+    <string name="guides_none" formatted="false">まだガイドがありません。</string>
+    <string name="guide_context_title" formatted="false">ガイドに使われる最近の記録の要約</string>
+    <string name="ocr_camera" formatted="false">📷 写真を撮る</string>
+    <string name="ocr_gallery" formatted="false">🖼 ギャラリーから選ぶ</string>
+    <string name="val_required" formatted="false">必須項目を入力してください。</string>
+    <string name="val_email" formatted="false">メールアドレスの形式を確認してください。</string>
+    <string name="val_phone" formatted="false">電話番号の形式を確認してください。（例: 01012345678 または +86 138 1234 5678）</string>
+    <string name="val_messenger" formatted="false">メッセンジャーIDは2〜50文字の文字・数字・_ . - + @ のみ使えます。</string>
+    <string name="val_birth" formatted="false">14歳以上の方のみ登録できます。</string>
+    <string name="val_gender" formatted="false">性別を選択してください。</string>
+    <string name="val_date" formatted="false">日付は YYYY-MM-DD の形式で入力してください。</string>
+    <string name="val_future" formatted="false">診療日に未来の日付は指定できません。</string>
+    <string name="val_number" formatted="false">数字を確認してください。（1日1〜10回、1〜365日分）</string>
+    <string name="val_name" formatted="false">名前は2〜50文字で入力してください。</string>
+    <string name="session_expired" formatted="false">ログインの有効期限が切れました。もう一度ログインしてください。</string>
+    <string name="network_error" formatted="false">サーバーに接続できませんでした。インターネット接続を確認してください。</string>
+    <string name="rm_app_note" formatted="false">アプリを閉じていても、設定した時刻にスマホへ通知が届きます。</string>
+    <string name="rm_perm_denied" formatted="false">通知がオフのため、スマホに通知できません。設定でオンにしてください。</string>
+    <string name="rm_exact_off" formatted="false">正確なアラームがオフのため、通知が数分遅れることがあります。</string>
+    <string name="rm_exact_open" formatted="false">正確なアラームを許可</string>
+    <string name="rm_channel" formatted="false">服薬リマインダー</string>
+    <string name="open_settings" formatted="false">設定を開く</string>
+    <string name="chat_usage" formatted="false">今日の質問 {used} / {limit}</string>
+    <string name="chat_alerts" formatted="false">危険サインの記録</string>
+    <string name="chat_alerts_none" formatted="false">危険サインの記録はありません。</string>
+    <string name="chat_stop" formatted="false">停止</string>
+    <string name="chat_lang" formatted="false">チャットボットの言語</string>
+    <string name="tts_unsupported_app" formatted="false">このスマホは音声読み上げに対応していません。</string>
+    <string name="card_shared" formatted="false">カード画像を作りました。保存先・送信先を選んでください。</string>
+    <string name="guide_assets" formatted="false">変換ファイル {n}件（管理者）</string>
+    <string name="hosp_detail" formatted="false">病院情報</string>
+    <string name="contact_detail" formatted="false">依頼の詳細</string>
+    <string name="app_version" formatted="false">アプリ {v} ・ サーバー {s}</string>
+</resources>

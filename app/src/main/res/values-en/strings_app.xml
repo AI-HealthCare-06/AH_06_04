@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 자동 생성: scripts/app_strings.js — 앱에만 있는 문구 (4개 언어) -->
+<resources>
+    <string name="features" formatted="false">All features</string>
+    <string name="profile_title" formatted="false">My info</string>
+    <string name="profile_save" formatted="false">Save</string>
+    <string name="profile_saved" formatted="false">Saved.</string>
+    <string name="profile_masked_note" formatted="false">Contact details are shown masked. Enter new ones only to change them.</string>
+    <string name="profile_lang" formatted="false">Display language</string>
+    <string name="edit" formatted="false">Edit</string>
+    <string name="delete" formatted="false">Delete</string>
+    <string name="cancel" formatted="false">Cancel</string>
+    <string name="ok" formatted="false">OK</string>
+    <string name="retry" formatted="false">Try again</string>
+    <string name="loading" formatted="false">Loading…</string>
+    <string name="record_edit_title" formatted="false">Edit medical record</string>
+    <string name="record_update" formatted="false">Save changes</string>
+    <string name="record_delete_confirm" formatted="false">Delete this medical record? This cannot be undone.</string>
+    <string name="record_deleted" formatted="false">Medical record deleted.</string>
+    <string name="record_detail" formatted="false">View record</string>
+    <string name="guides_none" formatted="false">No guides yet.</string>
+    <string name="guide_context_title" formatted="false">Summary of recent records used for guides</string>
+    <string name="ocr_camera" formatted="false">📷 Take a photo</string>
+    <string name="ocr_gallery" formatted="false">🖼 Choose from gallery</string>
+    <string name="val_required" formatted="false">Please fill in the required fields.</string>
+    <string name="val_email" formatted="false">Please check the email format.</string>
+    <string name="val_phone" formatted="false">Please check the phone number. (e.g. 01012345678 or +86 138 1234 5678)</string>
+    <string name="val_messenger" formatted="false">Messenger ID: 2–50 letters, numbers or _ . - + @ only.</string>
+    <string name="val_birth" formatted="false">You must be 14 or older to sign up.</string>
+    <string name="val_gender" formatted="false">Please select your gender.</string>
+    <string name="val_date" formatted="false">Please enter the date as YYYY-MM-DD.</string>
+    <string name="val_future" formatted="false">The visit date cannot be in the future.</string>
+    <string name="val_number" formatted="false">Please check the numbers. (1–10 times a day, 1–365 days)</string>
+    <string name="val_name" formatted="false">Please enter a name of 2–50 characters.</string>
+    <string name="session_expired" formatted="false">Your session has ended. Please log in again.</string>
+    <string name="network_error" formatted="false">Could not reach the server. Please check your internet connection.</string>
+    <string name="rm_app_note" formatted="false">You will get a phone notification at the set time even if the app is closed.</string>
+    <string name="rm_perm_denied" formatted="false">Notifications are turned off, so we cannot alert you. Please turn them on in Settings.</string>
+    <string name="rm_exact_off" formatted="false">Exact alarms are off, so notifications may arrive a few minutes late.</string>
+    <string name="rm_exact_open" formatted="false">Allow exact alarms</string>
+    <string name="rm_channel" formatted="false">Medication reminders</string>
+    <string name="open_settings" formatted="false">Open settings</string>
+    <string name="chat_usage" formatted="false">Questions today {used} / {limit}</string>
+    <string name="chat_alerts" formatted="false">My safety alerts</string>
+    <string name="chat_alerts_none" formatted="false">No safety alerts.</string>
+    <string name="chat_stop" formatted="false">Stop</string>
+    <string name="chat_lang" formatted="false">Chatbot language</string>
+    <string name="tts_unsupported_app" formatted="false">This phone does not support text-to-speech.</string>
+    <string name="card_shared" formatted="false">Card image ready. Choose where to save or send it.</string>
+    <string name="guide_assets" formatted="false">{n} converted files (admin)</string>
+    <string name="hosp_detail" formatted="false">Clinic info</string>
+    <string name="contact_detail" formatted="false">Request details</string>
+    <string name="app_version" formatted="false">App {v} · server {s}</string>
+</resources>

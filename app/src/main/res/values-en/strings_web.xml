@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 자동 생성: scripts/i18n_to_strings.js (웹 frontend/i18n.js) — 손으로 고치지 않는다 -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation,UnusedResources,Typos">
+    <string name="tagline" formatted="false">No more figuring out your skin care alone</string>
+    <string name="intro" formatted="false">GlowPass explains your medicines and after-care simply, based on your clinic visit.</string>
+    <string name="choose_lang" formatted="false">Choose language</string>
+    <string name="login" formatted="false">Log in</string>
+    <string name="signup" formatted="false">Sign up</string>
+    <string name="logout" formatted="false">Log out</string>
+    <string name="withdraw" formatted="false">Delete account</string>
+    <string name="withdraw_confirm" formatted="false">Deleting your account permanently removes your records, guides and clinic requests. This cannot be undone. Delete?</string>
+    <string name="withdraw_done" formatted="false">Your account was deleted. Chat history is removed automatically within 30 days.</string>
+    <string name="email" formatted="false">Email</string>
+    <string name="password" formatted="false">Password</string>
+    <string name="password_hint" formatted="false">8+ characters with upper, lower, number and symbol</string>
+    <string name="name" formatted="false">Name</string>
+    <string name="gender" formatted="false">Gender</string>
+    <string name="female" formatted="false">Female</string>
+    <string name="male" formatted="false">Male</string>
+    <string name="birth" formatted="false">Date of birth</string>
+    <string name="select_placeholder" formatted="false">Select</string>
+    <string name="intro_video" formatted="false">GlowPass intro video</string>
+    <string name="phone" formatted="false">Mobile number</string>
+    <string name="phone_hint" formatted="false">Required · e.g. +1 415 555 0100</string>
+    <string name="no_account" formatted="false">No account yet?</string>
+    <string name="have_account" formatted="false">Already have an account?</string>
+    <string name="home_title" formatted="false">My skin care</string>
+    <string name="my_records" formatted="false">My clinic records</string>
+    <string name="no_records" formatted="false">No clinic records yet.</string>
+    <string name="add_record" formatted="false">Add a clinic record</string>
+    <string name="make_guide" formatted="false">Create AI guide</string>
+    <string name="my_guides" formatted="false">My AI guides</string>
+    <string name="visit_date" formatted="false">Visit date</string>
+    <string name="hospital" formatted="false">Clinic name</string>
+    <string name="procedure" formatted="false">Treatment / procedure</string>
+    <string name="procedure_ph" formatted="false">e.g. acne care, laser toning</string>
+    <string name="doctor_note" formatted="false">Doctor\'s notes</string>
+    <string name="drugs" formatted="false">Prescribed medicines</string>
+    <string name="drug_name" formatted="false">Medicine name</string>
+    <string name="dose" formatted="false">Dose</string>
+    <string name="dose_ph" formatted="false">e.g. 1 tablet</string>
+    <string name="times_per_day" formatted="false">Times a day</string>
+    <string name="days" formatted="false">Days</string>
+    <string name="add_drug" formatted="false">+ Add medicine</string>
+    <string name="save" formatted="false">Save and create AI guide</string>
+    <string name="ocr_upload" formatted="false">Fill in from a prescription photo</string>
+    <string name="analyzing" formatted="false">AI analysis · creating guide</string>
+    <string name="step_record" formatted="false">Checking your records and prescriptions</string>
+    <string name="step_rag" formatted="false">Searching trusted sources (FR-02)</string>
+    <string name="step_guide" formatted="false">Writing your medicine and care guide (FR-03)</string>
+    <string name="wait_msg" formatted="false">Please wait a moment. We\'ll show it as soon as it\'s ready.</string>
+    <string name="guide_title" formatted="false">Your AI guide</string>
+    <string name="tab_med" formatted="false">Medicines</string>
+    <string name="tab_life" formatted="false">Daily care</string>
+    <string name="tab_src" formatted="false">Sources</string>
+    <string name="prescriptions_title" formatted="false">Your prescription</string>
+    <string name="prescriptions_note" formatted="false">Shown exactly as you entered it from the clinic. Follow your prescription.</string>
+    <string name="no_source" formatted="false">We don\'t have verified sources for this record yet, so no guide was created. Please ask your doctor.</string>
+    <string name="failed" formatted="false">We couldn\'t create the guide. Please try again later.</string>
+    <string name="empty_section" formatted="false">No sources for this part.</string>
+    <string name="ask_ai" formatted="false">Ask AI more</string>
+    <string name="contact_hospital" formatted="false">Contact your clinic</string>
+    <string name="coming_soon" formatted="false">Coming soon</string>
+    <string name="times_unit" formatted="false">{n} times a day</string>
+    <string name="days_unit" formatted="false">{n} days</string>
+    <string name="relevance" formatted="false">Relevance</string>
+    <string name="open_source" formatted="false">Open source</string>
+    <string name="disclaimer_short" formatted="false">※ This information is for reference and does not replace medical judgement or prescriptions.</string>
+    <string name="back" formatted="false">← Back</string>
+    <string name="status_PENDING" formatted="false">Creating</string>
+    <string name="status_DONE" formatted="false">Done</string>
+    <string name="status_NO_SOURCE" formatted="false">No sources</string>
+    <string name="status_FAILED" formatted="false">Failed</string>
+    <string name="err_login" formatted="false">Please check your email or password.</string>
+    <string name="err_generic" formatted="false">We couldn\'t process the request.</string>
+    <string name="signup_done" formatted="false">Signed up. Please log in.</string>
+    <string name="chat_open" formatted="false">Ask the AI chatbot</string>
+    <string name="chat_title" formatted="false">AI Chatbot</string>
+    <string name="chat_intro" formatted="false">General information only, based on our reference documents. Always ask your medical team whether it applies to you.</string>
+    <string name="chat_ph" formatted="false">Type your question (Enter to send)</string>
+    <string name="send" formatted="false">Send</string>
+    <string name="chat_new" formatted="false">New conversation</string>
+    <string name="chat_error" formatted="false">We couldn\'t get an answer. Please try again shortly.</string>
+    <string name="chat_sources" formatted="false">Sources:</string>
+    <string name="emergency_title" formatted="false">⚠ This may be an emergency</string>
+    <string name="emergency_body" formatted="false">The symptoms you describe may need immediate care. Call 119 now or go to the nearest emergency room.</string>
+    <string name="call_119" formatted="false">Call 119</string>
+    <string name="find_er" formatted="false">Find the nearest ER</string>
+    <string name="call_1330" formatted="false">Call 1330 (multilingual travel hotline)</string>
+    <string name="ocr_hint" formatted="false">Cover your name and ID number before taking the photo. The photo may be sent to an external AI service to read the text; the photo itself is not stored.</string>
+    <string name="ocr_reading" formatted="false">Reading the photo…</string>
+    <string name="ocr_done" formatted="false">Filled in from the photo.</string>
+    <string name="ocr_check" formatted="false">The text may be misread. Compare with your prescription and fix it before saving.</string>
+    <string name="ocr_items_not_read" formatted="false">We couldn\'t read the medicine list. Please enter it yourself.</string>
+    <string name="ocr_fake" formatted="false">(Demo: simulated result)</string>
+    <string name="ocr_failed" formatted="false">We couldn\'t read the photo. Retake it bright and sharp, or enter the details yourself.</string>
+    <string name="ocr_badge" formatted="false">From photo</string>
+    <string name="nationality" formatted="false">Nationality</string>
+    <string name="nat_cn" formatted="false">China</string>
+    <string name="nat_jp" formatted="false">Japan</string>
+    <string name="nat_us" formatted="false">USA</string>
+    <string name="nat_kr" formatted="false">Korea</string>
+    <string name="nat_other" formatted="false">Other</string>
+    <string name="fb_question" formatted="false">Was this helpful?</string>
+    <string name="fb_thanks" formatted="false">Thanks for the feedback!</string>
+    <string name="fb_wrong_info" formatted="false">Seems incorrect</string>
+    <string name="fb_hard_to_understand" formatted="false">Hard to understand</string>
+    <string name="fb_not_relevant" formatted="false">Not relevant to me</string>
+    <string name="fb_other" formatted="false">Other</string>
+    <string name="err_exists" formatted="false">This email or phone number is already in use, or it was already saved.</string>
+    <string name="err_too_big" formatted="false">The file is too large (max 5MB).</string>
+    <string name="err_file_type" formatted="false">Only JPG or PNG photos can be uploaded.</string>
+    <string name="err_input" formatted="false">Please check your input (password: 8+ characters with upper, lower, number and symbol).</string>
+    <string name="err_limit" formatted="false">You\'ve reached today\'s limit.</string>
+    <string name="chat_context" formatted="false">Using your latest record:</string>
+    <string name="card_symptoms" formatted="false">What symptoms do you have now?</string>
+    <string name="card_urgent" formatted="false">These need emergency care now</string>
+    <string name="card_since" formatted="false">Since when</string>
+    <string name="card_pick" formatted="false">Pick your symptoms to create a Korean message for the clinic.</string>
+    <string name="card_show_staff" formatted="false">Show this to clinic staff or send it as a message</string>
+    <string name="card_copy" formatted="false">Copy message</string>
+    <string name="card_copied" formatted="false">Copied</string>
+    <string name="card_copy_fail" formatted="false">Couldn\'t copy. Press and hold to copy.</string>
+    <string name="card_my_lang" formatted="false">See it in English</string>
+    <string name="card_note" formatted="false">This only describes your symptoms; it is not a diagnosis. The clinic decides whether you need care.</string>
+    <string name="messenger" formatted="false">Messenger for contact</string>
+    <string name="messenger_id" formatted="false">Messenger ID</string>
+    <string name="messenger_id_hint" formatted="false">e.g. +14155550123</string>
+    <string name="still_pending" formatted="false">Your guide is still being created. Please check \'My AI guides\' again shortly.</string>
+    <string name="record_changed" formatted="false">Your record changed after this guide was made. Prescriptions show the current record; the guide text is based on the old one.</string>
+    <string name="remake_guide" formatted="false">Make the guide again</string>
+    <string name="record_saved_guide_failed" formatted="false">Your record was saved, but the guide couldn\'t be created.</string>
+    <string name="hosp_title" formatted="false">Find a clinic</string>
+    <string name="hosp_region" formatted="false">Area</string>
+    <string name="hosp_dept" formatted="false">Department</string>
+    <string name="hosp_all_regions" formatted="false">All areas</string>
+    <string name="hosp_all_depts" formatted="false">All</string>
+    <string name="hosp_gangnam" formatted="false">Gangnam-gu</string>
+    <string name="hosp_seocho" formatted="false">Seocho-gu</string>
+    <string name="hosp_junggu" formatted="false">Jung-gu (Myeongdong)</string>
+    <string name="hosp_mapo" formatted="false">Mapo-gu</string>
+    <string name="hosp_songpa" formatted="false">Songpa-gu</string>
+    <string name="hosp_busan" formatted="false">Busan</string>
+    <string name="hosp_derm" formatted="false">Dermatology</string>
+    <string name="hosp_plastic" formatted="false">Plastic surgery</string>
+    <string name="hosp_only_my_lang" formatted="false">Only clinics that speak English</string>
+    <string name="hosp_none" formatted="false">No clinics match.</string>
+    <string name="hosp_count" formatted="false">{n} clinics (by name)</string>
+    <string name="hosp_principle" formatted="false">GlowPass does not recommend or rank clinics. Look at the list and choose yourself. We take no referral fees.</string>
+    <string name="hosp_demo_note" formatted="false">※ This list shows fictional demo clinics. It will be replaced with real public data.</string>
+    <string name="demo_banner" formatted="false">This is a demo. The sources behind AI answers have not yet been reviewed by medical staff. Always consult a medical professional about your treatment.</string>
+    <string name="unreviewed_badge" formatted="false">Not yet reviewed</string>
+    <string name="hc_request" formatted="false">Request contact</string>
+    <string name="hc_request_from_card" formatted="false">Request contact from the clinic list</string>
+    <string name="hc_method" formatted="false">How should they contact you?</string>
+    <string name="hc_m_messenger" formatted="false">Messenger (account from sign-up)</string>
+    <string name="hc_m_phone" formatted="false">Phone</string>
+    <string name="hc_m_email" formatted="false">Email</string>
+    <string name="hc_m_visit" formatted="false">Visit information</string>
+    <string name="hc_memo" formatted="false">Message to the clinic (optional)</string>
+    <string name="hc_send" formatted="false">Send request</string>
+    <string name="hc_sent" formatted="false">Request sent. The status changes when the clinic checks it.</string>
+    <string name="hc_mine" formatted="false">My contact requests</string>
+    <string name="hc_none" formatted="false">No requests yet.</string>
+    <string name="hc_cancel" formatted="false">Cancel request</string>
+    <string name="hc_status_requested" formatted="false">Received</string>
+    <string name="hc_status_in_progress" formatted="false">Clinic checking</string>
+    <string name="hc_status_completed" formatted="false">Contacted</string>
+    <string name="hc_status_cancelled" formatted="false">Cancelled</string>
+    <string name="hc_login_needed" formatted="false">Log in to request contact.</string>
+    <string name="hc_about_record" formatted="false">This is sent to the clinic you choose as a question about your treatment record.</string>
+    <string name="hc_demo" formatted="false">※ In the demo, requests are not delivered to real clinics.</string>
+    <string name="hc_after_emergency" formatted="false">Also tell your clinic (request contact)</string>
+    <string name="hc_about_alert" formatted="false">You came from a warning-sign alert. If symptoms are severe, call 119 first instead of waiting for the clinic.</string>
+    <string name="tts_play" formatted="false">🔊 Listen</string>
+    <string name="tts_stop" formatted="false">⏹ Stop</string>
+    <string name="tts_unsupported" formatted="false">This browser can\'t read text aloud.</string>
+    <string name="card_save" formatted="false">🖼 Save as card image</string>
+    <string name="rm_title" formatted="false">Medication reminders</string>
+    <string name="rm_intro" formatted="false">Set times to take your medicine or check your care guide.</string>
+    <string name="rm_type" formatted="false">Remind me to</string>
+    <string name="rm_time" formatted="false">Time</string>
+    <string name="rm_repeat" formatted="false">Repeat</string>
+    <string name="rm_MEDICATION" formatted="false">Take medicine</string>
+    <string name="rm_GUIDE_CHECK" formatted="false">Check care guide</string>
+    <string name="rm_repeat_daily" formatted="false">Every day</string>
+    <string name="rm_repeat_none" formatted="false">Once</string>
+    <string name="rm_add" formatted="false">Add reminder</string>
+    <string name="rm_list" formatted="false">My reminders</string>
+    <string name="rm_none" formatted="false">No reminders yet.</string>
+    <string name="rm_on" formatted="false">On</string>
+    <string name="rm_delete" formatted="false">Delete</string>
+    <string name="rm_alert_MEDICATION" formatted="false">💊 Time for your medicine. Take it as prescribed.</string>
+    <string name="rm_alert_GUIDE_CHECK" formatted="false">📋 Time to check your aftercare guide.</string>
+    <string name="rm_demo_note" formatted="false">※ In the demo, reminders only appear while GlowPass is open.</string>
+    <string name="hc_already" formatted="false">You already have an open request for this clinic. See \'My contact requests\'.</string>
+    <string name="hd_title" formatted="false">Clinic front desk</string>
+    <string name="hd_desc" formatted="false">Review contact requests from patients and update their status. (Demo: an admin account plays the clinic.)</string>
+    <string name="hd_open_only" formatted="false">Open only</string>
+    <string name="hd_all" formatted="false">Include closed</string>
+    <string name="hd_none" formatted="false">No requests to handle.</string>
+    <string name="hd_requester" formatted="false">Requester</string>
+    <string name="hd_contact" formatted="false">Contact</string>
+    <string name="hd_lang" formatted="false">Language</string>
+    <string name="hd_start" formatted="false">Start checking</string>
+    <string name="hd_done" formatted="false">Contacted</string>
+    <string name="hd_about_record" formatted="false">About a treatment record</string>
+    <string name="hd_about_alert" formatted="false">⚠ Came from a safety alert — check first</string>
+    <string name="hd_refresh" formatted="false">Refresh</string>
+    <string name="agree_privacy" formatted="false">[Required] I agree to the collection and use of personal information</string>
+    <string name="agree_terms" formatted="false">[Required] I agree to the Terms of Use</string>
+    <string name="agree_view" formatted="false">View details</string>
+    <string name="privacy_full" formatted="false">※ Demo service · draft before legal review.\n\n1. What we collect: email, password (stored encrypted), name, gender, date of birth, mobile number, messenger and ID for contact, nationality, display language, medical records (clinic, treatment, prescription), photos of prescriptions or medicine bags, questions to the chatbot\n2. Why: to give medication and aftercare guides, answer chatbot questions, and send contact requests to a clinic you choose\n3. How long: until you delete your account (deleted right away). Chatbot conversations are deleted automatically after 30 days\n4. Sensitive (health) information: medical records, prescriptions and photos are sensitive health information. We use them only for the purposes above, and this consent also covers processing of sensitive information.\n5. Transfer abroad: recipient OpenAI (United States) · items: medical records, photos, chatbot questions (phone numbers, emails and ID numbers in questions are hidden first; text printed on photos may be sent as is) · purpose: AI guides, photo reading, chatbot answers · when and how: each time you use these features, over encrypted connections · retention: per OpenAI\'s policy\n6. Your right to refuse: you may refuse, but without consent you cannot sign up or use the service.\n\nDo not enter real patient information in demos.</string>
+    <string name="terms_full" formatted="false">※ Demo service · draft before legal review.\n\n1. GlowPass is an information service for aftercare following dermatology treatments. It does not diagnose, prescribe or recommend specific medicines.\n2. AI guidance is for reference only. If symptoms are severe or it is an emergency, contact a clinic or call 119 right away.\n3. You choose clinics yourself from the list. GlowPass does not recommend clinics or take referral fees.\n4. Entering someone else\'s information or disrupting the service may lead to restricted use.\n5. You can delete your account and records at any time with \'Delete account\'.</string>
+    <string name="agree_needed" formatted="false">Please check both required agreements.</string>
+    <string name="card_contact_note" formatted="false">The clinic will contact you using your registered contact details</string>
+</resources>

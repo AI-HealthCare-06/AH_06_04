@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 자동 생성: scripts/i18n_to_strings.js (웹 frontend/i18n.js) — 손으로 고치지 않는다 -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation,UnusedResources,Typos">
+    <string name="tagline" formatted="false">皮肤烦恼，不用再一个人查资料</string>
+    <string name="intro" formatted="false">GlowPass 根据您的就诊内容，用简单的方式告诉您用药和护理方法。</string>
+    <string name="choose_lang" formatted="false">选择语言</string>
+    <string name="login" formatted="false">登录</string>
+    <string name="signup" formatted="false">注册</string>
+    <string name="logout" formatted="false">退出</string>
+    <string name="withdraw" formatted="false">注销账号</string>
+    <string name="withdraw_confirm" formatted="false">注销后，诊疗记录、指南和医院请求将全部删除且无法恢复。确定注销吗？</string>
+    <string name="withdraw_done" formatted="false">账号已注销。聊天记录将在30天内自动删除。</string>
+    <string name="email" formatted="false">邮箱</string>
+    <string name="password" formatted="false">密码</string>
+    <string name="password_hint" formatted="false">至少8位，包含大小写字母、数字和符号</string>
+    <string name="name" formatted="false">姓名</string>
+    <string name="gender" formatted="false">性别</string>
+    <string name="female" formatted="false">女</string>
+    <string name="male" formatted="false">男</string>
+    <string name="birth" formatted="false">出生日期</string>
+    <string name="select_placeholder" formatted="false">请选择</string>
+    <string name="intro_video" formatted="false">GlowPass 介绍视频</string>
+    <string name="phone" formatted="false">手机号码</string>
+    <string name="phone_hint" formatted="false">必填 · 例如: +86 138 1234 5678</string>
+    <string name="no_account" formatted="false">还没有账号？</string>
+    <string name="have_account" formatted="false">已有账号？</string>
+    <string name="home_title" formatted="false">我的皮肤管理</string>
+    <string name="my_records" formatted="false">我的就诊记录</string>
+    <string name="no_records" formatted="false">还没有就诊记录。</string>
+    <string name="add_record" formatted="false">填写就诊记录</string>
+    <string name="make_guide" formatted="false">生成 AI 指南</string>
+    <string name="my_guides" formatted="false">我的 AI 指南</string>
+    <string name="visit_date" formatted="false">就诊日期</string>
+    <string name="hospital" formatted="false">医院名称</string>
+    <string name="procedure" formatted="false">诊疗/项目内容</string>
+    <string name="procedure_ph" formatted="false">例如: 痘痘治疗、激光美白</string>
+    <string name="doctor_note" formatted="false">医生说明备注</string>
+    <string name="drugs" formatted="false">处方药</string>
+    <string name="drug_name" formatted="false">药名</string>
+    <string name="dose" formatted="false">每次用量</string>
+    <string name="dose_ph" formatted="false">例如: 1片</string>
+    <string name="times_per_day" formatted="false">每天次数</string>
+    <string name="days" formatted="false">天数</string>
+    <string name="add_drug" formatted="false">+ 添加药品</string>
+    <string name="save" formatted="false">保存并生成 AI 指南</string>
+    <string name="ocr_upload" formatted="false">拍摄处方或药袋自动填写</string>
+    <string name="analyzing" formatted="false">AI 分析 · 生成指南</string>
+    <string name="step_record" formatted="false">确认就诊记录和处方信息</string>
+    <string name="step_rag" formatted="false">检索依据资料 (FR-02)</string>
+    <string name="step_guide" formatted="false">生成 AI 用药·生活护理指南 (FR-03)</string>
+    <string name="wait_msg" formatted="false">请稍等，完成后马上为您显示。</string>
+    <string name="guide_title" formatted="false">AI 专属指南</string>
+    <string name="tab_med" formatted="false">用药说明</string>
+    <string name="tab_life" formatted="false">生活护理</string>
+    <string name="tab_src" formatted="false">出处</string>
+    <string name="prescriptions_title" formatted="false">处方内容</string>
+    <string name="prescriptions_note" formatted="false">按您填写的内容显示医院开具的处方。请按处方用药。</string>
+    <string name="no_source" formatted="false">暂时没有与此记录相关的已核实资料，因此未生成指南。请咨询主治医生。</string>
+    <string name="failed" formatted="false">未能生成指南，请稍后再试。</string>
+    <string name="empty_section" formatted="false">此项没有依据资料。</string>
+    <string name="ask_ai" formatted="false">继续问 AI</string>
+    <string name="contact_hospital" formatted="false">联系就诊医院</string>
+    <string name="coming_soon" formatted="false">即将开通</string>
+    <string name="times_unit" formatted="false">每天{n}次</string>
+    <string name="days_unit" formatted="false">{n}天量</string>
+    <string name="relevance" formatted="false">相关度</string>
+    <string name="open_source" formatted="false">查看原文</string>
+    <string name="disclaimer_short" formatted="false">※ 所提供信息仅供参考，不能代替医学判断或处方。</string>
+    <string name="back" formatted="false">← 返回</string>
+    <string name="status_PENDING" formatted="false">生成中</string>
+    <string name="status_DONE" formatted="false">完成</string>
+    <string name="status_NO_SOURCE" formatted="false">无资料</string>
+    <string name="status_FAILED" formatted="false">失败</string>
+    <string name="err_login" formatted="false">请检查邮箱或密码。</string>
+    <string name="err_generic" formatted="false">请求未能完成。</string>
+    <string name="signup_done" formatted="false">注册完成，请登录。</string>
+    <string name="chat_open" formatted="false">向AI聊天机器人提问</string>
+    <string name="chat_title" formatted="false">AI咨询聊天机器人</string>
+    <string name="chat_intro" formatted="false">仅根据GlowPass的说明资料提供一般性信息。是否适合您，请务必咨询医护人员。</string>
+    <string name="chat_ph" formatted="false">请输入您的问题（按Enter发送）</string>
+    <string name="send" formatted="false">发送</string>
+    <string name="chat_new" formatted="false">开始新对话</string>
+    <string name="chat_error" formatted="false">未能获得回答，请稍后再试。</string>
+    <string name="chat_sources" formatted="false">依据：</string>
+    <string name="emergency_title" formatted="false">⚠ 可能是紧急情况</string>
+    <string name="emergency_body" formatted="false">您描述的症状可能需要立即就医。请立即拨打119或前往最近的急诊室。</string>
+    <string name="call_119" formatted="false">拨打119</string>
+    <string name="find_er" formatted="false">查找附近的急诊室</string>
+    <string name="call_1330" formatted="false">拨打多语种旅游热线 1330</string>
+    <string name="ocr_hint" formatted="false">请遮住姓名和身份证号后拍摄。为识别文字，照片可能会发送至外部AI服务；照片本身不会保存。</string>
+    <string name="ocr_reading" formatted="false">正在识别照片…</string>
+    <string name="ocr_done" formatted="false">已根据照片识别内容填写。</string>
+    <string name="ocr_check" formatted="false">识别可能有误。请与处方核对并修改后再保存。</string>
+    <string name="ocr_items_not_read" formatted="false">未能识别药品列表，请手动填写。</string>
+    <string name="ocr_fake" formatted="false">（演示用的模拟识别结果）</string>
+    <string name="ocr_failed" formatted="false">未能识别照片。请在光线充足处清晰重拍，或手动填写。</string>
+    <string name="ocr_badge" formatted="false">照片录入</string>
+    <string name="nationality" formatted="false">国籍</string>
+    <string name="nat_cn" formatted="false">中国</string>
+    <string name="nat_jp" formatted="false">日本</string>
+    <string name="nat_us" formatted="false">美国</string>
+    <string name="nat_kr" formatted="false">韩国</string>
+    <string name="nat_other" formatted="false">其他</string>
+    <string name="fb_question" formatted="false">对您有帮助吗？</string>
+    <string name="fb_thanks" formatted="false">感谢您的反馈！</string>
+    <string name="fb_wrong_info" formatted="false">内容似乎有误</string>
+    <string name="fb_hard_to_understand" formatted="false">难以理解</string>
+    <string name="fb_not_relevant" formatted="false">与我的情况无关</string>
+    <string name="fb_other" formatted="false">其他</string>
+    <string name="err_exists" formatted="false">邮箱或手机号已被使用，或该内容已保存。</string>
+    <string name="err_too_big" formatted="false">文件太大（最大5MB）。</string>
+    <string name="err_file_type" formatted="false">只能上传JPG或PNG照片。</string>
+    <string name="err_input" formatted="false">请检查填写内容（密码需8位以上，包含大写、小写字母、数字和符号）。</string>
+    <string name="err_limit" formatted="false">今日使用次数已达上限。</string>
+    <string name="chat_context" formatted="false">参考最近的就诊记录：</string>
+    <string name="card_symptoms" formatted="false">现在有什么症状？</string>
+    <string name="card_urgent" formatted="false">以下症状请立即急救</string>
+    <string name="card_since" formatted="false">从什么时候开始</string>
+    <string name="card_pick" formatted="false">选择症状后，会生成给医院看的韩语句子。</string>
+    <string name="card_show_staff" formatted="false">请出示给医院工作人员，或通过消息发送</string>
+    <string name="card_copy" formatted="false">复制句子</string>
+    <string name="card_copied" formatted="false">已复制</string>
+    <string name="card_copy_fail" formatted="false">复制失败，请长按复制。</string>
+    <string name="card_my_lang" formatted="false">用中文查看内容</string>
+    <string name="card_note" formatted="false">这只是整理症状的句子，不是诊断。是否需要就诊由医院判断。</string>
+    <string name="messenger" formatted="false">联系用通讯软件</string>
+    <string name="messenger_id" formatted="false">通讯软件账号</string>
+    <string name="messenger_id_hint" formatted="false">例如：wxid_abc123</string>
+    <string name="still_pending" formatted="false">指南仍在生成中，请稍后在“我的 AI 指南”中查看。</string>
+    <string name="record_changed" formatted="false">生成指南后就诊记录已更改。处方栏为当前记录，说明文字基于之前的记录。</string>
+    <string name="remake_guide" formatted="false">重新生成指南</string>
+    <string name="record_saved_guide_failed" formatted="false">就诊记录已保存，但未能生成指南。</string>
+    <string name="hosp_title" formatted="false">查找医院</string>
+    <string name="hosp_region" formatted="false">地区</string>
+    <string name="hosp_dept" formatted="false">科室</string>
+    <string name="hosp_all_regions" formatted="false">全部地区</string>
+    <string name="hosp_all_depts" formatted="false">全部</string>
+    <string name="hosp_gangnam" formatted="false">江南区</string>
+    <string name="hosp_seocho" formatted="false">瑞草区</string>
+    <string name="hosp_junggu" formatted="false">中区（明洞）</string>
+    <string name="hosp_mapo" formatted="false">麻浦区</string>
+    <string name="hosp_songpa" formatted="false">松坡区</string>
+    <string name="hosp_busan" formatted="false">釜山</string>
+    <string name="hosp_derm" formatted="false">皮肤科</string>
+    <string name="hosp_plastic" formatted="false">整形外科</string>
+    <string name="hosp_only_my_lang" formatted="false">只看可用中文咨询的医院</string>
+    <string name="hosp_none" formatted="false">没有符合条件的医院。</string>
+    <string name="hosp_count" formatted="false">{n}家（按名称排序）</string>
+    <string name="hosp_principle" formatted="false">GlowPass不推荐医院，也不进行排名。请查看列表自行选择。我们也不收取任何转介费用。</string>
+    <string name="hosp_demo_note" formatted="false">※ 当前列表为演示用的虚拟医院，之后将替换为真实的公共数据。</string>
+    <string name="demo_banner" formatted="false">这是演示版。AI回答所依据的资料尚未经过医务人员审核。实际治疗请务必咨询医务人员。</string>
+    <string name="unreviewed_badge" formatted="false">未经审核的资料</string>
+    <string name="hc_request" formatted="false">请求联系</string>
+    <string name="hc_request_from_card" formatted="false">从医院列表请求联系</string>
+    <string name="hc_method" formatted="false">希望的联系方式</string>
+    <string name="hc_m_messenger" formatted="false">即时通讯（注册时填写的账号）</string>
+    <string name="hc_m_phone" formatted="false">电话</string>
+    <string name="hc_m_email" formatted="false">邮件</string>
+    <string name="hc_m_visit" formatted="false">到院说明</string>
+    <string name="hc_memo" formatted="false">给医院的留言（可选）</string>
+    <string name="hc_send" formatted="false">发送请求</string>
+    <string name="hc_sent" formatted="false">请求已发送。医院确认后状态会更新。</string>
+    <string name="hc_mine" formatted="false">我的联系请求</string>
+    <string name="hc_none" formatted="false">还没有发送过请求。</string>
+    <string name="hc_cancel" formatted="false">取消请求</string>
+    <string name="hc_status_requested" formatted="false">已受理</string>
+    <string name="hc_status_in_progress" formatted="false">医院确认中</string>
+    <string name="hc_status_completed" formatted="false">已联系</string>
+    <string name="hc_status_cancelled" formatted="false">已取消</string>
+    <string name="hc_login_needed" formatted="false">登录后才能请求联系。</string>
+    <string name="hc_about_record" formatted="false">将作为关于您治疗记录的咨询发送给所选医院。</string>
+    <string name="hc_demo" formatted="false">※ 演示版不会真正发送给医院。</string>
+    <string name="hc_after_emergency" formatted="false">同时通知做治疗的医院（请求联系）</string>
+    <string name="hc_about_alert" formatted="false">您是从危险信号提示进入的。症状严重时请不要等待医院联系，先拨打119。</string>
+    <string name="tts_play" formatted="false">🔊 语音朗读</string>
+    <string name="tts_stop" formatted="false">⏹ 停止</string>
+    <string name="tts_unsupported" formatted="false">此浏览器不支持语音朗读。</string>
+    <string name="card_save" formatted="false">🖼 保存为卡片图片</string>
+    <string name="rm_title" formatted="false">用药提醒</string>
+    <string name="rm_intro" formatted="false">设置吃药时间或查看护理说明的时间。</string>
+    <string name="rm_type" formatted="false">提醒内容</string>
+    <string name="rm_time" formatted="false">时间</string>
+    <string name="rm_repeat" formatted="false">重复</string>
+    <string name="rm_MEDICATION" formatted="false">吃药时间</string>
+    <string name="rm_GUIDE_CHECK" formatted="false">查看护理说明</string>
+    <string name="rm_repeat_daily" formatted="false">每天</string>
+    <string name="rm_repeat_none" formatted="false">仅一次</string>
+    <string name="rm_add" formatted="false">添加提醒</string>
+    <string name="rm_list" formatted="false">我的提醒</string>
+    <string name="rm_none" formatted="false">还没有提醒。</string>
+    <string name="rm_on" formatted="false">开启</string>
+    <string name="rm_delete" formatted="false">删除</string>
+    <string name="rm_alert_MEDICATION" formatted="false">💊 该吃药了。请按处方服用。</string>
+    <string name="rm_alert_GUIDE_CHECK" formatted="false">📋 该查看术后护理说明了。</string>
+    <string name="rm_demo_note" formatted="false">※ 演示版仅在 GlowPass 页面打开时提醒。</string>
+    <string name="hc_already" formatted="false">您对这家医院已有正在处理的请求，请在“我的联系请求”中查看。</string>
+    <string name="hd_title" formatted="false">医院前台</string>
+    <string name="hd_desc" formatted="false">查看患者发送的联系请求并更新状态。（演示：管理员代替医院）</string>
+    <string name="hd_open_only" formatted="false">仅进行中</string>
+    <string name="hd_all" formatted="false">含已结束</string>
+    <string name="hd_none" formatted="false">没有待处理的请求。</string>
+    <string name="hd_requester" formatted="false">请求者</string>
+    <string name="hd_contact" formatted="false">联系方式</string>
+    <string name="hd_lang" formatted="false">语言</string>
+    <string name="hd_start" formatted="false">开始确认</string>
+    <string name="hd_done" formatted="false">已联系</string>
+    <string name="hd_about_record" formatted="false">治疗记录咨询</string>
+    <string name="hd_about_alert" formatted="false">⚠ 来自危险信号的请求 — 请优先处理</string>
+    <string name="hd_refresh" formatted="false">刷新</string>
+    <string name="agree_privacy" formatted="false">[必选] 同意收集和使用个人信息</string>
+    <string name="agree_terms" formatted="false">[必选] 同意使用条款</string>
+    <string name="agree_view" formatted="false">查看内容</string>
+    <string name="privacy_full" formatted="false">※ 演示服务 · 法务审核前的草案。\n\n1. 收集项目：邮箱、密码（加密保存）、姓名、性别、出生日期、手机号码、联系用通讯软件及账号、国籍、界面语言、就诊记录（医院·治疗·处方）、处方单·药袋照片、向聊天机器人提出的问题\n2. 使用目的：提供用药·生活护理指南、聊天机器人回答、向您自行选择的医院发送联系请求\n3. 保存期限：至注销账号为止（注销后立即删除）。聊天记录30天后自动删除\n4. 敏感信息（健康信息）处理：就诊记录·处方·照片属于健康相关的敏感信息，仅用于上述目的。本同意也包括对敏感信息处理的单独同意。\n5. 跨境传输：接收方 OpenAI（美国）· 项目：就诊记录·照片·聊天问题（问题中的联系方式·邮箱·证件号会先隐藏；照片上的文字可能原样发送）· 目的：AI指南·照片识别·聊天机器人回答 · 时间与方式：每次使用功能时通过加密通信传输 · 保存期限：依照 OpenAI 政策\n6. 拒绝同意的权利：您可以不同意，但不同意将无法注册和使用服务。\n\n演示时请勿填写真实患者信息。</string>
+    <string name="terms_full" formatted="false">※ 演示服务 · 法务审核前的草案。\n\n1. GlowPass 是帮助皮肤科治疗后护理的信息服务，不提供诊断、处方或推荐特定药物。\n2. AI 指南仅供参考。症状严重或紧急时，请立即联系医院或拨打 119。\n3. 医院由您自行从列表中选择。GlowPass 不推荐医院，也不收取介绍费。\n4. 填写他人信息或妨碍服务的，可能会被限制使用。\n5. 您可随时通过“注销账号”删除账号和记录。</string>
+    <string name="agree_needed" formatted="false">请勾选两项必选同意。</string>
+    <string name="card_contact_note" formatted="false">医院将通过您登记的联系方式与您联系</string>
+</resources>
