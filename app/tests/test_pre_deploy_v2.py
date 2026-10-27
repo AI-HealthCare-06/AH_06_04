@@ -110,6 +110,21 @@ class TestPreDeployV2(TestCase):
         contacts = [i["requester_contact"] for i in res.json()["data"]["items"]]
         assert "01071000011" in contacts
 
+    # [배포 전 v2 통독 4] 화면의 로그아웃이 탭의 access 만 지우고 refresh 쿠키(14일)는 남겨 두었다
+    #   → 같은 브라우저의 다음 사람이 /auth/token/refresh 로 다시 로그인 상태가 된다. 서버가 쿠키를 지워야 한다
+    async def test_logout_clears_refresh_cookie(self):
+        await self.client.post("/api/v1/auth/signup", json=_body("v2_out@example.com", "01071000013"))
+        res = await self.client.post("/api/v1/auth/login", json={"email": "v2_out@example.com", "password": PASSWORD})
+        login_cookie = res.headers["set-cookie"]
+        self.client.cookies.clear()
+        res = await self.client.post("/api/v1/auth/logout")
+        assert res.status_code == status.HTTP_204_NO_CONTENT, res.text
+        cleared = res.headers.get("set-cookie", "")
+        assert cleared.startswith("refresh_token=") and "Max-Age=0" in cleared
+        # 지울 때도 로그인 때와 같은 path · domain 이어야 브라우저가 같은 쿠키로 보고 지운다
+        for attr in ("Path=/api/v1/auth", "HttpOnly"):
+            assert attr in login_cookie and attr in cleared
+
 
 def test_mask_helpers():
     assert mask_phone_number("01012345678") == "010****5678"
@@ -136,3 +151,35 @@ def test_empty_secret_key():
 def test_docs_off_in_prod():
     assert docs_urls(Env.PROD) == {"docs_url": None, "redoc_url": None, "openapi_url": None}
     assert docs_urls(Env.LOCAL)["docs_url"] == "/api/docs"
+
+
+class TestHugeIds(TestCase):
+    """[배포 전 v2 통독 3] 퍼징: 번호가 DB 정수 한계(BIGINT)를 넘으면 DB 오류 → 500 이었다 (10개 주소) → 422"""
+
+    async def test_huge_ids_are_not_500(self):
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+            await client.post("/api/v1/auth/signup", json=_body("v2_huge@example.com", "01071000014"))
+            res = await client.post("/api/v1/auth/login", json={"email": "v2_huge@example.com", "password": PASSWORD})
+            h = {"Authorization": f"Bearer {res.json()['access_token']}"}
+            big = "999999999999999999999"
+            calls = [
+                ("GET", f"/api/v1/medical-records/{big}", None),
+                ("PATCH", f"/api/v1/medical-records/{big}", {"hospital_name": "x"}),
+                ("DELETE", f"/api/v1/medical-records/{big}", None),
+                ("PATCH", f"/api/v1/reminders/{big}", {"is_active": False}),
+                ("DELETE", f"/api/v1/reminders/{big}", None),
+                ("GET", f"/api/v1/guides/{big}", None),
+                ("GET", f"/api/v1/guides/{big}/sources", None),
+                ("GET", f"/api/v1/content-formats/{big}", None),
+                ("GET", f"/api/v1/hospital-contacts/{big}", None),
+                ("GET", f"/api/v1/ocr/prescriptions/{big}", None),
+                ("POST", "/api/v1/guides", {"record_id": int(big)}),
+                (
+                    "POST",
+                    "/api/v1/hospital-contacts",
+                    {"hospital_id": 1, "contact_method": "phone", "record_id": int(big)},
+                ),
+            ]
+            for method, url, body in calls:
+                r = await client.request(method, url, headers=h, json=body)
+                assert r.status_code < 500, (method, url, r.status_code)

@@ -191,11 +191,15 @@ async function home() {
     me && me.is_admin ? h("a", { class: "btn secondary", href: "#/desk" }, t("hd_title")) : null,  // 병원 접수대 (관리자만)
     h("div", { class: "card" }, h("h2", {}, t("my_records")), recordList),
     guides.length ? h("div", { class: "card" }, h("h2", {}, t("my_guides")), guideList) : null,
-    h("button", { class: "btn secondary", onclick: () => { store.token = null; location.hash = "#/"; } }, t("logout")),
+    // [배포 전 v2 통독 4] 서버에도 알려 refresh 쿠키를 지운다 (실패해도 이 탭에서는 로그아웃)
+    h("button", { class: "btn secondary", onclick: async () => {
+      await api("POST", "/auth/logout").catch(() => null);
+      store.token = null; location.hash = "#/";
+    } }, t("logout")),
     // [최종 점검 5회차] 회원 탈퇴 — 한 번 더 묻고, 지운 뒤 첫 화면으로
     h("button", { class: "btn secondary", type: "button", onclick: async () => {
       if (!confirm(t("withdraw_confirm"))) return;
-      try { await api("DELETE", "/users/me"); store.token = null; alert(t("withdraw_done")); location.hash = "#/"; }
+      try { await api("DELETE", "/users/me"); await api("POST", "/auth/logout").catch(() => null); store.token = null; alert(t("withdraw_done")); location.hash = "#/"; }
       catch (ex) { alert(ex.message); }
     } }, t("withdraw")),
   );
