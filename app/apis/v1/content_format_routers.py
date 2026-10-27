@@ -6,10 +6,11 @@
 # ─────────────────────────────────────────────
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Path, status
 from fastapi.responses import ORJSONResponse
 
 from app.dependencies.security import get_request_user
+from app.dtos.base import MAX_DB_ID
 from app.dtos.content_assets import ContentFormatCreateRequest, ContentFormatResponse
 from app.models.users import User
 from app.services.content_formats import ContentFormatService, to_response
@@ -23,7 +24,7 @@ content_format_router = APIRouter(tags=["content-formats"])
     status_code=status.HTTP_202_ACCEPTED,
 )
 async def create_content_format(
-    guide_id: int,
+    guide_id: Annotated[int, Path(le=MAX_DB_ID)],
     request: ContentFormatCreateRequest,
     user: Annotated[User, Depends(get_request_user)],
     service: Annotated[ContentFormatService, Depends(ContentFormatService)],
@@ -36,7 +37,7 @@ async def create_content_format(
     "/content-formats/{asset_id}", response_model=ContentFormatResponse, status_code=status.HTTP_200_OK
 )
 async def get_content_format(
-    asset_id: int,
+    asset_id: Annotated[int, Path(le=MAX_DB_ID)],
     user: Annotated[User, Depends(get_request_user)],
     service: Annotated[ContentFormatService, Depends(ContentFormatService)],
 ) -> ORJSONResponse:

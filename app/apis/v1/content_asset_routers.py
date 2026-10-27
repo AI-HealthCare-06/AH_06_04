@@ -1,9 +1,10 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, Response, status
 from fastapi.responses import ORJSONResponse
 
 from app.dependencies.security import get_request_user
+from app.dtos.base import MAX_DB_ID
 from app.dtos.content_assets import ContentAssetCreateRequest, ContentAssetResponse
 from app.models.users import User
 from app.services.content_assets import ContentAssetService
@@ -30,7 +31,7 @@ async def create_content_asset(
 
 @content_asset_router.get("", response_model=list[ContentAssetResponse], status_code=status.HTTP_200_OK)
 async def get_content_assets(
-    guide_id: int,
+    guide_id: Annotated[int, Query(le=MAX_DB_ID)],
     user: Annotated[User, Depends(get_admin_user)],
     content_asset_service: Annotated[ContentAssetService, Depends(ContentAssetService)],
 ) -> ORJSONResponse:
@@ -41,7 +42,7 @@ async def get_content_assets(
 
 @content_asset_router.delete("/{asset_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_content_asset(
-    asset_id: int,
+    asset_id: Annotated[int, Path(le=MAX_DB_ID)],
     user: Annotated[User, Depends(get_admin_user)],
     content_asset_service: Annotated[ContentAssetService, Depends(ContentAssetService)],
 ) -> Response:

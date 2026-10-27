@@ -8,7 +8,7 @@ from typing import Annotated
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from app.core import config
-from app.dtos.base import BaseSerializerModel
+from app.dtos.base import MAX_DB_ID, BaseSerializerModel
 from app.models.medical_records import RecordSource
 
 MAX_ITEMS_PER_RECORD = 30  # 진료기록 1건에 넣을 수 있는 약의 최대 개수 (처방전 1장 기준 넉넉한 상한)
@@ -57,7 +57,7 @@ class MedicalRecordCreateRequest(BaseModel):
     # 약이 없으면 빈 목록, 최대 30개까지
     items: list[PrescriptionItemRequest] = Field(default_factory=list, max_length=MAX_ITEMS_PER_RECORD)
     # FR-05: 사진 인식 결과를 확인·수정해서 저장할 때 그 작업 번호 (한 번만 쓸 수 있다)
-    ocr_job_id: Annotated[int | None, Field(None, ge=1)]
+    ocr_job_id: Annotated[int | None, Field(None, ge=1, le=MAX_DB_ID)]
 
     _validate_visit_date = field_validator("visit_date")(_check_not_future)
 

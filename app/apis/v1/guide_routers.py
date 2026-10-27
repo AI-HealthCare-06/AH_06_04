@@ -9,10 +9,11 @@
 # ─────────────────────────────────────────────
 from typing import Annotated
 
-from fastapi import APIRouter, BackgroundTasks, Depends, Query, status
+from fastapi import APIRouter, BackgroundTasks, Depends, Path, Query, status
 from fastapi.responses import ORJSONResponse
 
 from app.dependencies.security import get_request_user
+from app.dtos.base import MAX_DB_ID
 from app.dtos.guides import (
     GuideAcceptedResponse,
     GuideCreateRequest,
@@ -67,7 +68,7 @@ async def guide_feedback_summary(
 
 @guide_router.get("/{guide_id}", response_model=GuideResponse, status_code=status.HTTP_200_OK)
 async def get_guide(
-    guide_id: int,
+    guide_id: Annotated[int, Path(le=MAX_DB_ID)],
     user: Annotated[User, Depends(get_request_user)],
     service: Annotated[GuideService, Depends(GuideService)],
 ) -> ORJSONResponse:
@@ -77,7 +78,7 @@ async def get_guide(
 
 @guide_router.get("/{guide_id}/sources", response_model=list[GuideSourceResponse], status_code=status.HTTP_200_OK)
 async def get_guide_sources(
-    guide_id: int,
+    guide_id: Annotated[int, Path(le=MAX_DB_ID)],
     user: Annotated[User, Depends(get_request_user)],
     service: Annotated[GuideService, Depends(GuideService)],
 ) -> ORJSONResponse:
@@ -87,7 +88,7 @@ async def get_guide_sources(
 
 @guide_router.put("/{guide_id}/feedback", response_model=GuideFeedbackResponse, status_code=status.HTTP_200_OK)
 async def put_guide_feedback(
-    guide_id: int,
+    guide_id: Annotated[int, Path(le=MAX_DB_ID)],
     request: GuideFeedbackRequest,
     user: Annotated[User, Depends(get_request_user)],
     service: Annotated[GuideService, Depends(GuideService)],
