@@ -2,7 +2,8 @@
 # [앱 v1 6] 앱 시험용 로컬 서버 — 코드_v2(main) 를 고치지 않고 그대로 빌드해서 fake 모드로 띄운다
 #   팀 docker-compose.yml 과 같은 모양(mysql · fastapi · chatbot · nginx). 이름 앞에 gpapp- 를 붙여 팀 컨테이너와 섞이지 않게
 #   앱(local)은 http://10.0.2.2:8088 → 이 nginx(8088) → /api/v1/chat 은 챗봇, 나머지는 fastapi
-#   켜기: docker compose -p gpapp up -d --build   끄기: docker compose -p gpapp down
+#   먼저: cp test.env.example test.env (값 채우기 · git 에 안 올라감)
+#   켜기: docker compose -p gpapp --env-file test.env up -d --build   끄기: docker compose -p gpapp --env-file test.env down
 # ─────────────────────────────────────────────
 services:
   gpapp-mysql:
@@ -24,7 +25,7 @@ services:
   gpapp-fastapi:
     container_name: gpapp-fastapi
     build:
-      context: ../../코드_v2_2026-10-27
+      context: ${SERVER_DIR:-../../코드_v2_2026-10-27}
       dockerfile: app/Dockerfile
     image: gpapp-fastapi:8303665
     env_file: test.env
@@ -36,7 +37,7 @@ services:
   gpapp-chatbot:
     container_name: gpapp-chatbot
     build:
-      context: ../../코드_v2_2026-10-27/chatbot
+      context: ${SERVER_DIR:-../../코드_v2_2026-10-27}/chatbot
       dockerfile: Dockerfile
     image: gpapp-chatbot:8303665
     environment:
