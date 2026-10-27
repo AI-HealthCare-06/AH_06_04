@@ -386,3 +386,22 @@ Object.assign(window.I18N.ko, { card_contact_note: "등록하신 연락처로 �
 Object.assign(window.I18N.ja, { card_contact_note: "ご登録の連絡先に病院から連絡します" });
 Object.assign(window.I18N.zh, { card_contact_note: "医院将通过您登记的联系方式与您联系" });
 Object.assign(window.I18N.en, { card_contact_note: "The clinic will contact you using your registered contact details" });
+// [10/26 멘토링] 연락처 가리기 안내
+Object.assign(window.I18N.ko, { hd_masked_hint: "연락처는 '확인 시작'을 누른 요청에서만 전체가 보여요." });
+Object.assign(window.I18N.ja, { hd_masked_hint: "連絡先は「確認開始」を押したリクエストでのみ全体が表示されます。" });
+Object.assign(window.I18N.zh, { hd_masked_hint: "只有点击“开始确认”的请求才会显示完整联系方式。" });
+Object.assign(window.I18N.en, { hd_masked_hint: "Full contact details show only for requests you have started checking." });
+// [10/26 멘토링] 병원 목록에 '요청 보냄' 표시
+Object.assign(window.I18N.ko, { hc_sent_badge: "요청 보냄", hc_view_mine: "내 요청 보기" });
+Object.assign(window.I18N.ja, { hc_sent_badge: "リクエスト済み", hc_view_mine: "リクエストを見る" });
+Object.assign(window.I18N.zh, { hc_sent_badge: "已发送请求", hc_view_mine: "查看我的请求" });
+Object.assign(window.I18N.en, { hc_sent_badge: "Request sent", hc_view_mine: "View my request" });
+// [10/26 멘토링] 챗봇 대화 관리
+Object.assign(window.I18N.ko, { chat_delete: "이 대화 삭제", chat_delete_confirm: "이 대화를 지울까요? 되돌릴 수 없어요.", chat_history: "이전 대화",
+  chat_history_none: "이전 대화가 없어요.", chat_msgs: "메시지 {n}개", chat_history_note: "대화는 30일 뒤 자동으로 지워져요." });
+Object.assign(window.I18N.ja, { chat_delete: "この会話を削除", chat_delete_confirm: "この会話を削除しますか？元に戻せません。", chat_history: "以前の会話",
+  chat_history_none: "以前の会話はありません。", chat_msgs: "メッセージ{n}件", chat_history_note: "会話は30日後に自動で削除されます。" });
+Object.assign(window.I18N.zh, { chat_delete: "删除此对话", chat_delete_confirm: "要删除此对话吗？无法恢复。", chat_history: "以前的对话",
+  chat_history_none: "没有以前的对话。", chat_msgs: "{n}条消息", chat_history_note: "对话会在30天后自动删除。" });
+Object.assign(window.I18N.en, { chat_delete: "Delete this chat", chat_delete_confirm: "Delete this chat? This cannot be undone.", chat_history: "Previous chats",
+  chat_history_none: "No previous chats.", chat_msgs: "{n} messages", chat_history_note: "Chats are deleted automatically after 30 days." });

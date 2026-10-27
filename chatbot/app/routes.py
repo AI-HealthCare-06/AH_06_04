@@ -91,6 +91,31 @@ async def new_conversation(body: NewConversation, request: Request, user_id: Use
     return {"conversation_id": str(conv.public_id), "lang": lang, "greeting": i18n.t("greeting", lang)}
 
 
+@router.get("/conversations")
+async def list_conversations(user_id: UserId):
+    """내 대화 목록 (최신순, 최대 30개) — 화면에서 이전 대화를 골라 다시 보거나 지울 수 있게 [10/26 멘토링]
+    미리보기 = 첫 사용자 질문 앞 60자 (질문이 없는 빈 대화는 목록에서 뺀다)"""
+    convs = await Conversation.filter(user_id=user_id).order_by("-last_message_at", "-id").limit(60)
+    items = []
+    for c in convs:
+        first = await Message.filter(conversation=c, role="user").order_by("id").first()
+        if first is None:
+            continue  # 인사말만 있고 질문이 없는 대화
+        items.append(
+            {
+                "conversation_id": str(c.public_id),
+                "lang": c.lang,
+                "preview": first.content[:60],
+                "message_count": await Message.filter(conversation=c).count(),
+                "created_at": c.created_at.isoformat(),
+                "last_message_at": c.last_message_at.isoformat() if c.last_message_at else None,
+            }
+        )
+        if len(items) >= 30:
+            break
+    return {"items": items}
+
+
 @router.get("/conversations/{conversation_id}/messages")
 async def messages(conversation_id: str, user_id: UserId):
     conv = await _own(conversation_id, user_id)

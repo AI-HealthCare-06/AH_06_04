@@ -6,6 +6,7 @@
 from fastapi import HTTPException, status
 
 from app.core import config
+from app.core.utils.common import mask_email, mask_messenger_id, mask_phone_number
 from app.dtos.hospital_contacts import (
     HospitalContactAdminItem,
     HospitalContactCreateRequest,
@@ -36,16 +37,17 @@ def to_response(c: HospitalContact) -> HospitalContactResponse:
     )
 
 
-def requester_contact(user: User, method: ContactMethod) -> str | None:
-    """고른 연락 방법에 맞는 연락처 하나만 병원에 보여준다 (필요 이상의 개인정보는 안 넘김)"""
+def requester_contact(user: User, method: ContactMethod, full: bool = False) -> str | None:
+    """고른 연락 방법에 맞는 연락처 하나만 병원에 보여준다 (필요 이상의 개인정보는 안 넘김)
+    full=False 면 가운데를 가린 값 — 병원이 '확인 시작' 을 눌러 맡은 요청만 전체 값을 본다 [10/26 멘토링]"""
     if method == ContactMethod.PHONE:
-        return user.phone_number
+        return user.phone_number if full else mask_phone_number(user.phone_number)
     if method == ContactMethod.MESSENGER:
-        return (
-            f"{user.messenger_type.value}: {user.messenger_id}" if user.messenger_type and user.messenger_id else None
-        )
+        if not (user.messenger_type and user.messenger_id):
+            return None
+        return f"{user.messenger_type.value}: {user.messenger_id if full else mask_messenger_id(user.messenger_id)}"
     if method == ContactMethod.EMAIL:
-        return user.email
+        return user.email if full else mask_email(user.email)
     return None  # 방문 안내는 연락처가 필요 없다
 
 
@@ -56,7 +58,7 @@ def to_admin_item(c: HospitalContact) -> HospitalContactAdminItem:
         **base,
         requester_name=c.user.name,
         requester_language=c.user.preferred_language.value,
-        requester_contact=requester_contact(c.user, c.contact_method),
+        requester_contact=requester_contact(c.user, c.contact_method, full=c.status == ContactStatus.IN_PROGRESS),
     )
 
 

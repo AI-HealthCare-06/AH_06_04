@@ -23,14 +23,27 @@ async function hospitalsView(params = new URLSearchParams()) {
     if (dept.value) q.set("department", dept.value);
     if (onlyMine.checked && lang !== "ko") q.set("language", lang);
     try {
-      const { data } = await api("GET", `/hospitals?${q}`);
+      // [10/26 멘토링] 내가 이미 보낸 요청을 같이 불러와서, 요청한 병원엔 상태 배지를 달고 버튼을 바꾼다
+      //   (안 그러면 같은 병원에 또 누르고 나서야 "이미 있어요" 가 떠서 헷갈린다)
+      const [{ data }, mine] = await Promise.all([
+        api("GET", `/hospitals?${q}`),
+        store.token ? api("GET", "/hospital-contacts").then((r) => r.data.items).catch(() => []) : [],
+      ]);
+      const openByHospital = {};  // 병원 번호 → 진행 중인 내 요청
+      for (const c of mine) if (["requested", "in_progress"].includes(c.status)) openByHospital[c.hospital_id] = c;
       if (!data.items.length) return list.replaceChildren(h("p", { class: "muted" }, t("hosp_none")));
       list.replaceChildren(h("p", { class: "muted small" }, t("hosp_count", { n: data.total })),
-        ...data.items.map((x) => h("div", { class: "item" },
-          h("strong", {}, x.name), h("div", { class: "muted" }, `${x.department} · ${x.address}`),
-          h("div", {}, x.languages.map((l) => h("span", { class: "badge" }, LANG_NAME[l] || l)), " "),
-          h("a", { class: "btn secondary", href: `tel:${x.phone}` }, `📞 ${x.phone}`),
-          contactRequestBox(x, recordId, alertId))));
+        ...data.items.map((x) => {
+          const sent = openByHospital[x.hospital_id];
+          return h("div", { class: "item" + (sent ? " requested" : "") },
+            h("strong", {}, x.name), " ", sent ? h("span", { class: "badge hot" }, `${t("hc_sent_badge")} · ${t(`hc_status_${sent.status}`)}`) : null,
+            h("div", { class: "muted" }, `${x.department} · ${x.address}`),
+            h("div", {}, x.languages.map((l) => h("span", { class: "badge" }, LANG_NAME[l] || l)), " "),
+            h("a", { class: "btn secondary", href: `tel:${x.phone}` }, `📞 ${x.phone}`),
+            sent
+              ? h("a", { class: "btn secondary", href: "#/contacts" }, t("hc_view_mine"))  // 요청한 병원: 또 보내는 대신 내 요청 보기
+              : contactRequestBox(x, recordId, alertId));
+        }));
     } catch (ex) { list.replaceChildren(h("p", { class: "error" }, ex.message)); }
   };
   [region, dept, onlyMine].forEach((el) => el.addEventListener("change", load));
@@ -131,7 +144,8 @@ async function deskView(params = new URLSearchParams()) {
       c.status === "in_progress" ? h("div", { class: "row" }, done) : null);
   };
   render(h("a", { href: "#/home" }, t("back")),
-    h("div", { class: "card" }, h("h1", {}, t("hd_title")), h("p", { class: "muted small" }, t("hd_desc")), err,
+    h("div", { class: "card" }, h("h1", {}, t("hd_title")), h("p", { class: "muted small" }, t("hd_desc")),
+      h("p", { class: "muted small" }, t("hd_masked_hint")), err,
       h("div", { class: "row" },
         h("a", { class: "btn secondary", href: showAll ? "#/desk" : "#/desk?all=1" }, showAll ? t("hd_open_only") : t("hd_all")),
         h("button", { class: "btn secondary", type: "button", onclick: () => deskView(params) }, t("hd_refresh"))),
