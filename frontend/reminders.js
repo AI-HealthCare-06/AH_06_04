@@ -62,27 +62,37 @@ function askNotifyPermission() {
   if ("Notification" in window && Notification.permission === "default") Notification.requestPermission().catch(() => {});
 }
 
-// 앱이 열려 있는 동안 30초마다 확인 — 시각이 되면 한 번만 알린다 (같은 분에 두 번 안 울리게 기억)
+// 앱이 열려 있는 동안 60초마다 확인 — 시각이 되면 한 번만 알린다 (같은 분에 두 번 안 울리게 기억)
+//   [배포 전 v2 F5] 10/26 멘토링 화면에서 /reminders 가 수십 번 반복됨 → 30초 → 60초 · 로그인 안 했거나 탭이 안 보이면 건너뜀
+//   60초 간격은 타이머가 조금씩 밀려 어떤 '분' 을 건너뛸 수 있다 → 지난 확인 뒤 ~ 지금 사이의 분(최대 5분)을 모두 본다
 const firedKey = (r, d) => `${r.id}@${d.toDateString()} ${hhmmOf(r.schedule_time)}`;
 const fired = new Set();
+let lastCheck = new Date();
 async function checkReminders() {
   if (!store.token || document.hidden) return;
   let items;
   try { items = await api("GET", "/reminders"); } catch { return; }
   const now = new Date();
+  const minutes = [];  // 확인할 분들 (hh:mm + 날짜)
+  for (let d = new Date(Math.max(lastCheck.getTime(), now.getTime() - 5 * 60000)); d <= now; d = new Date(d.getTime() + 60000)) {
+    minutes.push(d);
+  }
+  if (!minutes.length || hhmmOf(minutes[minutes.length - 1].toISOString()) !== hhmmOf(now.toISOString())) minutes.push(now);
+  lastCheck = now;
   for (const r of items) {
     if (!r.is_active) continue;
     const at = new Date(r.schedule_time);
-    const sameMinute = hhmmOf(r.schedule_time) === hhmmOf(now.toISOString());
-    const due = r.repeat_rule === "daily" ? sameMinute : sameMinute && at.toDateString() === now.toDateString();
-    if (!due || fired.has(firedKey(r, now))) continue;
-    fired.add(firedKey(r, now));
+    const hit = minutes.find((m) => hhmmOf(r.schedule_time) === hhmmOf(m.toISOString())
+      && (r.repeat_rule === "daily" || at.toDateString() === m.toDateString()));
+    if (!hit || fired.has(firedKey(r, hit))) continue;
+    fired.add(firedKey(r, hit));
     const text = t(`rm_alert_${r.reminder_type}`);
     toast(text);
     if ("Notification" in window && Notification.permission === "granted") new Notification("GlowPass", { body: text });
   }
 }
-setInterval(checkReminders, 30000);
+// 화면을 옮겨도 한 번만 등록 (스크립트가 다시 실행돼도 타이머가 겹치지 않게)
+if (!window.gpReminderTimer) window.gpReminderTimer = setInterval(checkReminders, 60000);
 
 // 화면 아래에 잠깐 뜨는 알림
 function toast(text) {
