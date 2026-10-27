@@ -1,0 +1,15 @@
+build/
+.gradle/
+_캐시/
+local.properties
+*.keystore
+*.jks
+_자료/*.mp4
+.idea/
+.kotlin/
+*.iml
+.DS_Store
+_자료/
+_시험/*.log
+배포/*.apk
+_시험서버/test.env

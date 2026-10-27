@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 자동 생성: scripts/app_strings.js — 앱에만 있는 문구 (4개 언어) -->
+<resources>
+    <string name="app_name" translatable="false">GlowPass</string>
+    <string name="features" formatted="false">기능 바로가기</string>
+    <string name="profile_title" formatted="false">내 정보</string>
+    <string name="profile_save" formatted="false">저장</string>
+    <string name="profile_saved" formatted="false">저장했어요.</string>
+    <string name="profile_masked_note" formatted="false">연락처는 가려서 보여 줘요. 바꿀 때만 새로 입력하세요.</string>
+    <string name="profile_lang" formatted="false">화면 언어</string>
+    <string name="edit" formatted="false">수정</string>
+    <string name="delete" formatted="false">삭제</string>
+    <string name="cancel" formatted="false">취소</string>
+    <string name="ok" formatted="false">확인</string>
+    <string name="retry" formatted="false">다시 시도</string>
+    <string name="loading" formatted="false">불러오는 중…</string>
+    <string name="record_edit_title" formatted="false">진료기록 수정</string>
+    <string name="record_update" formatted="false">수정 저장</string>
+    <string name="record_delete_confirm" formatted="false">이 진료기록을 지울까요? 지운 기록은 되돌릴 수 없어요.</string>
+    <string name="record_deleted" formatted="false">진료기록을 지웠어요.</string>
+    <string name="record_detail" formatted="false">기록 보기</string>
+    <string name="guides_none" formatted="false">아직 만든 가이드가 없어요.</string>
+    <string name="guide_context_title" formatted="false">가이드에 쓰이는 최근 기록 요약</string>
+    <string name="ocr_camera" formatted="false">📷 사진 찍기</string>
+    <string name="ocr_gallery" formatted="false">🖼 갤러리에서 고르기</string>
+    <string name="val_required" formatted="false">필수 칸을 채워 주세요.</string>
+    <string name="val_email" formatted="false">이메일 형식을 확인해 주세요.</string>
+    <string name="val_phone" formatted="false">휴대폰 번호 형식을 확인해 주세요. (예: 01012345678 또는 +86 138 1234 5678)</string>
+    <string name="val_messenger" formatted="false">메신저 아이디는 2~50자의 글자·숫자·_ . - + @ 만 쓸 수 있어요.</string>
+    <string name="val_birth" formatted="false">만 14세 이상만 가입할 수 있어요.</string>
+    <string name="val_gender" formatted="false">성별을 선택해 주세요.</string>
+    <string name="val_date" formatted="false">날짜는 YYYY-MM-DD 형식으로 입력해 주세요.</string>
+    <string name="val_future" formatted="false">진료일은 오늘 이후일 수 없어요.</string>
+    <string name="val_number" formatted="false">숫자를 확인해 주세요. (하루 1~10회, 1~365일분)</string>
+    <string name="val_name" formatted="false">이름은 2~50자로 입력해 주세요.</string>
+    <string name="session_expired" formatted="false">로그인이 끝났어요. 다시 로그인해 주세요.</string>
+    <string name="network_error" formatted="false">서버에 연결하지 못했어요. 인터넷 연결을 확인해 주세요.</string>
+    <string name="rm_app_note" formatted="false">앱을 닫아도 정한 시각에 휴대폰 알림이 와요.</string>
+    <string name="rm_perm_denied" formatted="false">알림 권한이 꺼져 있어 휴대폰 알림을 보낼 수 없어요. 설정에서 켜 주세요.</string>
+    <string name="rm_exact_off" formatted="false">정확한 시각 알람이 꺼져 있어 알림이 몇 분 늦게 올 수 있어요.</string>
+    <string name="rm_exact_open" formatted="false">정확한 알람 허용하기</string>
+    <string name="rm_channel" formatted="false">복약 알림</string>
+    <string name="open_settings" formatted="false">설정 열기</string>
+    <string name="chat_usage" formatted="false">오늘 질문 {used} / {limit}</string>
+    <string name="chat_alerts" formatted="false">내 위험 신호 기록</string>
+    <string name="chat_alerts_none" formatted="false">위험 신호 기록이 없어요.</string>
+    <string name="chat_stop" formatted="false">멈추기</string>
+    <string name="chat_lang" formatted="false">챗봇 언어</string>
+    <string name="tts_unsupported_app" formatted="false">이 휴대폰은 음성 읽기를 지원하지 않아요.</string>
+    <string name="card_shared" formatted="false">카드 이미지를 만들었어요. 저장하거나 보낼 앱을 고르세요.</string>
+    <string name="guide_assets" formatted="false">변환 파일 {n}개 (관리자)</string>
+    <string name="hosp_detail" formatted="false">병원 정보</string>
+    <string name="contact_detail" formatted="false">요청 자세히</string>
+    <string name="app_version" formatted="false">앱 버전 {v} · 서버 {s}</string>
+</resources>

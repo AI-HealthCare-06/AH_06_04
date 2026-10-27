@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 자동 생성: scripts/i18n_to_strings.js (웹 frontend/i18n.js) — 손으로 고치지 않는다 -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation,UnusedResources,Typos">
+    <string name="tagline" formatted="false">피부 고민, 이제 혼자 알아보지 마세요</string>
+    <string name="intro" formatted="false">진료받은 내용을 바탕으로 GlowPass가 복약·관리 방법을 쉽게 알려드려요.</string>
+    <string name="choose_lang" formatted="false">언어 선택</string>
+    <string name="login" formatted="false">로그인</string>
+    <string name="signup" formatted="false">회원가입</string>
+    <string name="logout" formatted="false">로그아웃</string>
+    <string name="withdraw" formatted="false">회원 탈퇴</string>
+    <string name="withdraw_confirm" formatted="false">탈퇴하면 진료기록·가이드·병원 요청이 모두 지워지고 되돌릴 수 없어요. 탈퇴할까요?</string>
+    <string name="withdraw_done" formatted="false">탈퇴가 끝났어요. 챗봇 대화는 30일 안에 자동으로 지워져요.</string>
+    <string name="email" formatted="false">이메일</string>
+    <string name="password" formatted="false">비밀번호</string>
+    <string name="password_hint" formatted="false">8자 이상, 대·소문자·숫자·특수문자 포함</string>
+    <string name="name" formatted="false">이름</string>
+    <string name="gender" formatted="false">성별</string>
+    <string name="female" formatted="false">여성</string>
+    <string name="male" formatted="false">남성</string>
+    <string name="birth" formatted="false">생년월일</string>
+    <string name="select_placeholder" formatted="false">선택하세요</string>
+    <string name="intro_video" formatted="false">GlowPass 소개 영상</string>
+    <string name="phone" formatted="false">휴대폰 번호</string>
+    <string name="phone_hint" formatted="false">필수 · 예: 01012345678 또는 +86 138 1234 5678</string>
+    <string name="no_account" formatted="false">계정이 없으신가요?</string>
+    <string name="have_account" formatted="false">이미 계정이 있으신가요?</string>
+    <string name="home_title" formatted="false">내 피부 관리</string>
+    <string name="my_records" formatted="false">내 진료기록</string>
+    <string name="no_records" formatted="false">아직 진료기록이 없어요.</string>
+    <string name="add_record" formatted="false">진료기록 입력하기</string>
+    <string name="make_guide" formatted="false">AI 가이드 만들기</string>
+    <string name="my_guides" formatted="false">내 AI 가이드</string>
+    <string name="visit_date" formatted="false">진료일</string>
+    <string name="hospital" formatted="false">병원 이름</string>
+    <string name="procedure" formatted="false">진료/시술 내용</string>
+    <string name="procedure_ph" formatted="false">예: 여드름 치료, 레이저 토닝</string>
+    <string name="doctor_note" formatted="false">의사 설명 메모</string>
+    <string name="drugs" formatted="false">처방약</string>
+    <string name="drug_name" formatted="false">약 이름</string>
+    <string name="dose" formatted="false">1회 용량</string>
+    <string name="dose_ph" formatted="false">예: 1정</string>
+    <string name="times_per_day" formatted="false">하루 횟수</string>
+    <string name="days" formatted="false">며칠분</string>
+    <string name="add_drug" formatted="false">+ 약 추가</string>
+    <string name="save" formatted="false">저장하고 AI 가이드 만들기</string>
+    <string name="ocr_upload" formatted="false">처방전·약봉투 사진으로 입력</string>
+    <string name="analyzing" formatted="false">AI 분석 · 가이드 생성</string>
+    <string name="step_record" formatted="false">진료기록·처방정보 확인</string>
+    <string name="step_rag" formatted="false">근거 자료 검색 (FR-02)</string>
+    <string name="step_guide" formatted="false">AI 복약·생활관리 가이드 생성 (FR-03)</string>
+    <string name="wait_msg" formatted="false">조금만 기다려주세요. 다 되면 바로 보여드릴게요.</string>
+    <string name="guide_title" formatted="false">AI 맞춤 가이드</string>
+    <string name="tab_med" formatted="false">복약 안내</string>
+    <string name="tab_life" formatted="false">생활관리</string>
+    <string name="tab_src" formatted="false">출처</string>
+    <string name="prescriptions_title" formatted="false">처방 내용</string>
+    <string name="prescriptions_note" formatted="false">병원에서 받은 처방을 입력하신 그대로 보여드려요. 복용 방법은 처방을 따르세요.</string>
+    <string name="no_source" formatted="false">이 기록과 관련된 검증된 자료가 아직 없어 가이드를 만들지 않았어요. 담당 의료진에게 문의해 주세요.</string>
+    <string name="failed" formatted="false">가이드를 만들지 못했어요. 잠시 후 다시 시도해 주세요.</string>
+    <string name="empty_section" formatted="false">이 항목은 근거 자료가 없어요.</string>
+    <string name="ask_ai" formatted="false">AI에게 더 물어보기</string>
+    <string name="contact_hospital" formatted="false">담당 병원 문의</string>
+    <string name="coming_soon" formatted="false">곧 연결돼요</string>
+    <string name="times_unit" formatted="false">하루 {n}회</string>
+    <string name="days_unit" formatted="false">{n}일분</string>
+    <string name="relevance" formatted="false">관련도</string>
+    <string name="open_source" formatted="false">원문 보기</string>
+    <string name="disclaimer_short" formatted="false">※ 제공 정보는 참고용이며 의학적 판단·처방을 대체하지 않아요.</string>
+    <string name="back" formatted="false">← 뒤로</string>
+    <string name="status_PENDING" formatted="false">생성 중</string>
+    <string name="status_DONE" formatted="false">완료</string>
+    <string name="status_NO_SOURCE" formatted="false">자료 없음</string>
+    <string name="status_FAILED" formatted="false">실패</string>
+    <string name="err_login" formatted="false">이메일 또는 비밀번호를 확인해 주세요.</string>
+    <string name="err_generic" formatted="false">요청을 처리하지 못했어요.</string>
+    <string name="signup_done" formatted="false">가입이 완료됐어요. 로그인해 주세요.</string>
+    <string name="chat_open" formatted="false">AI 챗봇에게 물어보기</string>
+    <string name="chat_title" formatted="false">AI 상담 챗봇</string>
+    <string name="chat_intro" formatted="false">GlowPass 안내 자료를 바탕으로 일반적인 정보만 안내해요. 내 몸에 맞는지는 꼭 의료진과 상담하세요.</string>
+    <string name="chat_ph" formatted="false">궁금한 점을 입력하세요 (Enter = 보내기)</string>
+    <string name="send" formatted="false">보내기</string>
+    <string name="chat_new" formatted="false">새 대화 시작</string>
+    <string name="chat_error" formatted="false">답을 받지 못했어요. 잠시 후 다시 시도해 주세요.</string>
+    <string name="chat_sources" formatted="false">근거:</string>
+    <string name="emergency_title" formatted="false">⚠ 응급일 수 있어요</string>
+    <string name="emergency_body" formatted="false">말씀하신 증상은 바로 진료가 필요할 수 있어요. 지금 119에 전화하거나 가까운 응급실로 가세요.</string>
+    <string name="call_119" formatted="false">119 전화하기</string>
+    <string name="find_er" formatted="false">가까운 응급실 찾기</string>
+    <string name="call_1330" formatted="false">외국어 관광안내 1330 전화</string>
+    <string name="ocr_hint" formatted="false">이름·주민등록번호는 가리고 찍어 주세요. 글자 인식을 위해 사진이 외부 AI 서비스로 전송될 수 있고, 사진 자체는 저장하지 않아요.</string>
+    <string name="ocr_reading" formatted="false">사진을 읽고 있어요…</string>
+    <string name="ocr_done" formatted="false">사진에서 읽은 내용으로 채웠어요.</string>
+    <string name="ocr_check" formatted="false">글자를 잘못 읽을 수 있어요. 처방전과 한 번 더 비교해 고친 뒤 저장해 주세요.</string>
+    <string name="ocr_items_not_read" formatted="false">약 목록은 읽지 못했어요. 직접 입력해 주세요.</string>
+    <string name="ocr_fake" formatted="false">(데모용 가짜 인식 결과)</string>
+    <string name="ocr_failed" formatted="false">사진을 읽지 못했어요. 밝고 선명하게 다시 찍거나 직접 입력해 주세요.</string>
+    <string name="ocr_badge" formatted="false">사진 입력</string>
+    <string name="nationality" formatted="false">국적</string>
+    <string name="nat_cn" formatted="false">중국</string>
+    <string name="nat_jp" formatted="false">일본</string>
+    <string name="nat_us" formatted="false">미국</string>
+    <string name="nat_kr" formatted="false">한국</string>
+    <string name="nat_other" formatted="false">기타</string>
+    <string name="fb_question" formatted="false">도움이 됐나요?</string>
+    <string name="fb_thanks" formatted="false">의견 고마워요!</string>
+    <string name="fb_wrong_info" formatted="false">내용이 틀린 것 같아요</string>
+    <string name="fb_hard_to_understand" formatted="false">이해하기 어려워요</string>
+    <string name="fb_not_relevant" formatted="false">내 상황과 관계없어요</string>
+    <string name="fb_other" formatted="false">기타</string>
+    <string name="err_exists" formatted="false">이미 사용 중이에요.</string>
+    <string name="err_too_big" formatted="false">파일이 너무 커요.</string>
+    <string name="err_file_type" formatted="false">JPG·PNG 사진만 올릴 수 있어요.</string>
+    <string name="err_input" formatted="false">입력한 내용을 확인해 주세요.</string>
+    <string name="err_limit" formatted="false">오늘 사용할 수 있는 횟수를 모두 썼어요.</string>
+    <string name="chat_context" formatted="false">최근 진료기록 참고 (약 이름이 AI 답변에 쓰여요):</string>
+    <string name="card_symptoms" formatted="false">지금 어떤 증상이 있나요?</string>
+    <string name="card_urgent" formatted="false">이런 증상은 바로 응급</string>
+    <string name="card_since" formatted="false">언제부터</string>
+    <string name="card_pick" formatted="false">증상을 고르면 병원에 보여줄 문장이 만들어져요.</string>
+    <string name="card_show_staff" formatted="false">병원 직원에게 보여주거나 메시지로 보내세요</string>
+    <string name="card_copy" formatted="false">문장 복사하기</string>
+    <string name="card_copied" formatted="false">복사했어요</string>
+    <string name="card_copy_fail" formatted="false">복사하지 못했어요. 길게 눌러 복사해 주세요.</string>
+    <string name="card_my_lang" formatted="false">내 언어로 내용 보기</string>
+    <string name="card_note" formatted="false">증상을 정리한 문장일 뿐 진단이 아니에요. 진료가 필요한지는 병원이 판단해요.</string>
+    <string name="messenger" formatted="false">연락용 메신저</string>
+    <string name="messenger_id" formatted="false">메신저 아이디</string>
+    <string name="messenger_id_hint" formatted="false">예: wxid_abc123</string>
+    <string name="still_pending" formatted="false">아직 가이드를 만들고 있어요. 잠시 뒤 \'내 AI 가이드\' 에서 다시 확인해 주세요.</string>
+    <string name="record_changed" formatted="false">가이드를 만든 뒤 진료기록이 바뀌었어요. 처방 칸은 지금 기록, 안내 글은 예전 기록 기준이에요.</string>
+    <string name="remake_guide" formatted="false">가이드 다시 만들기</string>
+    <string name="record_saved_guide_failed" formatted="false">진료기록은 저장됐어요. 가이드는 만들지 못했어요.</string>
+    <string name="hosp_title" formatted="false">병원 찾기</string>
+    <string name="hosp_region" formatted="false">지역</string>
+    <string name="hosp_dept" formatted="false">진료과</string>
+    <string name="hosp_all_regions" formatted="false">전체 지역</string>
+    <string name="hosp_all_depts" formatted="false">전체</string>
+    <string name="hosp_gangnam" formatted="false">강남구</string>
+    <string name="hosp_seocho" formatted="false">서초구</string>
+    <string name="hosp_junggu" formatted="false">중구(명동)</string>
+    <string name="hosp_mapo" formatted="false">마포구</string>
+    <string name="hosp_songpa" formatted="false">송파구</string>
+    <string name="hosp_busan" formatted="false">부산</string>
+    <string name="hosp_derm" formatted="false">피부과</string>
+    <string name="hosp_plastic" formatted="false">성형외과</string>
+    <string name="hosp_only_my_lang" formatted="false">내 언어로 상담 가능한 곳만</string>
+    <string name="hosp_none" formatted="false">조건에 맞는 병원이 없어요.</string>
+    <string name="hosp_count" formatted="false">{n}곳 (이름 순)</string>
+    <string name="hosp_principle" formatted="false">GlowPass 는 병원을 추천하거나 순위를 매기지 않아요. 목록을 보고 직접 선택하세요. 병원 연결 수수료도 받지 않아요.</string>
+    <string name="hosp_demo_note" formatted="false">※ 지금 목록은 데모용 가짜 병원이에요. 실제 공공데이터로 바꿀 예정이에요.</string>
+    <string name="demo_banner" formatted="false">데모 버전이에요. AI 답변의 근거 자료는 아직 의료진 감수 전이에요. 실제 치료 판단은 꼭 의료진과 상담하세요.</string>
+    <string name="unreviewed_badge" formatted="false">감수 전 자료</string>
+    <string name="hc_request" formatted="false">연락 요청</string>
+    <string name="hc_request_from_card" formatted="false">병원 목록에서 연락 요청하기</string>
+    <string name="hc_method" formatted="false">연락 받을 방법</string>
+    <string name="hc_m_messenger" formatted="false">메신저 (가입 때 적은 계정)</string>
+    <string name="hc_m_phone" formatted="false">전화</string>
+    <string name="hc_m_email" formatted="false">이메일</string>
+    <string name="hc_m_visit" formatted="false">방문 안내</string>
+    <string name="hc_memo" formatted="false">병원에 남길 말 (선택)</string>
+    <string name="hc_send" formatted="false">요청 보내기</string>
+    <string name="hc_sent" formatted="false">요청을 보냈어요. 병원이 확인하면 상태가 바뀌어요.</string>
+    <string name="hc_mine" formatted="false">내 연락 요청</string>
+    <string name="hc_none" formatted="false">아직 보낸 요청이 없어요.</string>
+    <string name="hc_cancel" formatted="false">요청 취소</string>
+    <string name="hc_status_requested" formatted="false">접수됨</string>
+    <string name="hc_status_in_progress" formatted="false">병원 확인 중</string>
+    <string name="hc_status_completed" formatted="false">연락 완료</string>
+    <string name="hc_status_cancelled" formatted="false">취소됨</string>
+    <string name="hc_login_needed" formatted="false">연락 요청은 로그인 후 할 수 있어요.</string>
+    <string name="hc_about_record" formatted="false">고른 병원에 내 시술 기록에 대한 문의로 보냅니다.</string>
+    <string name="hc_demo" formatted="false">※ 데모 버전에서는 실제 병원에 전달되지 않아요.</string>
+    <string name="hc_after_emergency" formatted="false">시술 병원에도 알리기 (연락 요청)</string>
+    <string name="hc_about_alert" formatted="false">위험 신호 안내에서 왔어요. 증상이 심하면 병원 연락을 기다리지 말고 119에 먼저 전화하세요.</string>
+    <string name="tts_play" formatted="false">🔊 음성으로 듣기</string>
+    <string name="tts_stop" formatted="false">⏹ 멈추기</string>
+    <string name="tts_unsupported" formatted="false">이 브라우저는 음성 읽기를 지원하지 않아요.</string>
+    <string name="card_save" formatted="false">🖼 카드 이미지로 저장</string>
+    <string name="rm_title" formatted="false">복약 알림</string>
+    <string name="rm_intro" formatted="false">약 먹을 시간이나 관리 안내를 확인할 시간을 정해 두세요.</string>
+    <string name="rm_type" formatted="false">무엇을 알릴까요</string>
+    <string name="rm_time" formatted="false">시각</string>
+    <string name="rm_repeat" formatted="false">반복</string>
+    <string name="rm_MEDICATION" formatted="false">약 먹을 시간</string>
+    <string name="rm_GUIDE_CHECK" formatted="false">관리 안내 확인</string>
+    <string name="rm_repeat_daily" formatted="false">매일</string>
+    <string name="rm_repeat_none" formatted="false">한 번만</string>
+    <string name="rm_add" formatted="false">알림 추가</string>
+    <string name="rm_list" formatted="false">내 알림</string>
+    <string name="rm_none" formatted="false">아직 알림이 없어요.</string>
+    <string name="rm_on" formatted="false">켜기</string>
+    <string name="rm_delete" formatted="false">삭제</string>
+    <string name="rm_alert_MEDICATION" formatted="false">💊 약 먹을 시간이에요. 처방전에 적힌 대로 드세요.</string>
+    <string name="rm_alert_GUIDE_CHECK" formatted="false">📋 시술 후 관리 안내를 확인할 시간이에요.</string>
+    <string name="rm_demo_note" formatted="false">※ 데모 버전에서는 GlowPass 화면이 열려 있을 때만 알려요.</string>
+    <string name="hc_already" formatted="false">이 병원에 이미 진행 중인 요청이 있어요. \'내 연락 요청\'에서 확인하세요.</string>
+    <string name="hd_title" formatted="false">병원 접수대</string>
+    <string name="hd_desc" formatted="false">환자가 보낸 연락 요청을 확인하고 상태를 바꿉니다. (데모: 관리자 계정이 병원 역할)</string>
+    <string name="hd_open_only" formatted="false">진행 중만</string>
+    <string name="hd_all" formatted="false">끝난 것까지</string>
+    <string name="hd_none" formatted="false">처리할 요청이 없어요.</string>
+    <string name="hd_requester" formatted="false">요청자</string>
+    <string name="hd_contact" formatted="false">연락처</string>
+    <string name="hd_lang" formatted="false">언어</string>
+    <string name="hd_start" formatted="false">확인 시작</string>
+    <string name="hd_done" formatted="false">연락 완료</string>
+    <string name="hd_about_record" formatted="false">시술 기록 문의</string>
+    <string name="hd_about_alert" formatted="false">⚠ 위험 신호에서 넘어온 요청 — 먼저 확인</string>
+    <string name="hd_refresh" formatted="false">새로 고침</string>
+    <string name="agree_privacy" formatted="false">[필수] 개인정보 수집 · 이용 동의</string>
+    <string name="agree_terms" formatted="false">[필수] 이용약관 동의</string>
+    <string name="agree_view" formatted="false">내용 보기</string>
+    <string name="privacy_full" formatted="false">※ 데모 서비스 · 법무 검토 전 초안입니다.\n\n1. 수집 항목: 이메일, 비밀번호(암호화 저장), 이름, 성별, 생년월일, 휴대폰 번호, 연락용 메신저와 아이디, 국적, 화면 언어, 진료기록(병원·시술·처방), 처방전·약봉투 사진, 챗봇 질문\n2. 이용 목적: 복약 · 생활 관리 가이드 제공, 챗봇 답변, 사용자가 고른 병원에 연락 요청 전달\n3. 보유 기간: 회원 탈퇴 때까지 (탈퇴하면 바로 삭제). 챗봇 대화는 30일 뒤 자동 삭제\n4. 민감정보(건강정보) 처리: 진료기록 · 처방 · 사진은 건강에 관한 민감정보입니다. 위 목적에만 쓰며, 이 동의로 민감정보 처리에도 따로 동의합니다.\n5. 국외 이전: 이전받는 자 OpenAI(미국) · 항목: 진료기록 · 사진 · 챗봇 질문(질문 속 연락처 · 이메일 · 등록번호는 가린 뒤 보냄. 사진에 적힌 글자는 그대로 갈 수 있음) · 목적: AI 가이드 · 사진 인식 · 챗봇 답변 · 시기와 방법: 기능을 쓸 때마다 암호화된 통신으로 · 보유 기간: OpenAI 정책에 따름\n6. 동의를 거부할 권리: 동의하지 않을 수 있습니다. 다만 동의하지 않으면 가입과 서비스 이용이 어렵습니다.\n\n데모에는 실제 환자 정보를 넣지 마세요.</string>
+    <string name="terms_full" formatted="false">※ 데모 서비스 · 법무 검토 전 초안입니다.\n\n1. GlowPass 는 피부과 시술 뒤 관리를 돕는 정보 서비스이며, 진단 · 처방 · 특정 약 추천을 하지 않습니다.\n2. AI 안내는 참고용입니다. 증상이 심하거나 응급이면 바로 병원 또는 119 에 연락하세요.\n3. 병원은 사용자가 목록에서 직접 고릅니다. GlowPass 는 병원을 추천하거나 연결 수수료를 받지 않습니다.\n4. 다른 사람의 정보를 넣거나 서비스를 방해하면 이용이 제한될 수 있습니다.\n5. 언제든지 \'회원 탈퇴\'로 계정과 기록을 지울 수 있습니다.</string>
+    <string name="agree_needed" formatted="false">필수 동의 두 가지에 체크해 주세요.</string>
+    <string name="card_contact_note" formatted="false">등록하신 연락처로 병원이 연락합니다</string>
+</resources>

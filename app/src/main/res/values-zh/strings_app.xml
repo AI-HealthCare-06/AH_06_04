@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 자동 생성: scripts/app_strings.js — 앱에만 있는 문구 (4개 언어) -->
+<resources>
+    <string name="features" formatted="false">功能入口</string>
+    <string name="profile_title" formatted="false">我的信息</string>
+    <string name="profile_save" formatted="false">保存</string>
+    <string name="profile_saved" formatted="false">已保存。</string>
+    <string name="profile_masked_note" formatted="false">联系方式会部分隐藏显示。仅在需要修改时重新输入。</string>
+    <string name="profile_lang" formatted="false">界面语言</string>
+    <string name="edit" formatted="false">编辑</string>
+    <string name="delete" formatted="false">删除</string>
+    <string name="cancel" formatted="false">取消</string>
+    <string name="ok" formatted="false">确定</string>
+    <string name="retry" formatted="false">重试</string>
+    <string name="loading" formatted="false">加载中…</string>
+    <string name="record_edit_title" formatted="false">编辑就诊记录</string>
+    <string name="record_update" formatted="false">保存修改</string>
+    <string name="record_delete_confirm" formatted="false">要删除这条就诊记录吗？删除后无法恢复。</string>
+    <string name="record_deleted" formatted="false">已删除就诊记录。</string>
+    <string name="record_detail" formatted="false">查看记录</string>
+    <string name="guides_none" formatted="false">还没有指南。</string>
+    <string name="guide_context_title" formatted="false">用于指南的近期记录摘要</string>
+    <string name="ocr_camera" formatted="false">📷 拍照</string>
+    <string name="ocr_gallery" formatted="false">🖼 从相册选择</string>
+    <string name="val_required" formatted="false">请填写必填项。</string>
+    <string name="val_email" formatted="false">请检查邮箱格式。</string>
+    <string name="val_phone" formatted="false">请检查手机号码格式。（例：01012345678 或 +86 138 1234 5678）</string>
+    <string name="val_messenger" formatted="false">通讯软件账号为2~50个字符，只能使用字母、数字及 _ . - + @。</string>
+    <string name="val_birth" formatted="false">仅限14岁以上用户注册。</string>
+    <string name="val_gender" formatted="false">请选择性别。</string>
+    <string name="val_date" formatted="false">请按 YYYY-MM-DD 格式输入日期。</string>
+    <string name="val_future" formatted="false">就诊日期不能晚于今天。</string>
+    <string name="val_number" formatted="false">请检查数字。（每天1~10次，1~365天）</string>
+    <string name="val_name" formatted="false">姓名请输入2~50个字符。</string>
+    <string name="session_expired" formatted="false">登录已过期，请重新登录。</string>
+    <string name="network_error" formatted="false">无法连接服务器，请检查网络连接。</string>
+    <string name="rm_app_note" formatted="false">即使关闭应用，也会在设定时间收到手机通知。</string>
+    <string name="rm_perm_denied" formatted="false">通知权限已关闭，无法发送手机通知。请在设置中开启。</string>
+    <string name="rm_exact_off" formatted="false">精确闹钟未开启，通知可能会晚几分钟。</string>
+    <string name="rm_exact_open" formatted="false">允许精确闹钟</string>
+    <string name="rm_channel" formatted="false">用药提醒</string>
+    <string name="open_settings" formatted="false">打开设置</string>
+    <string name="chat_usage" formatted="false">今日提问 {used} / {limit}</string>
+    <string name="chat_alerts" formatted="false">我的危险信号记录</string>
+    <string name="chat_alerts_none" formatted="false">没有危险信号记录。</string>
+    <string name="chat_stop" formatted="false">停止</string>
+    <string name="chat_lang" formatted="false">聊天机器人语言</string>
+    <string name="tts_unsupported_app" formatted="false">此手机不支持语音朗读。</string>
+    <string name="card_shared" formatted="false">卡片图片已生成，请选择保存或发送的应用。</string>
+    <string name="guide_assets" formatted="false">转换文件 {n} 个（管理员）</string>
+    <string name="hosp_detail" formatted="false">医院信息</string>
+    <string name="contact_detail" formatted="false">请求详情</string>
+    <string name="app_version" formatted="false">应用 {v} · 服务器 {s}</string>
+</resources>
