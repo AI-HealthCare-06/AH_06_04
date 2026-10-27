@@ -79,8 +79,15 @@ function errorBox() { return h("div", { class: "error", role: "alert" }); }
 // ── 1. 첫 화면 (언어 선택) ───────────────────────
 function onboarding() {
   const langs = [["ko", "한국어"], ["ja", "日本語"], ["zh", "中文"], ["en", "English"]];
+  // 소개 영상 (frontend/assets) — 자동 재생은 소리 끔이어야 브라우저가 막지 않는다. 움직임 줄이기 설정이면 자동 재생 안 함
+  const video = h("video", { class: "hero-video", loop: true, playsinline: true, controls: true, preload: "metadata",
+    autoplay: !matchMedia("(prefers-reduced-motion: reduce)").matches,
+    poster: "/static/assets/glowpass-intro-poster.jpg", "aria-label": t("intro_video") },
+    h("source", { src: "/static/assets/glowpass-intro.mp4", type: "video/mp4" }));
+  video.muted = true;  // JS 로 만든 video 는 muted 속성(attribute)만으론 소리 끔이 안 돼 자동 재생이 막힌다
   render(
     h("div", { class: "card" },
+      video,
       h("h1", {}, t("tagline")),
       h("p", { class: "muted" }, t("intro")),
       h("h2", {}, t("choose_lang")),
@@ -121,7 +128,9 @@ function signupView() {
     email: h("input", { type: "email", required: true }),
     password: h("input", { type: "password", autocomplete: "new-password", required: true, placeholder: t("password_hint") }),
     name: h("input", { required: true, maxlength: 50 }),
-    gender: h("select", {}, h("option", { value: "FEMALE" }, t("female")), h("option", { value: "MALE" }, t("male"))),
+    // 성별은 필수라 미리 골라 두지 않는다 (그대로 넘기면 틀린 값으로 가입되던 것)
+    gender: h("select", { required: true }, h("option", { value: "", disabled: true, selected: true }, t("select_placeholder")),
+      h("option", { value: "FEMALE" }, t("female")), h("option", { value: "MALE" }, t("male"))),
     birth_date: h("input", { type: "date", required: true }),
     phone_number: h("input", { type: "tel", required: true, placeholder: t("phone_hint") }),  // 해외 번호 가능
     // 연락용 메신저 1개 (팀 결정: 전화 + 메신저) — 나라별로 많이 쓰는 것을 먼저
