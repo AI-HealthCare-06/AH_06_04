@@ -178,6 +178,11 @@ class TestHugeIds(TestCase):
                 ("GET", f"/api/v1/content-formats/{big}", None),
                 ("GET", f"/api/v1/hospital-contacts/{big}", None),
                 ("GET", f"/api/v1/ocr/prescriptions/{big}", None),
+                # [10회 8] 목록의 offset 도 (앞 퍼징은 다른 칸이 먼저 422 라 놓쳤다)
+                ("GET", f"/api/v1/medical-records?offset={big}", None),
+                ("GET", f"/api/v1/guides?offset={big}", None),
+                ("GET", f"/api/v1/hospitals?offset={big}", None),
+                ("GET", f"/api/v1/medical-records?offset={2**63}", None),
                 ("POST", "/api/v1/guides", {"record_id": int(big)}),
                 (
                     "POST",

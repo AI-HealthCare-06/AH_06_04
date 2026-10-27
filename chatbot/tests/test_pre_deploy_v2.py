@@ -10,3 +10,6 @@ async def test_huge_ids_are_not_500(client):
     assert r.status_code == 422
     r = await client.get(f"/api/v1/chat/safety-alerts/{big}")
     assert r.status_code == 422
+    # [10회 8] 목록의 offset 도 SQLite 정수 한계를 넘으면 500 이었다
+    r = await client.get(f"/api/v1/chat/safety-alerts?offset={big}")
+    assert r.status_code == 422

@@ -189,7 +189,7 @@ def _alert_out(a: SafetyAlert) -> dict:
 async def my_safety_alerts(
     user_id: UserId,
     limit: Annotated[int, Query(ge=1, le=100)] = 20,
-    offset: Annotated[int, Query(ge=0)] = 0,
+    offset: Annotated[int, Query(ge=0, le=2**63 - 1)] = 0,  # [10회 8] 한계를 넘으면 OverflowError → 500 이었다
     severity: Literal["high", "medium"] | None = None,
 ):
     """내 감지 이력 (최신순)"""

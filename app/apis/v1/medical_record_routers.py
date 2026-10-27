@@ -42,7 +42,7 @@ async def list_medical_records(
     user: Annotated[User, Depends(get_request_user)],
     service: Annotated[MedicalRecordService, Depends(MedicalRecordService)],
     limit: Annotated[int, Query(ge=1, le=100)] = 20,  # 한 번에 몇 개 (기본 20개)
-    offset: Annotated[int, Query(ge=0)] = 0,  # 몇 개 건너뛰고
+    offset: Annotated[int, Query(ge=0, le=MAX_DB_ID)] = 0,  # 몇 개 건너뛰고
 ) -> ORJSONResponse:
     records = await service.list_records(user=user, limit=limit, offset=offset)
     return ORJSONResponse([record.model_dump() for record in records], status_code=status.HTTP_200_OK)

@@ -51,7 +51,7 @@ async def list_guides(
     user: Annotated[User, Depends(get_request_user)],
     service: Annotated[GuideService, Depends(GuideService)],
     limit: Annotated[int, Query(ge=1, le=50)] = 10,
-    offset: Annotated[int, Query(ge=0)] = 0,
+    offset: Annotated[int, Query(ge=0, le=MAX_DB_ID)] = 0,
 ) -> ORJSONResponse:
     guides = await service.list_guides(user=user, limit=limit, offset=offset)
     return ORJSONResponse([g.model_dump(mode="json") for g in guides], status_code=status.HTTP_200_OK)

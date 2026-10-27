@@ -8,6 +8,7 @@ from typing import Annotated, Literal
 from fastapi import APIRouter, HTTPException, Query, status
 from fastapi.responses import ORJSONResponse
 
+from app.dtos.base import MAX_DB_ID
 from app.services import hospitals
 
 hospital_router = APIRouter(prefix="/hospitals", tags=["hospitals"])
@@ -19,7 +20,7 @@ async def search_hospitals(
     department: Annotated[str | None, Query(max_length=20, examples=["피부과"])] = None,
     language: Annotated[Literal["ko", "ja", "zh", "en"] | None, Query()] = None,
     limit: Annotated[int, Query(ge=1, le=100)] = 20,
-    offset: Annotated[int, Query(ge=0)] = 0,
+    offset: Annotated[int, Query(ge=0, le=MAX_DB_ID)] = 0,
 ) -> ORJSONResponse:
     total, items = hospitals.search(region, department, language, limit, offset)
     body = {
