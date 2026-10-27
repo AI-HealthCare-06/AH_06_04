@@ -18,7 +18,9 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        pendingRoute.value = intent?.getStringExtra(EXTRA_ROUTE)
+        // 알림을 눌러 켠 처음 한 번만 (회전 · 언어 바꿈으로 화면이 다시 만들어질 때 또 가지 않게)
+        if (savedInstanceState == null) pendingRoute.value = intent?.getStringExtra(EXTRA_ROUTE)
+        intent?.removeExtra(EXTRA_ROUTE)
         val app = application as GlowPassApp
         setContent {
             GlowPassTheme {
@@ -30,6 +32,7 @@ class MainActivity : AppCompatActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         intent.getStringExtra(EXTRA_ROUTE)?.let { pendingRoute.value = it }
+        intent.removeExtra(EXTRA_ROUTE)
     }
 
     companion object {

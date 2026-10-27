@@ -6,6 +6,7 @@ package com.aidosas.glowpass.app.data.repository
 
 import com.aidosas.glowpass.app.data.api.ApiClient
 import com.aidosas.glowpass.app.data.api.ApiException
+import com.aidosas.glowpass.app.data.api.ApiJsonWithNulls
 import com.aidosas.glowpass.app.data.api.SseEvent
 import com.aidosas.glowpass.app.data.api.apiCall
 import com.aidosas.glowpass.app.data.dto.AskRequest
@@ -84,7 +85,8 @@ class GlowPassRepository(private val client: ApiClient, private val onRemindersC
     suspend fun records(limit: Int = 20) = apiCall { api.records(limit) }
     suspend fun record(id: Long) = apiCall { api.record(id) }
     suspend fun createRecord(body: MedicalRecordCreateRequest) = apiCall { api.createRecord(body) }
-    suspend fun updateRecord(id: Long, body: MedicalRecordUpdateRequest) = apiCall { api.updateRecord(id, body) }
+    suspend fun updateRecord(id: Long, body: MedicalRecordUpdateRequest) =
+        apiCall { api.updateRecord(id, ApiJsonWithNulls.encodeToJsonElement(MedicalRecordUpdateRequest.serializer(), body)) }
     suspend fun deleteRecord(id: Long) {
         val res = apiCall { api.deleteRecord(id) }
         if (!res.isSuccessful) throw ApiException(res.code(), null)

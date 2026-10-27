@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
@@ -55,12 +56,12 @@ private fun ProfileForm(me: UserInfo) {
     val app = LocalApp.current
     val ctx = LocalContext.current
     val scope = rememberUiScope()
-    var name by remember { mutableStateOf(me.name) }
-    var phone by remember { mutableStateOf("") }
-    var nationality by remember { mutableStateOf(me.nationality ?: "") }
-    var messenger by remember { mutableStateOf(me.messengerType ?: "WHATSAPP") }
-    var messengerId by remember { mutableStateOf("") }
-    var lang by remember { mutableStateOf(me.preferredLanguage) }
+    var name by rememberSaveable { mutableStateOf(me.name) }
+    var phone by rememberSaveable { mutableStateOf("") }
+    var nationality by rememberSaveable { mutableStateOf(me.nationality) }  // null = 안 바꿈
+    var messenger by rememberSaveable { mutableStateOf(me.messengerType) }  // null = 가입 때 안 적음 → 고르기 전에는 안 보낸다
+    var messengerId by rememberSaveable { mutableStateOf("") }
+    var lang by rememberSaveable { mutableStateOf(me.preferredLanguage) }
     var err by remember { mutableStateOf<String?>(null) }
     var ok by remember { mutableStateOf<String?>(null) }
     var busy by remember { mutableStateOf(false) }
@@ -75,10 +76,11 @@ private fun ProfileForm(me: UserInfo) {
     Notice(tr(R.string.profile_masked_note))
     Field(tr(R.string.name), name, { name = it }, maxLength = 50)
     Field(tr(R.string.phone), phone, { phone = it }, keyboard = KeyboardType.Phone, placeholder = me.phoneNumber ?: tr(R.string.phone_hint), maxLength = 20)
+    // 국적 '기타'(빈 값)는 서버에서 지울 수 없어 고치기 칸에는 두지 않는다
     Dropdown(tr(R.string.nationality), listOf("CN" to tr(R.string.nat_cn), "JP" to tr(R.string.nat_jp), "US" to tr(R.string.nat_us),
-        "KR" to tr(R.string.nat_kr), "" to tr(R.string.nat_other)), nationality, { nationality = it })
+        "KR" to tr(R.string.nat_kr)), nationality, { nationality = it }, placeholder = me.nationality ?: tr(R.string.nat_other))
     Dropdown(tr(R.string.messenger), listOf("WECHAT" to "WeChat 微信", "LINE" to "LINE", "WHATSAPP" to "WhatsApp",
-        "KAKAOTALK" to "KakaoTalk 카카오톡", "TELEGRAM" to "Telegram"), messenger, { messenger = it })
+        "KAKAOTALK" to "KakaoTalk 카카오톡", "TELEGRAM" to "Telegram"), messenger, { messenger = it }, placeholder = tr(R.string.select_placeholder))
     Field(tr(R.string.messenger_id), messengerId, { messengerId = it }, placeholder = me.messengerId ?: tr(R.string.messenger_id_hint), maxLength = 50)
     Dropdown(tr(R.string.profile_lang), LANGS, lang, { lang = it })
     PrimaryButton(tr(R.string.profile_save), enabled = !busy, onClick = {
@@ -87,6 +89,8 @@ private fun ProfileForm(me: UserInfo) {
             name.trim().length !in 2..50 -> "val_name"  // 서버 UserUpdateRequest: 이름 2~50자
             phone.isNotBlank() && Validators.phone(phone) != null -> "val_phone"
             messengerId.isNotBlank() && Validators.messengerId(messengerId) != null -> "val_messenger"
+            // 메신저 종류를 바꾸면 그 메신저 아이디도 새로 적어야 한다 (안 그러면 「LINE: wxid…」처럼 남의 아이디가 붙는다)
+            messenger != me.messengerType && messengerId.isBlank() -> "val_messenger"
             else -> null
         }
         if (bad != null) { err = ctx.str(bad); return@PrimaryButton }
@@ -97,9 +101,9 @@ private fun ProfileForm(me: UserInfo) {
                 app.repo.updateMe(UserUpdateRequest(
                     name = name.trim().takeIf { it != me.name },
                     phoneNumber = phone.trim().ifBlank { null },
-                    nationality = nationality.ifBlank { null }?.takeIf { it != me.nationality },
+                    nationality = nationality?.takeIf { it != me.nationality },
                     preferredLanguage = lang.takeIf { it != me.preferredLanguage },
-                    messengerType = messenger.takeIf { it != me.messengerType || messengerId.isNotBlank() },
+                    messengerType = messenger?.takeIf { it != me.messengerType || messengerId.isNotBlank() },
                     messengerId = messengerId.trim().ifBlank { null },
                 ))
                 ok = ctx.str("profile_saved")

@@ -54,6 +54,7 @@ object ReminderPlanner {
         val now = Instant.ofEpochMilli(nowMillis).atZone(zone)
         var at = now.toLocalDate().atTime(hour, minute).atZone(zone)
         if (!at.isAfter(now)) at = at.plusDays(1)
-        return at.toOffsetDateTime().toString()
+        // 초까지 늘 적는다 (09:00 이면 toString() 이 초를 빼서 웹 toISOString() 과 모양이 달라진다)
+        return at.toOffsetDateTime().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX"))
     }
 }

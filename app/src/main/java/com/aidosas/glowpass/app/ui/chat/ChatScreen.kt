@@ -14,7 +14,10 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -95,6 +98,8 @@ fun ChatScreen() {
     var showAlerts by remember { mutableStateOf(false) }
     var reset by remember { mutableStateOf(0) }
     val list = rememberLazyListState()
+    val keyboard = androidx.compose.ui.platform.LocalSoftwareKeyboardController.current
+    val focus = androidx.compose.ui.platform.LocalFocusManager.current
 
     suspend fun refreshUsage() {
         runCatching { app.repo.chatUsage() }.getOrNull()?.let { usage = tr_fill(ctx, it.used, it.limit) }
@@ -131,6 +136,7 @@ fun ChatScreen() {
         val id = convId
         if (q.isEmpty() || job != null || id == null) return@send
         input = ""
+        keyboard?.hide(); focus.clearFocus()  // 보내면 자판을 내린다 (응급 안내 · 답이 보일 자리)
         bubbles += Bubble(true, q)
         val box = Bubble(false, "…").also { bubbles += it }
         job = scope.launch {
@@ -176,6 +182,11 @@ fun ChatScreen() {
     }
 
     Screen(tr(R.string.chat_title), onBack = { job?.cancel(); app.back() }, scroll = false) {
+        // [추가 점검 r2] 응급 안내는 목록 밖 맨 위에 고정 — 목록은 새 답을 따라 아래로 내려가서, 안에 두면 안내가 화면 밖으로 밀려났다
+        //   (웹은 안내를 화면에 보이게 스크롤한다 · 디자인 시안 8번 「맨 위 빨간 안내」)
+        if (emergency) androidx.compose.foundation.layout.Box(Modifier.heightIn(max = 260.dp).verticalScroll(rememberScrollState())) {
+            EmergencyCard(alertId) { app.go(Routes.hospitals(alert = it)) }
+        }
         LazyColumn(state = list, modifier = Modifier.weight(1f).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -190,7 +201,6 @@ fun ChatScreen() {
                         Dropdown(tr(R.string.chat_lang), opts, lang, { if (it != lang) { job?.cancel(); lang = it } }, modifier = Modifier.weight(1f))
                         usage?.let { MutedText(it, small = true) }
                     }
-                    if (emergency) EmergencyCard(alertId) { app.go(Routes.hospitals(alert = it)) }
                     ErrorText(err)
                 }
             }

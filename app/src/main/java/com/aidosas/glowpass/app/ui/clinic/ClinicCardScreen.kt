@@ -15,7 +15,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
@@ -55,8 +57,8 @@ private fun CardBody(record: MedicalRecord, me: UserInfo?) {
     val app = LocalApp.current
     val ctx = LocalContext.current
     val lang = app.lang
-    val picked = remember { mutableStateListOf<String>() }
-    var since by remember { mutableStateOf("today") }
+    val picked = rememberSaveable(saver = androidx.compose.runtime.saveable.listSaver(save = { it.toList() }, restore = { it.toMutableStateList() })) { mutableStateListOf<String>() }
+    var since by rememberSaveable { mutableStateOf("today") }
     var copied by remember { mutableStateOf<String?>(null) }
     var showMine by remember { mutableStateOf(false) }
     val chosen = SYMPTOMS.filter { it.key in picked }

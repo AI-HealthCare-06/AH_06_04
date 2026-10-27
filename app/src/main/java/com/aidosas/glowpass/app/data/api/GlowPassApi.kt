@@ -27,7 +27,6 @@ import com.aidosas.glowpass.app.data.dto.HospitalPage
 import com.aidosas.glowpass.app.data.dto.LoginRequest
 import com.aidosas.glowpass.app.data.dto.MedicalRecord
 import com.aidosas.glowpass.app.data.dto.MedicalRecordCreateRequest
-import com.aidosas.glowpass.app.data.dto.MedicalRecordUpdateRequest
 import com.aidosas.glowpass.app.data.dto.NewConversationRequest
 import com.aidosas.glowpass.app.data.dto.OcrAccepted
 import com.aidosas.glowpass.app.data.dto.OcrJob
@@ -91,7 +90,8 @@ interface GlowPassApi {
     suspend fun record(@Path("id") id: Long): MedicalRecord
 
     @PATCH("api/v1/medical-records/{id}")
-    suspend fun updateRecord(@Path("id") id: Long, @Body body: MedicalRecordUpdateRequest): MedicalRecord
+    // 비운 칸(시술 · 메모)은 null 을 꼭 보내야 서버가 지운다 → 몸통을 직접 만들어 보낸다 (GlowPassRepository.updateRecord)
+    suspend fun updateRecord(@Path("id") id: Long, @Body body: JsonElement): MedicalRecord
 
     @DELETE("api/v1/medical-records/{id}")
     suspend fun deleteRecord(@Path("id") id: Long): Response<Unit>

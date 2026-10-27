@@ -9,6 +9,8 @@ import com.aidosas.glowpass.app.ui.rememberUiScope
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Matrix
+import android.media.ExifInterface
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -19,9 +21,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.saveable.listSaver
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -33,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import com.aidosas.glowpass.app.R
 import com.aidosas.glowpass.app.data.Validators
+import com.aidosas.glowpass.app.data.dto.MedicalRecord
 import com.aidosas.glowpass.app.data.dto.MedicalRecordCreateRequest
 import com.aidosas.glowpass.app.data.dto.MedicalRecordUpdateRequest
 import com.aidosas.glowpass.app.data.dto.OcrJob
@@ -67,6 +72,14 @@ private class DrugRow(name: String = "", dose: String = "", times: String = "", 
     var days by mutableStateOf(days)
 }
 
+private fun rowOf(name: String, dose: String?, times: Int?, days: Int?) = DrugRow(name, dose ?: "", times?.toString() ?: "", days?.toString() ?: "")
+
+// [추가 점검 r5] 화면이 다시 만들어져도(회전 · 언어 바꿈 · 카메라 중 앱 종료) 적던 약 목록이 남게
+private val DrugRowsSaver = listSaver<SnapshotStateList<DrugRow>, String>(
+    save = { rows -> rows.flatMap { listOf(it.name, it.dose, it.times, it.days) } },
+    restore = { flat -> flat.chunked(4).map { DrugRow(it[0], it[1], it[2], it[3]) }.toMutableStateList() },
+)
+
 @Composable
 fun RecordFormScreen(recordId: Long?) {
     val app = LocalApp.current
@@ -75,36 +88,32 @@ fun RecordFormScreen(recordId: Long?) {
     } else {
         val loader = rememberLoader(recordId) { app.repo.record(recordId) }
         Screen(tr(R.string.record_edit_title), onBack = { app.back() }) {
-            LoadView(loader) { RecordForm(recordId) }
+            // 불러온 기록으로 바로 채운다 (한 번 더 부르다 실패하면 빈 칸이 되던 것)
+            LoadView(loader) { RecordForm(it) }
         }
     }
 }
 
 @Composable
-private fun RecordForm(recordId: Long?) {
+private fun RecordForm(initial: MedicalRecord?) {
     val app = LocalApp.current
     val ctx = LocalContext.current
     val scope = rememberUiScope()
+    val recordId = initial?.id
     val today = LocalDate.now()  // 기기 시간대 기준 오늘
-    var visitDate by remember { mutableStateOf(today.toString()) }
-    var hospital by remember { mutableStateOf("") }
-    var procedure by remember { mutableStateOf("") }
-    var note by remember { mutableStateOf("") }
-    val drugs = remember { mutableStateListOf(DrugRow()) }
-    var ocrJobId by remember { mutableStateOf<Long?>(null) }
+    var visitDate by rememberSaveable { mutableStateOf(initial?.visitDate ?: today.toString()) }
+    var hospital by rememberSaveable { mutableStateOf(initial?.hospitalName ?: "") }
+    var procedure by rememberSaveable { mutableStateOf(initial?.procedureName ?: "") }
+    var note by rememberSaveable { mutableStateOf(initial?.doctorNote ?: "") }
+    val drugs = rememberSaveable(saver = DrugRowsSaver) {
+        (initial?.items?.map { rowOf(it.drugName, it.dose, it.timesPerDay, it.days) }?.takeIf { it.isNotEmpty() } ?: listOf(DrugRow()))
+            .toMutableStateList()
+    }
+    var ocrJobId by rememberSaveable { mutableStateOf<Long?>(null) }
     var ocrNote by remember { mutableStateOf<OcrJob?>(null) }
     var ocrBusy by remember { mutableStateOf(false) }
     var err by remember { mutableStateOf<String?>(null) }
     var busy by remember { mutableStateOf(false) }
-
-    // 수정이면 지금 값으로 채운다
-    if (recordId != null) LaunchedEffect(recordId) {
-        val r = runCatching { app.repo.record(recordId) }.getOrNull() ?: return@LaunchedEffect
-        visitDate = r.visitDate; hospital = r.hospitalName; procedure = r.procedureName ?: ""; note = r.doctorNote ?: ""
-        drugs.clear()
-        r.items.forEach { drugs += DrugRow(it.drugName, it.dose ?: "", it.timesPerDay?.toString() ?: "", it.days?.toString() ?: "") }
-        if (drugs.isEmpty()) drugs += DrugRow()
-    }
 
     val fillFromOcr = { job: OcrJob ->
         val d = job.draft
@@ -115,7 +124,7 @@ private fun RecordForm(recordId: Long?) {
             d.procedureName?.let { procedure = it }
             if (d.items.isNotEmpty()) {
                 drugs.clear()
-                d.items.forEach { drugs += DrugRow(it.drugName, it.dose ?: "", it.timesPerDay?.toString() ?: "", it.days?.toString() ?: "") }
+                d.items.forEach { drugs += rowOf(it.drugName, it.dose, it.timesPerDay, it.days) }
             }
         }
         ocrNote = job
@@ -132,7 +141,7 @@ private fun RecordForm(recordId: Long?) {
             finally { ocrBusy = false }
         }
     }
-    var photoUri by remember { mutableStateOf<Uri?>(null) }
+    var photoUri by rememberSaveable { mutableStateOf<Uri?>(null) }  // 카메라를 쓰는 동안 앱이 꺼져도 사진을 잃지 않게
     val takePicture = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { ok ->
         if (ok) photoUri?.let(runOcr)
     }
@@ -228,7 +237,20 @@ private fun shrinkPhoto(ctx: Context, uri: Uri): ByteArray? {
     val bmp = ctx.contentResolver.openInputStream(uri)?.use {
         BitmapFactory.decodeStream(it, null, BitmapFactory.Options().apply { inSampleSize = sample })
     } ?: return null
+    // [추가 점검 r5] 휴대폰 카메라 사진은 옆으로 저장하고 '돌려 보기' 표시(EXIF)만 붙인다 → 다시 저장하면 표시가 사라져
+    //   서버가 옆으로 누운 처방전을 받는다. 그래서 표시대로 먼저 돌린다
+    val degrees = runCatching {
+        ctx.contentResolver.openInputStream(uri)?.use {
+            when (ExifInterface(it).getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)) {
+                ExifInterface.ORIENTATION_ROTATE_90 -> 90f
+                ExifInterface.ORIENTATION_ROTATE_180 -> 180f
+                ExifInterface.ORIENTATION_ROTATE_270 -> 270f
+                else -> 0f
+            }
+        }
+    }.getOrNull() ?: 0f
     val scale = minOf(1f, 2000f / maxOf(bmp.width, bmp.height))
-    val out = if (scale < 1f) Bitmap.createScaledBitmap(bmp, (bmp.width * scale).toInt(), (bmp.height * scale).toInt(), true) else bmp
+    val m = Matrix().apply { postScale(scale, scale); postRotate(degrees) }
+    val out = if (scale < 1f || degrees != 0f) Bitmap.createBitmap(bmp, 0, 0, bmp.width, bmp.height, m, true) else bmp
     return ByteArrayOutputStream().use { s -> out.compress(Bitmap.CompressFormat.JPEG, 85, s); s.toByteArray() }
 }

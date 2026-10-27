@@ -76,8 +76,8 @@ class ReminderPlannerTest {
 
     @Test
     fun nextTimeIso_todayOrTomorrow() {
-        assertEquals("2026-10-27T21:00+09:00", ReminderPlanner.nextTimeIso(21, 0, at("2026-10-27T10:00:00+09:00"), seoul))
-        assertEquals("2026-10-28T09:00+09:00", ReminderPlanner.nextTimeIso(9, 0, at("2026-10-27T10:00:00+09:00"), seoul))
+        assertEquals("2026-10-27T21:00:00+09:00", ReminderPlanner.nextTimeIso(21, 0, at("2026-10-27T10:00:00+09:00"), seoul))
+        assertEquals("2026-10-28T09:00:00+09:00", ReminderPlanner.nextTimeIso(9, 0, at("2026-10-27T10:00:00+09:00"), seoul))
     }
 }
 
@@ -168,5 +168,19 @@ class SseParserEndTest {
         assertEquals(1, p.feed("event: done\ndata: {}\n\n").size)
         assertTrue(p.feed("\n\n").isEmpty())
         assertTrue(p.feed(": keep-alive\n\n").isEmpty())
+    }
+}
+
+class RecordPatchBodyTest {
+    @Test
+    fun clearedFields_areSentAsNull_soServerClearsThem() {
+        val body = com.aidosas.glowpass.app.data.dto.MedicalRecordUpdateRequest("병원", "2026-10-27", null, null, emptyList())
+        val json = com.aidosas.glowpass.app.data.api.ApiJsonWithNulls.encodeToString(
+            com.aidosas.glowpass.app.data.dto.MedicalRecordUpdateRequest.serializer(), body)
+        assertTrue(json, json.contains("\"procedure_name\":null") && json.contains("\"doctor_note\":null"))
+        // 다른 요청은 그대로 null 을 빼고 보낸다 (내 정보 PATCH 는 '보낸 칸만' 바꾸므로)
+        val me = com.aidosas.glowpass.app.data.api.ApiJson.encodeToString(
+            com.aidosas.glowpass.app.data.dto.UserUpdateRequest.serializer(), com.aidosas.glowpass.app.data.dto.UserUpdateRequest(name = "A"))
+        assertEquals("{\"name\":\"A\"}", me)
     }
 }

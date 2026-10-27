@@ -27,6 +27,9 @@ val ApiJson = Json {
 // 로그인 토큰을 붙이지 않는 주소 (로그인·가입·토큰 갱신)
 private val NO_AUTH = listOf("/api/v1/auth/login", "/api/v1/auth/signup", "/api/v1/auth/token/refresh")
 
+// [추가 점검 r5] 진료기록 고치기(PATCH)는 '보낸 칸만' 바뀐다 → 비운 칸은 null 을 보내야 지워진다
+val ApiJsonWithNulls = Json(ApiJson) { explicitNulls = true; encodeDefaults = true }  // 기본값 null 도 빠지지 않게
+
 class AuthInterceptor(private val session: Session) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val req = chain.request()

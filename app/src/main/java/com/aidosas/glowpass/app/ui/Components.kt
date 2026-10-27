@@ -1,3 +1,5 @@
+@file:OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
+
 // ─────────────────────────────────────────────
 // [앱 v1 3] 화면 공통 조각 — 모든 목록에 로딩 · 빈 목록 · 오류 화면 (시연용 다듬기)
 // ─────────────────────────────────────────────
@@ -6,6 +8,8 @@ package com.aidosas.glowpass.app.ui
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.background
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -324,7 +328,10 @@ fun FeedbackBar(current: String?, send: suspend (rating: String, reason: String?
 fun EmergencyCard(alertId: Long? = null, onContactHospital: ((Long) -> Unit)? = null) {
     val ctx = LocalContext.current
     val open = { uri: String -> runCatching { ctx.startActivity(Intent(if (uri.startsWith("tel:")) Intent.ACTION_DIAL else Intent.ACTION_VIEW, Uri.parse(uri))) } }
-    Column(Modifier.fillMaxWidth().background(Color_EmergencyBg, RoundedCornerShape(12.dp)).padding(12.dp).testTag("emergency"),
+    // [추가 점검 r4] 안내가 화면 밖(위쪽)에 생기면 보이는 곳으로 끌어온다 (웹 scrollIntoView 와 같다)
+    val seen = remember { BringIntoViewRequester() }
+    LaunchedEffect(Unit) { kotlinx.coroutines.delay(80); runCatching { seen.bringIntoView() } }
+    Column(Modifier.fillMaxWidth().bringIntoViewRequester(seen).background(Color_EmergencyBg, RoundedCornerShape(12.dp)).padding(12.dp).testTag("emergency"),
         verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(tr(R.string.emergency_title), color = Danger, fontWeight = FontWeight.Bold)
         Text(tr(R.string.emergency_body))

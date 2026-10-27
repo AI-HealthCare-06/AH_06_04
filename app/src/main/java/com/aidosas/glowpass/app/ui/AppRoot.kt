@@ -5,6 +5,7 @@
 // ─────────────────────────────────────────────
 package com.aidosas.glowpass.app.ui
 
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -45,6 +46,7 @@ class AppState(
 ) {
     var demo by mutableStateOf(false)  // 감수 전 안내문으로 데모 운영 중 (GET /service-info)
     var loginMessage by mutableStateOf<String?>(null)
+    var ready by mutableStateOf(repo.session.isLoggedIn)  // 앱을 켤 때 로그인 잇기(refresh)가 끝났는지
     val lang: String get() = Settings.currentAppLang()
     val loggedIn: Boolean get() = repo.session.isLoggedIn
 
@@ -59,7 +61,8 @@ class AppState(
     fun home() = navigate(Routes.HOME) { popUpTo(Routes.HOME) { inclusive = true }; launchSingleTop = true }
     fun toLogin(message: String? = null) {
         loginMessage = message
-        navigate(Routes.LOGIN)
+        // [추가 점검 r5] 로그인 화면 밑에는 홈만 남긴다 — 뒤로 가면 홈 (로그인이 필요한 화면으로 돌아가 다시 로그인으로 튕기는 반복 방지)
+        navigate(Routes.LOGIN) { popUpTo(Routes.HOME); launchSingleTop = true }
     }
 }
 
@@ -92,19 +95,18 @@ fun AppRoot(app: GlowPassApp, pendingRoute: String?, onRouteHandled: () -> Unit)
     val nav = rememberNavController()
     val state = remember { AppState(app.repo, app.settings, app.scheduler, nav) }
     val ctx = androidx.compose.ui.platform.LocalContext.current
-    var ready by remember { mutableStateOf(app.repo.session.isLoggedIn) }
 
     LaunchedEffect(Unit) {
         // 앱을 켜면: refresh 쿠키로 로그인 잇기(3초 안) → 데모 띠 → (로그인이면) 알림 목록 받아 알람 다시 맞추기
         launch { runCatching { state.demo = app.repo.serviceInfo().demoUnreviewedDocs } }
         if (app.repo.resume()) launch { runCatching { app.repo.reminders() } }
-        ready = true
+        state.ready = true
     }
     LaunchedEffect(Unit) {
         app.repo.session.expired.collect { state.toLogin(ctx.str("session_expired")) }
     }
-    LaunchedEffect(pendingRoute, ready) {
-        if (pendingRoute != null && ready) {
+    LaunchedEffect(pendingRoute, state.ready) {
+        if (pendingRoute != null && state.ready) {
             if (state.loggedIn) state.go(pendingRoute) else state.toLogin()
             onRouteHandled()
         }
@@ -112,7 +114,7 @@ fun AppRoot(app: GlowPassApp, pendingRoute: String?, onRouteHandled: () -> Unit)
 
     androidx.compose.runtime.CompositionLocalProvider(LocalApp provides state) {
         NavHost(nav, startDestination = Routes.HOME) {
-            composable(Routes.HOME) { HomeScreen(ready) }
+            composable(Routes.HOME) { HomeScreen(state.ready) }
             composable(Routes.LOGIN) { LoginScreen() }
             composable(Routes.SIGNUP) { SignupScreen() }
             composable(Routes.PROFILE) { NeedLogin { ProfileScreen() } }
@@ -146,5 +148,12 @@ fun AppRoot(app: GlowPassApp, pendingRoute: String?, onRouteHandled: () -> Unit)
 @Composable
 private fun NeedLogin(content: @Composable () -> Unit) {
     val app = LocalApp.current
-    if (app.loggedIn) content() else LaunchedEffect(Unit) { app.toLogin() }
+    when {
+        app.loggedIn -> content()
+        // 앱을 다시 켠 직후: 로그인 잇기(refresh)가 끝날 때까지 기다린다 (바로 로그인 화면으로 보내지 않게)
+        !app.ready -> androidx.compose.foundation.layout.Box(androidx.compose.ui.Modifier.fillMaxSize(), contentAlignment = androidx.compose.ui.Alignment.Center) {
+            androidx.compose.material3.CircularProgressIndicator()
+        }
+        else -> LaunchedEffect(Unit) { app.toLogin() }
+    }
 }

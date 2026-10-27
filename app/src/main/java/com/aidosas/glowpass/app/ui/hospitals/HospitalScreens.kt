@@ -165,6 +165,7 @@ fun ContactsScreen() {
     val list = rememberLoader { app.repo.contacts() }
     var err by remember { mutableStateOf<String?>(null) }
     var detail by remember { mutableStateOf<Long?>(null) }
+    var busyId by remember { mutableStateOf<Long?>(null) }
     Screen(tr(R.string.hc_mine), onBack = { app.back() }) {
         ErrorText(err)
         Section {
@@ -174,10 +175,12 @@ fun ContactsScreen() {
                     ContactRow(c)
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         TextButton(onClick = { detail = c.contactId }) { Text(tr(R.string.contact_detail)) }
-                        if (c.status in listOf("requested", "in_progress")) OutlinedButton(onClick = {
+                        if (c.status in listOf("requested", "in_progress")) OutlinedButton(enabled = busyId != c.contactId, onClick = {
+                            busyId = c.contactId  // 두 번 눌러 두 번 가지 않게 (웹과 같다)
                             scope.launch {
                                 try { app.repo.changeContact(c.contactId, "cancelled"); list.reload(showLoading = false) }
                                 catch (e: Throwable) { err = ctx.errorText(e) }  // 예: 이미 취소 → 409
+                                finally { busyId = null }
                             }
                         }) { Text(tr(R.string.hc_cancel)) }
                     }
@@ -218,9 +221,12 @@ fun DeskScreen() {
         }
     }
     var err by remember { mutableStateOf<String?>(null) }
+    var busyId by remember { mutableStateOf<Long?>(null) }
     val set: (HospitalContact, String) -> Unit = { c, next ->
+        busyId = c.contactId  // 보내는 동안 그 줄 버튼을 막는다
         scope.launch {
             try { app.repo.changeContact(c.contactId, next); list.reload(showLoading = false) } catch (e: Throwable) { err = ctx.errorText(e) }
+            finally { busyId = null }
         }
     }
     Screen(tr(R.string.hd_title), onBack = { app.back() }) {
@@ -244,8 +250,8 @@ fun DeskScreen() {
                     c.recordId?.let { MutedText("${tr(R.string.hd_about_record)} #$it", small = true) }
                     c.memo?.let { Text(it) }
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        if (c.status == "requested") OutlinedButton(onClick = { set(c, "in_progress") }) { Text(tr(R.string.hd_start)) }
-                        if (c.status in listOf("requested", "in_progress")) OutlinedButton(onClick = { set(c, "completed") }) { Text(tr(R.string.hd_done)) }
+                        if (c.status == "requested") OutlinedButton(enabled = busyId != c.contactId, onClick = { set(c, "in_progress") }) { Text(tr(R.string.hd_start)) }
+                        if (c.status in listOf("requested", "in_progress")) OutlinedButton(enabled = busyId != c.contactId, onClick = { set(c, "completed") }) { Text(tr(R.string.hd_done)) }
                     }
                 }
             }
