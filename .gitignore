@@ -9,3 +9,6 @@ _자료/*.mp4
 .kotlin/
 *.iml
 .DS_Store
+_자료/
+_시험/*.log
+배포/*.apk

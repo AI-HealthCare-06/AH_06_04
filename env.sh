@@ -1,4 +1,12 @@
 # [앱 v1 1] 셸을 열 때마다 어플용 코드 에서: source env.sh (비밀값 아님)
+# 어느 폴더에서 불러도 이 파일이 있는 폴더(어플용 코드) 기준으로 동작한다
+GP_DIR=""
+for d in "$PWD" "$(cd "$(dirname "${BASH_SOURCE[0]:-${(%):-%x}}")" 2>/dev/null && pwd)"; do
+  if [ -f "$d/env.sh" ] && [ -d "$d/app" ]; then GP_DIR="$d"; break; fi
+done
+if [ -z "$GP_DIR" ] || [ ! -f "$GP_DIR/env.sh" ] || [ ! -d "$GP_DIR/app" ]; then
+  echo "env.sh: 어플용 코드 폴더를 찾지 못했습니다. 그 폴더에서 source env.sh 하세요"; return 1 2>/dev/null || exit 1
+fi
 export JAVA_HOME=/opt/homebrew/opt/openjdk@17
 export ANDROID_HOME=/opt/homebrew/share/android-commandlinetools
 # 캐시는 _캐시/ 안에 둔다 — 단 Gradle 캐시만 예외 (10/27 확인):
@@ -8,8 +16,8 @@ export GRADLE_USER_HOME=/tmp/glowpass-gradle
 # 빌드 결과(중간 파일 · APK)도 같은 이유로 영문 경로에. app/build 는 그곳을 가리키는 바로가기 (APK: app/build/outputs/apk/...)
 export GLOWPASS_BUILD_DIR=/tmp/glowpass-build/app
 mkdir -p "$GLOWPASS_BUILD_DIR"
-[ -L app/build ] || { rm -rf app/build; ln -s "$GLOWPASS_BUILD_DIR" app/build; }
-mkdir -p "$PWD/_캐시/android" "$PWD/_캐시/avd"
-export ANDROID_USER_HOME="$PWD/_캐시/android"
-export ANDROID_AVD_HOME="$PWD/_캐시/avd"
+[ -e "$GP_DIR/app/build" ] || ln -s "$GLOWPASS_BUILD_DIR" "$GP_DIR/app/build"  # 없을 때만 만든다 (지우지 않는다)
+mkdir -p "$GP_DIR/_캐시/android" "$GP_DIR/_캐시/avd"
+export ANDROID_USER_HOME="$GP_DIR/_캐시/android"
+export ANDROID_AVD_HOME="$GP_DIR/_캐시/avd"
 export PATH="$JAVA_HOME/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator:$ANDROID_HOME/cmdline-tools/latest/bin:$PATH"
