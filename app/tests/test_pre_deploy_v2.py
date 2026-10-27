@@ -136,6 +136,9 @@ def test_mask_helpers():
     assert mask_messenger_id("wxid_abc123") == "wx***"
     assert mask_messenger_id("a") == "***"
     assert mask_email("demo1026@example.com") == "de***@example.com"
+    # [10회 2] 짧은 값은 절반까지만 보인다 (메신저 ID 는 2자부터 받음)
+    assert mask_messenger_id("abc") == "a***" and mask_messenger_id("ab") == "a***"
+    assert mask_email("ab@example.com") == "a***@example.com" and mask_email("a@example.com") == "***@example.com"
 
 
 # F3 ─ SECRET_KEY 를 비워 두면: 개발은 32자 이상 무작위 키 + 경고 / 운영은 problems 에 걸림

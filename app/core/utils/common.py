@@ -25,13 +25,13 @@ def mask_phone_number(phone_number: str | None) -> str | None:
 
 
 def mask_messenger_id(messenger_id: str | None) -> str | None:
-    """wxid_abc123 → wx*** (앞 2글자만 — 내 계정이 맞는지 알아볼 정도)"""
+    """wxid_abc123 → wx*** (앞 2글자까지만, 짧은 값은 절반까지만 — 내 계정이 맞는지 알아볼 정도)"""
     if not messenger_id:
         return messenger_id
-    return (messenger_id[:2] if len(messenger_id) > 2 else "") + "***"
+    return messenger_id[: min(2, len(messenger_id) // 2)] + "***"
 
 
 def mask_email(email: str) -> str:
     """demo1026@example.com → de***@example.com"""
     local, _, domain = email.partition("@")
-    return f"{local[:2]}***@{domain}" if domain else mask_messenger_id(email) or ""
+    return f"{mask_messenger_id(local) or '***'}@{domain}" if domain else mask_messenger_id(email) or ""

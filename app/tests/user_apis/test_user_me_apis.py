@@ -31,7 +31,7 @@ class TestUserMeApis(TestCase):
             headers = {"Authorization": f"Bearer {access_token}"}
             response = await client.get("/api/v1/users/me", headers=headers)
         assert response.status_code == status.HTTP_200_OK
-        assert response.json()["email"] == email[:2] + "***@example.com"  # [배포 전 v2 F2] 가린 값
+        assert response.json()["email"] == "m***@example.com"  # [배포 전 v2 F2] 가린 값 (짧으면 절반까지만)
         assert response.json()["name"] == "내정보테스터"
 
     async def test_update_user_me_success(self):
