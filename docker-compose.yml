@@ -56,6 +56,7 @@ services:
     env_file: .env
     command: | 
       sh -c "uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+    # ↑ --reload 는 개발용 (코드를 고치면 바로 다시 켜짐). 운영은 infra/docker/docker-compose.prod.yml (--workers 3 · 마이그레이션 먼저)
     volumes:
       - ./app:/app/app  # 로컬의 app 디렉토리를 컨테이너의 /app/app에 마운트(수정사항 즉시 반영)
       - static_volume:/app/templates

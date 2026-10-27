@@ -46,6 +46,12 @@ services:
     container_name: fastapi
     image: ${DOCKER_USER}/${DOCKER_REPOSITORY}:app-${APP_VERSION}  # APP_VERSION은 빌드된 이미지의 버전관리를 위함입니다. v1.0.0 형식으로 사용합니다.
     env_file: .env
+    # [배포 전 v2 F6] 켜질 때 마이그레이션 먼저 (아직 안 한 것만 · 여러 번 돌려도 안전). 실패하면 서버가 뜨지 않는다(&&)
+    #   uvicorn 은 Dockerfile CMD 와 같게: --workers 3 · --reload 없음
+    #   --proxy-headers 는 넣지 않음: 코드가 접속 IP·https 여부를 쓰는 곳이 없다 (IP 별 제한을 만들면 그때 nginx 만 믿게 추가)
+    command: >
+      sh -c "uv run --no-sync aerich upgrade &&
+             exec uv run --no-sync uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 3"
     volumes:
       - static_volume:/app/templates
       - media_volume:/app/media
