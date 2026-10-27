@@ -52,7 +52,7 @@ flowchart LR
 | 위험 신호 | `GET /chat/safety-alerts` · `GET /chat/safety-alerts/{id}` |
 | 리마인더 · 콘텐츠 · 서비스 정보 | `/reminders` · `/content-assets` · `GET /service-info` (데모 모드 표시용) |
 
-자세한 요청·응답은 서버 실행 후 `/api/docs` (Swagger).
+자세한 요청·응답은 서버 실행 후 `/api/docs` (Swagger · 개발에서만 — 운영 `ENV=prod` 에서는 꺼짐).
 
 ## AI 설정 (`.env`)
 

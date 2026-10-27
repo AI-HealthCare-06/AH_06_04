@@ -34,7 +34,7 @@ class User(models.Model):
     name = fields.CharField(max_length=50)  # [리뷰 #15] 서구권 긴 이름 (20자 → 50자)
     gender = fields.CharEnumField(enum_type=Gender)
     birthday = fields.DateField()
-    # 외국인 사용자도 가입할 수 있게: 전화번호는 선택, 국제번호(+86…)는 '+' 포함 최대 16자
+    # 국제번호(+86…)는 '+' 포함 최대 16자. 가입 때는 필수(팀 결정 · PR #15), DB 는 예전 가입자 때문에 null 허용
     phone_number = fields.CharField(max_length=16, null=True)
     nationality = fields.CharField(max_length=2, null=True)  # 국적 (ISO 2글자, 예: CN·JP·US·KR)
     preferred_language = fields.CharEnumField(enum_type=Language, default=Language.KO)

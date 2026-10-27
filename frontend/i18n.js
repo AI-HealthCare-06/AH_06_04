@@ -227,28 +227,24 @@ Object.assign(window.I18N.en, { card_symptoms: "What symptoms do you have now?",
 // 배포 전 리뷰 반영 문구
 Object.assign(window.I18N.ko, {
   messenger: "연락용 메신저", messenger_id: "메신저 아이디", messenger_id_hint: "예: wxid_abc123",
-  ai_privacy_notice: "AI 가이드·사진 인식·챗봇을 위해 입력한 진료기록·사진·질문이 외부 AI 서비스(OpenAI)로 전송될 수 있어요. 데모에는 실제 환자 정보를 넣지 마세요.",
   still_pending: "아직 가이드를 만들고 있어요. 잠시 뒤 '내 AI 가이드' 에서 다시 확인해 주세요.",
   record_changed: "가이드를 만든 뒤 진료기록이 바뀌었어요. 처방 칸은 지금 기록, 안내 글은 예전 기록 기준이에요.",
   remake_guide: "가이드 다시 만들기", record_saved_guide_failed: "진료기록은 저장됐어요. 가이드는 만들지 못했어요.",
 });
 Object.assign(window.I18N.ja, {
   messenger: "連絡用メッセンジャー", messenger_id: "メッセンジャーID", messenger_id_hint: "例: line_abc123",
-  ai_privacy_notice: "AIガイド・写真読み取り・チャットボットのため、入力した診療記録・写真・質問が外部AIサービス（OpenAI）に送信される場合があります。デモでは実際の患者情報を入力しないでください。",
   still_pending: "まだガイドを作成中です。しばらくしてから「AIガイド」で確認してください。",
   record_changed: "ガイド作成後に診療記録が変更されました。処方欄は現在の記録、案内文は以前の記録に基づいています。",
   remake_guide: "ガイドを作り直す", record_saved_guide_failed: "診療記録は保存されました。ガイドは作成できませんでした。",
 });
 Object.assign(window.I18N.zh, {
   messenger: "联系用通讯软件", messenger_id: "通讯软件账号", messenger_id_hint: "例如：wxid_abc123",
-  ai_privacy_notice: "为提供AI指南、照片识别和聊天机器人功能，您填写的就诊记录、照片和问题可能会发送至外部AI服务（OpenAI）。演示时请勿填写真实患者信息。",
   still_pending: "指南仍在生成中，请稍后在“我的 AI 指南”中查看。",
   record_changed: "生成指南后就诊记录已更改。处方栏为当前记录，说明文字基于之前的记录。",
   remake_guide: "重新生成指南", record_saved_guide_failed: "就诊记录已保存，但未能生成指南。",
 });
 Object.assign(window.I18N.en, {
   messenger: "Messenger for contact", messenger_id: "Messenger ID", messenger_id_hint: "e.g. +14155550123",
-  ai_privacy_notice: "To provide AI guides, photo reading and the chatbot, the records, photos and questions you enter may be sent to an external AI service (OpenAI). Do not enter real patient information in demos.",
   still_pending: "Your guide is still being created. Please check 'My AI guides' again shortly.",
   record_changed: "Your record changed after this guide was made. Prescriptions show the current record; the guide text is based on the old one.",
   remake_guide: "Make the guide again", record_saved_guide_failed: "Your record was saved, but the guide couldn't be created.",
