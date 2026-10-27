@@ -12,7 +12,8 @@ object Validators {
     private val EMAIL = Regex("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$")
     private val KR_PHONE = listOf(Regex("010-\\d{4}-\\d{4}"), Regex("010\\d{8}"), Regex("\\+8210\\d{8}"))
     private val INTL_PHONE = Regex("\\+[1-9]\\d{7,14}")
-    private val MESSENGER_ID = Regex("(?U)[\\w.\\-+@]{2,50}")
+    // 파이썬 \w 처럼 한글·한자 글자도 받는다. (?U) 는 안드로이드 정규식이 몰라서 앱이 멈춘다 → 글자 종류를 직접 적는다
+    private val MESSENGER_ID = Regex("[\\p{L}\\p{M}\\p{N}_.\\-+@]{2,50}")
 
     fun email(v: String): String? = if (v.length in 3..100 && EMAIL.matches(v.trim())) null else "val_email"
 

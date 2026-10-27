@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -152,17 +153,17 @@ fun Tag(text: String, warn: Boolean = false) {
 
 @Composable
 fun PrimaryButton(text: String, onClick: () -> Unit, enabled: Boolean = true, modifier: Modifier = Modifier) {
-    Button(onClick, modifier.fillMaxWidth().height(48.dp), enabled = enabled, shape = RoundedCornerShape(12.dp)) { Text(text) }
+    Button(onClick, modifier.fillMaxWidth().heightIn(min = 48.dp), enabled = enabled, shape = RoundedCornerShape(12.dp)) { Text(text) }
 }
 
 @Composable
 fun SecondaryButton(text: String, onClick: () -> Unit, enabled: Boolean = true, modifier: Modifier = Modifier) {
-    OutlinedButton(onClick, modifier.fillMaxWidth().height(48.dp), enabled = enabled, shape = RoundedCornerShape(12.dp)) { Text(text) }
+    OutlinedButton(onClick, modifier.fillMaxWidth().heightIn(min = 48.dp), enabled = enabled, shape = RoundedCornerShape(12.dp)) { Text(text) }
 }
 
 @Composable
 fun DangerButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    Button(onClick, modifier.fillMaxWidth().height(48.dp), shape = RoundedCornerShape(12.dp),
+    Button(onClick, modifier.fillMaxWidth().heightIn(min = 48.dp), shape = RoundedCornerShape(12.dp),
         colors = ButtonDefaults.buttonColors(containerColor = Danger)) { Text(text) }
 }
 
@@ -271,7 +272,7 @@ class Loader<T>(private val scope: CoroutineScope, private val block: suspend ()
 
 @Composable
 fun <T> rememberLoader(vararg keys: Any?, block: suspend () -> T): Loader<T> {
-    val scope = rememberCoroutineScope()
+    val scope = rememberUiScope()
     val loader = remember(*keys) { Loader(scope, block) }
     LaunchedEffect(loader) { loader.reload() }
     return loader
@@ -296,7 +297,7 @@ fun <T> LoadView(loader: Loader<T>, emptyText: String? = null, isEmpty: (T) -> B
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun FeedbackBar(current: String?, send: suspend (rating: String, reason: String?) -> Unit) {
-    val scope = rememberCoroutineScope()
+    val scope = rememberUiScope()
     var rating by remember { mutableStateOf(current) }
     var asking by remember { mutableStateOf(false) }
     var busy by remember { mutableStateOf(false) }
@@ -350,3 +351,7 @@ fun ClickRow(text: String, sub: String? = null, onClick: () -> Unit, trailing: @
         trailing()
     }
 }
+
+/** 화면 코루틴은 늘 메인 스레드에서 이어 간다 — 서버 응답 뒤 화면 이동 · 토스트가 다른 스레드에서 불리지 않게 (10/27 화면 시험에서 발견) */
+@Composable
+fun rememberUiScope(): CoroutineScope = rememberCoroutineScope { kotlinx.coroutines.Dispatchers.Main.immediate }

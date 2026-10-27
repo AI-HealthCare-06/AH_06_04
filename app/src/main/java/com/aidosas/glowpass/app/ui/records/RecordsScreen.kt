@@ -4,6 +4,7 @@
 // ─────────────────────────────────────────────
 package com.aidosas.glowpass.app.ui.records
 
+import com.aidosas.glowpass.app.ui.rememberUiScope
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -16,7 +17,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -53,7 +53,7 @@ suspend fun makeGuide(app: AppState, recordId: Long?) {
 fun RecordsScreen() {
     val app = LocalApp.current
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = rememberUiScope()
     val records = rememberLoader { app.repo.records() }
     val guides = rememberLoader { app.repo.guides() }
     val context = rememberLoader { runCatching { app.repo.guideContext() }.getOrNull() }

@@ -6,6 +6,10 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
 }
 
+// 이 폴더 경로(한글 · 띄어쓰기)에 빌드 중간 파일을 두면 Kotlin 컴파일러가 클래스를 못 찾는다(10/27 확인)
+//   → env.sh 의 GLOWPASS_BUILD_DIR(영문 경로)에 만든다. app/build 는 그곳을 가리키는 바로가기
+System.getenv("GLOWPASS_BUILD_DIR")?.let { layout.buildDirectory.set(file(it)) }
+
 android {
     namespace = "com.aidosas.glowpass.app"
     compileSdk = 36
@@ -28,12 +32,12 @@ android {
             buildConfigField("String", "API_BASE", "\"https://app-glowpass.aidosas.com\"")
         }
         // 시험용 — 가상 휴대폰에서 본 맥(10.0.2.2). 이 종류에서만 http 를 허용한다 (src/local/res/xml)
-        //   포트 8000 = 시험용 nginx (/api/v1/chat → 챗봇, 나머지 → fastapi) · 어플용 코드/_시험서버/
+        //   포트 8088 = 시험용 nginx (8000 은 이 맥에서 다른 프로그램이 쓰고 있어 피함) (/api/v1/chat → 챗봇, 나머지 → fastapi) · 어플용 코드/_시험서버/
         create("local") {
             dimension = "server"
             applicationIdSuffix = ".local"
             versionNameSuffix = "-local"
-            buildConfigField("String", "API_BASE", "\"http://10.0.2.2:8000\"")
+            buildConfigField("String", "API_BASE", "\"http://10.0.2.2:8088\"")
         }
     }
 
@@ -99,4 +103,5 @@ dependencies {
     androidTestImplementation(libs.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.test.runner)
     androidTestImplementation(libs.androidx.test.ext.junit)
+    androidTestImplementation(libs.androidx.test.rules)
 }

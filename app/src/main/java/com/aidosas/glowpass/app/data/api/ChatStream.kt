@@ -39,6 +39,7 @@ class SseParser {
                 if (line.startsWith("event:")) event = line.substring(6).trim()
                 else if (line.startsWith("data:")) data.append(line.substring(5).trim())
             }
+            if (event == "message" && data.isEmpty()) continue  // 빈 덩어리(끝의 빈 줄 · 주석 줄)는 건너뛴다
             val obj = if (data.isEmpty()) JsonObject(emptyMap())
             else runCatching { ApiJson.parseToJsonElement(data.toString()) as? JsonObject }.getOrNull() ?: JsonObject(emptyMap())
             out += SseEvent(event, obj)

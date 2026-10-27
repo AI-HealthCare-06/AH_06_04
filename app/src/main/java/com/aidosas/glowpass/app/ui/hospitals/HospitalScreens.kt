@@ -5,6 +5,7 @@
 // ─────────────────────────────────────────────
 package com.aidosas.glowpass.app.ui.hospitals
 
+import com.aidosas.glowpass.app.ui.rememberUiScope
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
@@ -21,7 +22,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -129,7 +129,7 @@ private fun HospitalDetail(id: Long, onClose: () -> Unit) {
 private fun ContactRequestBox(h: Hospital, recordId: Long?, alertId: Long?) {
     val app = LocalApp.current
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = rememberUiScope()
     var open by remember { mutableStateOf(false) }
     var method by remember { mutableStateOf("messenger") }
     var memo by remember { mutableStateOf("") }
@@ -161,7 +161,7 @@ private fun ContactRequestBox(h: Hospital, recordId: Long?, alertId: Long?) {
 fun ContactsScreen() {
     val app = LocalApp.current
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = rememberUiScope()
     val list = rememberLoader { app.repo.contacts() }
     var err by remember { mutableStateOf<String?>(null) }
     var detail by remember { mutableStateOf<Long?>(null) }
@@ -210,7 +210,7 @@ private fun ContactRow(c: HospitalContact) {
 fun DeskScreen() {
     val app = LocalApp.current
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = rememberUiScope()
     var showAll by remember { mutableStateOf(false) }
     val list = rememberLoader(showAll) {
         try { app.repo.contacts(all = true, open = !showAll) } catch (e: Throwable) {

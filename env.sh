@@ -5,6 +5,10 @@ export ANDROID_HOME=/opt/homebrew/share/android-commandlinetools
 #   이 폴더 경로(한글 · 띄어쓰기)를 Gradle 캐시로 쓰면 Kotlin 컴파일러가 라이브러리를 하나도 못 찾는다(오류 2,490개).
 #   바로가기(symlink)도 Gradle 이 원래 경로로 바꿔서 안 된다 → 영문 경로 /tmp/glowpass-gradle 에 둔다 (맥을 다시 켜면 지워질 수 있음 → 다시 내려받음 약 5분)
 export GRADLE_USER_HOME=/tmp/glowpass-gradle
+# 빌드 결과(중간 파일 · APK)도 같은 이유로 영문 경로에. app/build 는 그곳을 가리키는 바로가기 (APK: app/build/outputs/apk/...)
+export GLOWPASS_BUILD_DIR=/tmp/glowpass-build/app
+mkdir -p "$GLOWPASS_BUILD_DIR"
+[ -L app/build ] || { rm -rf app/build; ln -s "$GLOWPASS_BUILD_DIR" app/build; }
 mkdir -p "$PWD/_캐시/android" "$PWD/_캐시/avd"
 export ANDROID_USER_HOME="$PWD/_캐시/android"
 export ANDROID_AVD_HOME="$PWD/_캐시/avd"

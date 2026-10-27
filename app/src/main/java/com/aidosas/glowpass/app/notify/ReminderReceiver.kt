@@ -59,6 +59,14 @@ class ReminderReceiver : BroadcastReceiver() {
 /** 휴대폰을 다시 켜거나 앱을 새로 깔거나 시간대·정확한 알람 허용이 바뀌면 마지막 목록으로 다시 맞춘다 */
 class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
+        if (intent.action !in ACTIONS) return  // 정해진 신호만 (다른 앱이 보낸 가짜 신호는 무시)
         ReminderScheduler(context).reschedule()
+    }
+
+    private companion object {
+        val ACTIONS = setOf(
+            Intent.ACTION_BOOT_COMPLETED, Intent.ACTION_MY_PACKAGE_REPLACED, Intent.ACTION_TIMEZONE_CHANGED,
+            Intent.ACTION_TIME_CHANGED, "android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED",
+        )
     }
 }

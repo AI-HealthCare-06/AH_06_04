@@ -5,6 +5,7 @@
 // ─────────────────────────────────────────────
 package com.aidosas.glowpass.app.ui.auth
 
+import com.aidosas.glowpass.app.ui.rememberUiScope
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,7 +16,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -48,7 +48,7 @@ import java.time.LocalDate
 fun LoginScreen() {
     val app = LocalApp.current
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = rememberUiScope()
     var email by rememberSaveable { mutableStateOf("") }
     var pw by remember { mutableStateOf("") }
     var err by remember { mutableStateOf<String?>(null) }
@@ -104,7 +104,7 @@ private val MESSENGER_BY_COUNTRY = mapOf("CN" to "WECHAT", "JP" to "LINE", "US" 
 fun SignupScreen() {
     val app = LocalApp.current
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = rememberUiScope()
     var email by rememberSaveable { mutableStateOf("") }
     var pw by remember { mutableStateOf("") }
     var name by rememberSaveable { mutableStateOf("") }
@@ -157,7 +157,7 @@ fun SignupScreen() {
                         agreePrivacy = agreePrivacy, agreeTerms = agreeTerms,
                     ))
                     app.loginMessage = ctx.str("signup_done")
-                    app.nav.navigate(Routes.LOGIN) { popUpTo(Routes.SIGNUP) { inclusive = true } }
+                    app.navigate(Routes.LOGIN) { popUpTo(Routes.SIGNUP) { inclusive = true } }
                 } catch (e: Throwable) {
                     err = ctx.errorText(e)
                 } finally { busy = false }

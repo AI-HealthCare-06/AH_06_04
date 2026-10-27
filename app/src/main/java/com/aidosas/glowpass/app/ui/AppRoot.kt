@@ -48,12 +48,18 @@ class AppState(
     val lang: String get() = Settings.currentAppLang()
     val loggedIn: Boolean get() = repo.session.isLoggedIn
 
-    fun go(route: String) = nav.navigate(route) { launchSingleTop = true }
-    fun back() { if (!nav.popBackStack()) go(Routes.HOME) }
-    fun home() = nav.navigate(Routes.HOME) { popUpTo(Routes.HOME) { inclusive = true }; launchSingleTop = true }
+    // 화면 이동은 늘 메인 스레드에서 (서버 응답을 받은 스레드에서 부르면 Navigation 이 멈춘다)
+    private val main = android.os.Handler(android.os.Looper.getMainLooper())
+    private fun ui(block: () -> Unit) { if (android.os.Looper.myLooper() == android.os.Looper.getMainLooper()) block() else main.post(block) }
+
+    fun navigate(route: String, builder: androidx.navigation.NavOptionsBuilder.() -> Unit = { launchSingleTop = true }) =
+        ui { nav.navigate(route, builder) }
+    fun go(route: String) = navigate(route)
+    fun back() = ui { if (!nav.popBackStack()) nav.navigate(Routes.HOME) }
+    fun home() = navigate(Routes.HOME) { popUpTo(Routes.HOME) { inclusive = true }; launchSingleTop = true }
     fun toLogin(message: String? = null) {
         loginMessage = message
-        nav.navigate(Routes.LOGIN) { launchSingleTop = true }
+        navigate(Routes.LOGIN)
     }
 }
 

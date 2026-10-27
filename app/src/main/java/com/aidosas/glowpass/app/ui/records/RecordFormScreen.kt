@@ -5,6 +5,7 @@
 // ─────────────────────────────────────────────
 package com.aidosas.glowpass.app.ui.records
 
+import com.aidosas.glowpass.app.ui.rememberUiScope
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -23,7 +24,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -84,7 +84,7 @@ fun RecordFormScreen(recordId: Long?) {
 private fun RecordForm(recordId: Long?) {
     val app = LocalApp.current
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = rememberUiScope()
     val today = LocalDate.now()  // 기기 시간대 기준 오늘
     var visitDate by remember { mutableStateOf(today.toString()) }
     var hospital by remember { mutableStateOf("") }
@@ -207,9 +207,9 @@ private fun RecordForm(recordId: Long?) {
                 // [리뷰 #12] 기록은 저장됐는데 가이드만 실패(한도 등)하면 같은 화면에 머물지 않게 → 중복 저장 방지
                 try {
                     val gid = app.repo.makeGuide(rec.id, app.lang)
-                    app.nav.navigate(Routes.guide(gid)) { popUpTo(Routes.RECORD_NEW) { inclusive = true } }
+                    app.navigate(Routes.guide(gid)) { popUpTo(Routes.RECORD_NEW) { inclusive = true } }
                 } catch (e: Throwable) {
-                    app.nav.navigate(Routes.RECORDS) { popUpTo(Routes.RECORD_NEW) { inclusive = true } }
+                    app.navigate(Routes.RECORDS) { popUpTo(Routes.RECORD_NEW) { inclusive = true } }
                     Toast.makeText(ctx, ctx.str("record_saved_guide_failed") + "\n" + ctx.errorText(e), Toast.LENGTH_LONG).show()
                 }
             } catch (e: Throwable) { err = ctx.errorText(e) } finally { busy = false }

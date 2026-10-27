@@ -6,6 +6,7 @@
 // ─────────────────────────────────────────────
 package com.aidosas.glowpass.app.ui.chat
 
+import com.aidosas.glowpass.app.ui.rememberUiScope
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -29,7 +30,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -80,7 +80,7 @@ private fun JsonObject.long(k: String) = (this[k] as? kotlinx.serialization.json
 fun ChatScreen() {
     val app = LocalApp.current
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = rememberUiScope()
     val langs = rememberLoader { runCatching { app.repo.chatLangs().langs }.getOrDefault(emptyList()) }
     var lang by remember { mutableStateOf(CHAT_LANG[app.lang] ?: "ko") }
     val bubbles = remember { mutableStateListOf<Bubble>() }

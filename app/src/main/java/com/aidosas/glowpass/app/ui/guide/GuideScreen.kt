@@ -5,6 +5,7 @@
 // ─────────────────────────────────────────────
 package com.aidosas.glowpass.app.ui.guide
 
+import com.aidosas.glowpass.app.ui.rememberUiScope
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -32,7 +33,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -119,7 +119,7 @@ private fun Progress(seconds: Float) {
 private fun GuideResult(g: Guide) {
     val app = LocalApp.current
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = rememberUiScope()
     var err by remember { mutableStateOf<String?>(null) }
     var remaking by remember { mutableStateOf(false) }
     val remake: () -> Unit = {

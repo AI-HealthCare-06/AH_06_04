@@ -1,0 +1,58 @@
+# ─────────────────────────────────────────────
+# [앱 v1 6] 앱 시험용 로컬 서버 — 코드_v2(main) 를 고치지 않고 그대로 빌드해서 fake 모드로 띄운다
+#   팀 docker-compose.yml 과 같은 모양(mysql · fastapi · chatbot · nginx). 이름 앞에 gpapp- 를 붙여 팀 컨테이너와 섞이지 않게
+#   앱(local)은 http://10.0.2.2:8088 → 이 nginx(8088) → /api/v1/chat 은 챗봇, 나머지는 fastapi
+#   켜기: docker compose -p gpapp up -d --build   끄기: docker compose -p gpapp down
+# ─────────────────────────────────────────────
+services:
+  gpapp-mysql:
+    image: mysql:8.0
+    container_name: gpapp-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ai_health
+      MYSQL_USER: gp
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      TZ: Asia/Seoul
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  gpapp-fastapi:
+    container_name: gpapp-fastapi
+    build:
+      context: ../../코드_v2_2026-10-27
+      dockerfile: app/Dockerfile
+    image: gpapp-fastapi:8303665
+    env_file: test.env
+    command: sh -c "uv run --no-sync aerich upgrade && uv run --no-sync uvicorn app.main:app --host 0.0.0.0 --port 8000"
+    depends_on:
+      gpapp-mysql:
+        condition: service_healthy
+
+  gpapp-chatbot:
+    container_name: gpapp-chatbot
+    build:
+      context: ../../코드_v2_2026-10-27/chatbot
+      dockerfile: Dockerfile
+    image: gpapp-chatbot:8303665
+    environment:
+      LOGIN_SECRET_KEY: ${SECRET_KEY}
+      DB_URL: sqlite:///chatbot/var/chat.sqlite3
+      APP_ENV: dev
+      LLM_MODE: fake
+      ALLOW_UNREVIEWED_DOCS: "true"
+
+  gpapp-nginx:
+    container_name: gpapp-nginx
+    image: nginx:latest
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "8088:80"
+    depends_on:
+      - gpapp-fastapi
+      - gpapp-chatbot

@@ -4,6 +4,7 @@
 // ─────────────────────────────────────────────
 package com.aidosas.glowpass.app.ui.home
 
+import com.aidosas.glowpass.app.ui.rememberUiScope
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -31,7 +32,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -58,7 +58,7 @@ private data class Feature(val label: String, val icon: ImageVector, val route: 
 @Composable
 fun HomeScreen(ready: Boolean) {
     val app = LocalApp.current
-    val scope = rememberCoroutineScope()
+    val scope = rememberUiScope()
     val loggedIn = ready && app.loggedIn
     // 관리자면 병원 접수대 카드도 (내 정보는 로그인 동안 한 번만 받는다)
     val me = rememberLoader(loggedIn) { if (loggedIn) app.repo.me() else null }
@@ -87,7 +87,7 @@ fun HomeScreen(ready: Boolean) {
         }
 
         if (ready && !loggedIn) {
-            PrimaryButton(tr(R.string.login), { app.go(Routes.LOGIN) })
+            PrimaryButton(tr(R.string.login), { app.go(Routes.LOGIN) }, modifier = Modifier.testTag("home_login"))
             SecondaryButton(tr(R.string.signup), { app.go(Routes.SIGNUP) })
         }
 

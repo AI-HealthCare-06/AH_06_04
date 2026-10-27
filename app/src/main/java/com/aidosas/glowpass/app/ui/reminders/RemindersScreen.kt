@@ -5,6 +5,7 @@
 // ─────────────────────────────────────────────
 package com.aidosas.glowpass.app.ui.reminders
 
+import com.aidosas.glowpass.app.ui.rememberUiScope
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -29,7 +30,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -67,7 +67,7 @@ import java.time.ZoneId
 fun RemindersScreen() {
     val app = LocalApp.current
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
+    val scope = rememberUiScope()
     val list = rememberLoader { app.repo.reminders() }  // 받을 때마다 휴대폰 알람을 다시 맞춘다
     var type by remember { mutableStateOf("MEDICATION") }
     var hour by remember { mutableStateOf(9) }
