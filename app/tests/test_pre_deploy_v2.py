@@ -53,6 +53,8 @@ class TestPreDeployV2(TestCase):
             {"agree_privacy": False},
             {"agree_terms": False},
             {"agree_privacy": None},
+            {"agree_privacy": 1},  # [10회 1] 동의는 분명한 true 만 (숫자 1 · "true" 글자는 안 됨)
+            {"agree_terms": "true"},
         ]
         for i, change in enumerate(cases):
             res = await self.client.post(
