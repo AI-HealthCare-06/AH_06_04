@@ -44,6 +44,8 @@ class UserRepository:
         messenger_id: str | None = None,
         is_active: bool = True,
         is_admin: bool = False,
+        privacy_agreed_at: datetime | None = None,
+        terms_agreed_at: datetime | None = None,
     ) -> User:
         return await self._model.create(
             email=email,
@@ -58,6 +60,8 @@ class UserRepository:
             messenger_id=messenger_id,
             is_active=is_active,
             is_admin=is_admin,
+            privacy_agreed_at=privacy_agreed_at,
+            terms_agreed_at=terms_agreed_at,
         )
 
     async def get_user_by_email(self, email: str) -> User | None:

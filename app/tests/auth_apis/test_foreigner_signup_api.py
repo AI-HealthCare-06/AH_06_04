@@ -10,12 +10,15 @@ from tortoise.contrib.test import TestCase
 from app.core.utils.common import normalize_phone_number
 from app.core.validators import validate_phone_number
 from app.main import app
+from app.models.users import User
 
 BASE = {
     "password": "Password123!",
     "name": "王小美",
     "gender": "FEMALE",
     "birth_date": "1996-05-01",
+    "agree_privacy": True,
+    "agree_terms": True,
     "messenger_type": "WECHAT",
     "messenger_id": "wxid_xiaomei",
 }
@@ -46,8 +49,11 @@ class TestForeignerSignup(TestCase):
         res = await self.client.post("/api/v1/auth/signup", json=body)
         assert res.status_code == status.HTTP_201_CREATED, res.text
         _, me = await self._login_me("cn1@example.com")
-        assert me["phone_number"] == "+8613812345678" and me["nationality"] == "CN" and me["preferred_language"] == "zh"
-        assert me["messenger_type"] == "WECHAT" and me["messenger_id"] == "wxid_xiaomei"
+        assert me["nationality"] == "CN" and me["preferred_language"] == "zh" and me["messenger_type"] == "WECHAT"
+        # [배포 전 v2 F2] 응답은 가린 값 — 정리(숫자만)된 원래 값은 DB 에서 확인
+        assert me["phone_number"] == "+86*******5678" and me["messenger_id"] == "wx***"
+        saved = await User.get(email="cn1@example.com")
+        assert saved.phone_number == "+8613812345678" and saved.messenger_id == "wxid_xiaomei"
         dup = {**body, "email": "cn2@example.com", "phone_number": "+8613812345678"}
         assert (await self.client.post("/api/v1/auth/signup", json=dup)).status_code == status.HTTP_409_CONFLICT
 

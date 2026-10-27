@@ -7,7 +7,7 @@ window.I18N = {
     choose_lang: "언어 선택", login: "로그인", signup: "회원가입", logout: "로그아웃", withdraw: "회원 탈퇴", withdraw_confirm: "탈퇴하면 진료기록·가이드·병원 요청이 모두 지워지고 되돌릴 수 없어요. 탈퇴할까요?", withdraw_done: "탈퇴가 끝났어요. 챗봇 대화는 30일 안에 자동으로 지워져요.",
     email: "이메일", password: "비밀번호", password_hint: "8자 이상, 대·소문자·숫자·특수문자 포함",
     name: "이름", gender: "성별", female: "여성", male: "남성", birth: "생년월일",
-    phone: "휴대폰 번호", phone_hint: "선택 · 예: 01012345678 또는 +86 138 1234 5678",
+    phone: "휴대폰 번호", phone_hint: "필수 · 예: 01012345678 또는 +86 138 1234 5678",
     no_account: "계정이 없으신가요?", have_account: "이미 계정이 있으신가요?",
     home_title: "내 피부 관리", my_records: "내 진료기록", no_records: "아직 진료기록이 없어요.",
     add_record: "진료기록 입력하기", make_guide: "AI 가이드 만들기", my_guides: "내 AI 가이드",
@@ -33,7 +33,7 @@ window.I18N = {
     choose_lang: "言語を選択", login: "ログイン", signup: "新規登録", logout: "ログアウト", withdraw: "退会", withdraw_confirm: "退会すると診療記録・ガイド・病院への依頼がすべて削除され、元に戻せません。退会しますか？", withdraw_done: "退会しました。チャットの会話は30日以内に自動で削除されます。",
     email: "メールアドレス", password: "パスワード", password_hint: "8文字以上・大文字・小文字・数字・記号を含む",
     name: "お名前", gender: "性別", female: "女性", male: "男性", birth: "生年月日",
-    phone: "携帯電話番号", phone_hint: "任意 · 例: +81 90 1234 5678",
+    phone: "携帯電話番号", phone_hint: "必須 · 例: +81 90 1234 5678",
     no_account: "アカウントをお持ちでないですか？", have_account: "すでにアカウントをお持ちですか？",
     home_title: "わたしの肌ケア", my_records: "診療記録", no_records: "まだ診療記録がありません。",
     add_record: "診療記録を入力", make_guide: "AIガイドを作る", my_guides: "AIガイド",
@@ -59,7 +59,7 @@ window.I18N = {
     choose_lang: "选择语言", login: "登录", signup: "注册", logout: "退出", withdraw: "注销账号", withdraw_confirm: "注销后，诊疗记录、指南和医院请求将全部删除且无法恢复。确定注销吗？", withdraw_done: "账号已注销。聊天记录将在30天内自动删除。",
     email: "邮箱", password: "密码", password_hint: "至少8位，包含大小写字母、数字和符号",
     name: "姓名", gender: "性别", female: "女", male: "男", birth: "出生日期",
-    phone: "手机号码", phone_hint: "选填 · 例如: +86 138 1234 5678",
+    phone: "手机号码", phone_hint: "必填 · 例如: +86 138 1234 5678",
     no_account: "还没有账号？", have_account: "已有账号？",
     home_title: "我的皮肤管理", my_records: "我的就诊记录", no_records: "还没有就诊记录。",
     add_record: "填写就诊记录", make_guide: "生成 AI 指南", my_guides: "我的 AI 指南",
@@ -85,7 +85,7 @@ window.I18N = {
     choose_lang: "Choose language", login: "Log in", signup: "Sign up", logout: "Log out", withdraw: "Delete account", withdraw_confirm: "Deleting your account permanently removes your records, guides and clinic requests. This cannot be undone. Delete?", withdraw_done: "Your account was deleted. Chat history is removed automatically within 30 days.",
     email: "Email", password: "Password", password_hint: "8+ characters with upper, lower, number and symbol",
     name: "Name", gender: "Gender", female: "Female", male: "Male", birth: "Date of birth",
-    phone: "Mobile number", phone_hint: "Optional · e.g. +1 415 555 0100",
+    phone: "Mobile number", phone_hint: "Required · e.g. +1 415 555 0100",
     no_account: "No account yet?", have_account: "Already have an account?",
     home_title: "My skin care", my_records: "My clinic records", no_records: "No clinic records yet.",
     add_record: "Add a clinic record", make_guide: "Create AI guide", my_guides: "My AI guides",
@@ -360,3 +360,33 @@ Object.assign(window.I18N.en, { hd_title: "Clinic front desk", hd_desc: "Review 
   hd_open_only: "Open only", hd_all: "Include closed", hd_none: "No requests to handle.", hd_requester: "Requester", hd_contact: "Contact", hd_lang: "Language",
   hd_start: "Start checking", hd_done: "Contacted", hd_about_record: "About a treatment record", hd_about_alert: "⚠ Came from a safety alert — check first",
   hd_refresh: "Refresh" });
+// [배포 전 v2 F1] 가입 동의 (10/26 멘토링: 동의해야만 가입 · 없으면 앱 심사 반려) — 데모 서비스 · 법무 검토 전 초안
+Object.assign(window.I18N.ko, {
+  agree_privacy: "[필수] 개인정보 수집 · 이용 동의", agree_terms: "[필수] 이용약관 동의", agree_view: "내용 보기",
+  privacy_full: "※ 데모 서비스 · 법무 검토 전 초안입니다.\n\n1. 수집 항목: 이메일, 비밀번호(암호화 저장), 이름, 성별, 생년월일, 휴대폰 번호, 연락용 메신저와 아이디, 국적, 화면 언어, 진료기록(병원·시술·처방), 처방전·약봉투 사진, 챗봇 질문\n2. 이용 목적: 복약 · 생활 관리 가이드 제공, 챗봇 답변, 사용자가 고른 병원에 연락 요청 전달\n3. 보유 기간: 회원 탈퇴 때까지 (탈퇴하면 바로 삭제). 챗봇 대화는 30일 뒤 자동 삭제\n4. 민감정보(건강정보) 처리: 진료기록 · 처방 · 사진은 건강에 관한 민감정보입니다. 위 목적에만 쓰며, 이 동의로 민감정보 처리에도 따로 동의합니다.\n5. 국외 이전: 이전받는 자 OpenAI(미국) · 항목: 진료기록 · 사진 · 챗봇 질문(질문 속 연락처 · 이메일 · 등록번호는 가린 뒤 보냄. 사진에 적힌 글자는 그대로 갈 수 있음) · 목적: AI 가이드 · 사진 인식 · 챗봇 답변 · 시기와 방법: 기능을 쓸 때마다 암호화된 통신으로 · 보유 기간: OpenAI 정책에 따름\n6. 동의를 거부할 권리: 동의하지 않을 수 있습니다. 다만 동의하지 않으면 가입과 서비스 이용이 어렵습니다.\n\n데모에는 실제 환자 정보를 넣지 마세요.",
+  terms_full: "※ 데모 서비스 · 법무 검토 전 초안입니다.\n\n1. GlowPass 는 피부과 시술 뒤 관리를 돕는 정보 서비스이며, 진단 · 처방 · 특정 약 추천을 하지 않습니다.\n2. AI 안내는 참고용입니다. 증상이 심하거나 응급이면 바로 병원 또는 119 에 연락하세요.\n3. 병원은 사용자가 목록에서 직접 고릅니다. GlowPass 는 병원을 추천하거나 연결 수수료를 받지 않습니다.\n4. 다른 사람의 정보를 넣거나 서비스를 방해하면 이용이 제한될 수 있습니다.\n5. 언제든지 '회원 탈퇴'로 계정과 기록을 지울 수 있습니다.",
+  agree_needed: "필수 동의 두 가지에 체크해 주세요.",
+});
+Object.assign(window.I18N.ja, {
+  agree_privacy: "[必須] 個人情報の収集・利用への同意", agree_terms: "[必須] 利用規約への同意", agree_view: "内容を見る",
+  privacy_full: "※ デモサービス・法務確認前の草案です。\n\n1. 収集項目：メール、パスワード（暗号化して保存）、氏名、性別、生年月日、携帯電話番号、連絡用メッセンジャーとID、国籍、表示言語、診療記録（病院・施術・処方）、処方箋・薬袋の写真、チャットボットへの質問\n2. 利用目的：服薬・生活ケアガイドの提供、チャットボットの回答、ご自身で選んだ病院への連絡リクエストの送信\n3. 保有期間：退会まで（退会するとすぐに削除）。チャットボットの会話は30日後に自動削除\n4. 要配慮個人情報（健康情報）の取扱い：診療記録・処方・写真は健康に関する情報です。上記の目的にのみ使い、この同意により健康情報の取扱いにも同意します。\n5. 国外移転：移転先 OpenAI（米国）・項目：診療記録・写真・チャットボットの質問（質問内の連絡先・メール・登録番号は伏せて送信。写真に写った文字はそのまま送られる場合あり）・目的：AIガイド・写真読み取り・チャットボットの回答・時期と方法：機能を使うたびに暗号化通信で・保有期間：OpenAIのポリシーによる\n6. 同意を拒否する権利：同意しないこともできます。ただし同意しない場合、登録とサービスの利用ができません。\n\nデモでは実際の患者情報を入力しないでください。",
+  terms_full: "※ デモサービス・法務確認前の草案です。\n\n1. GlowPassは皮膚科施術後のケアを支援する情報サービスで、診断・処方・特定の薬の推奨は行いません。\n2. AIの案内は参考用です。症状が重い場合や緊急時はすぐに病院または119に連絡してください。\n3. 病院はご自身で一覧から選びます。GlowPassは病院の推薦や紹介手数料の受け取りを行いません。\n4. 他人の情報を入力したり、サービスを妨害したりすると利用を制限することがあります。\n5. いつでも「退会」でアカウントと記録を削除できます。",
+  agree_needed: "必須の同意2つにチェックしてください。",
+});
+Object.assign(window.I18N.zh, {
+  agree_privacy: "[必选] 同意收集和使用个人信息", agree_terms: "[必选] 同意使用条款", agree_view: "查看内容",
+  privacy_full: "※ 演示服务 · 法务审核前的草案。\n\n1. 收集项目：邮箱、密码（加密保存）、姓名、性别、出生日期、手机号码、联系用通讯软件及账号、国籍、界面语言、就诊记录（医院·治疗·处方）、处方单·药袋照片、向聊天机器人提出的问题\n2. 使用目的：提供用药·生活护理指南、聊天机器人回答、向您自行选择的医院发送联系请求\n3. 保存期限：至注销账号为止（注销后立即删除）。聊天记录30天后自动删除\n4. 敏感信息（健康信息）处理：就诊记录·处方·照片属于健康相关的敏感信息，仅用于上述目的。本同意也包括对敏感信息处理的单独同意。\n5. 跨境传输：接收方 OpenAI（美国）· 项目：就诊记录·照片·聊天问题（问题中的联系方式·邮箱·证件号会先隐藏；照片上的文字可能原样发送）· 目的：AI指南·照片识别·聊天机器人回答 · 时间与方式：每次使用功能时通过加密通信传输 · 保存期限：依照 OpenAI 政策\n6. 拒绝同意的权利：您可以不同意，但不同意将无法注册和使用服务。\n\n演示时请勿填写真实患者信息。",
+  terms_full: "※ 演示服务 · 法务审核前的草案。\n\n1. GlowPass 是帮助皮肤科治疗后护理的信息服务，不提供诊断、处方或推荐特定药物。\n2. AI 指南仅供参考。症状严重或紧急时，请立即联系医院或拨打 119。\n3. 医院由您自行从列表中选择。GlowPass 不推荐医院，也不收取介绍费。\n4. 填写他人信息或妨碍服务的，可能会被限制使用。\n5. 您可随时通过“注销账号”删除账号和记录。",
+  agree_needed: "请勾选两项必选同意。",
+});
+Object.assign(window.I18N.en, {
+  agree_privacy: "[Required] I agree to the collection and use of personal information", agree_terms: "[Required] I agree to the Terms of Use", agree_view: "View details",
+  privacy_full: "※ Demo service · draft before legal review.\n\n1. What we collect: email, password (stored encrypted), name, gender, date of birth, mobile number, messenger and ID for contact, nationality, display language, medical records (clinic, treatment, prescription), photos of prescriptions or medicine bags, questions to the chatbot\n2. Why: to give medication and aftercare guides, answer chatbot questions, and send contact requests to a clinic you choose\n3. How long: until you delete your account (deleted right away). Chatbot conversations are deleted automatically after 30 days\n4. Sensitive (health) information: medical records, prescriptions and photos are sensitive health information. We use them only for the purposes above, and this consent also covers processing of sensitive information.\n5. Transfer abroad: recipient OpenAI (United States) · items: medical records, photos, chatbot questions (phone numbers, emails and ID numbers in questions are hidden first; text printed on photos may be sent as is) · purpose: AI guides, photo reading, chatbot answers · when and how: each time you use these features, over encrypted connections · retention: per OpenAI's policy\n6. Your right to refuse: you may refuse, but without consent you cannot sign up or use the service.\n\nDo not enter real patient information in demos.",
+  terms_full: "※ Demo service · draft before legal review.\n\n1. GlowPass is an information service for aftercare following dermatology treatments. It does not diagnose, prescribe or recommend specific medicines.\n2. AI guidance is for reference only. If symptoms are severe or it is an emergency, contact a clinic or call 119 right away.\n3. You choose clinics yourself from the list. GlowPass does not recommend clinics or take referral fees.\n4. Entering someone else's information or disrupting the service may lead to restricted use.\n5. You can delete your account and records at any time with 'Delete account'.",
+  agree_needed: "Please check both required agreements.",
+});
+// [배포 전 v2 F2] 연락처는 가린 값만 화면에 — 병원은 연락 요청으로 원래 연락처를 받는다
+Object.assign(window.I18N.ko, { card_contact_note: "등록하신 연락처로 병원이 연락합니다" });
+Object.assign(window.I18N.ja, { card_contact_note: "ご登録の連絡先に病院から連絡します" });
+Object.assign(window.I18N.zh, { card_contact_note: "医院将通过您登记的联系方式与您联系" });
+Object.assign(window.I18N.en, { card_contact_note: "The clinic will contact you using your registered contact details" });

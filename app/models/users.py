@@ -44,6 +44,9 @@ class User(models.Model):
     is_active = fields.BooleanField(default=True)
     is_admin = fields.BooleanField(default=False)
     last_login = fields.DatetimeField(null=True)
+    # [배포 전 v2 F1] 가입 때 개인정보 수집·이용 동의 · 이용약관 동의 시각 (이 기능 전 가입자는 비어 있음)
+    privacy_agreed_at = fields.DatetimeField(null=True)
+    terms_agreed_at = fields.DatetimeField(null=True)
     created_at = fields.DatetimeField(auto_now_add=True)
     updated_at = fields.DatetimeField(auto_now=True)
 

@@ -1,5 +1,5 @@
 from datetime import date
-from typing import Annotated
+from typing import Annotated, Literal
 
 from pydantic import AfterValidator, BaseModel, EmailStr, Field
 
@@ -31,6 +31,9 @@ class SignUpRequest(BaseModel):
     messenger_id: Annotated[str, Field(examples=["wxid_glowpass"]), AfterValidator(validate_messenger_id)]
     nationality: Annotated[str | None, Field(None, examples=["CN"]), optional_after_validator(validate_nationality)]
     preferred_language: Language = Language.KO
+    # [배포 전 v2 F1] 10/26 멘토링 「개인정보 동의를 해야만 가입되게」 (없으면 앱 심사 반려) — 둘 다 true 여야 함, 아니면 422
+    agree_privacy: Literal[True]
+    agree_terms: Literal[True]
 
 
 class LoginRequest(BaseModel):

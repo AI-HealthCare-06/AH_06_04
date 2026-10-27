@@ -71,6 +71,8 @@ details summary { cursor: pointer; color: var(--brand); margin-top: 10px; }
 .warn-box .btn { margin-top: 8px; }
 .check { display: flex; align-items: center; gap: 6px; font-weight: 400; }
 .check input { width: auto; }
+.agree-text { white-space: pre-wrap; max-height: 240px; overflow-y: auto; }
+.btn[disabled] { opacity: .5; cursor: not-allowed; }
 /* 감수 전 데모 운영 띠 · 표시 */
 .demo-banner { background: #fff3e0; color: #7a4a00; border-bottom: 1px solid #f5d29a; padding: 8px 16px; font-size: 13px; text-align: center; }
 .badge-warn { background: #fff3e0; color: #7a4a00; }
