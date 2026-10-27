@@ -167,6 +167,13 @@ uv sync --group ai   # AI 워커용
 
 생성된 `env` 파일 내의 환경변수들은 프로젝트 상황에 맞게 수정하세요.
 
+- **비밀값 3개는 비어 있어요. 꼭 채우세요:** `SECRET_KEY` · `DB_PASSWORD` · `DB_ROOT_PASSWORD` (각각 `openssl rand -hex 32` 로 만들기)
+- `docker-compose.yml`은 프로젝트 루트의 `.env`를 읽어요 → 로컬용 파일을 그 이름으로 연결하세요.
+    ```bash
+    ln -s envs/.local.env .env
+    ```
+- 도커로 띄울 때 `DB_HOST=mysql`(예시 기본값). 도커 없이 맥에서 직접 띄울 때만 `localhost`.
+
 ---
 
 ## 🏃 실행 방법
@@ -178,7 +185,9 @@ uv sync --group ai   # AI 워커용
 모든 서비스(API, Worker, DB, Redis, Nginx)를 한 번에 실행합니다.
 
 ```bash
-docker-compose up -d --build
+# 처음 실행 순서: ① 위에서 .env 비밀값 3개 채우기 → ② 띄우기 → ③ DB 테이블 만들기(마이그레이션)
+docker compose up -d --build
+docker compose exec fastapi uv run aerich upgrade   # 빼먹으면 회원가입이 500 ("users 테이블 없음")
 ```
 
 실행 후 다음 주소로 접속 가능합니다:
