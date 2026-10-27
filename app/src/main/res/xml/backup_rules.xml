@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- [앱 v1 3] 로그인 쿠키 · 알림 목록은 백업하지 않는다 (다른 기기로 옮겨 가지 않게) -->
+<full-backup-content>
+    <exclude domain="sharedpref" path="." />
+    <exclude domain="file" path="datastore/" />
+</full-backup-content>

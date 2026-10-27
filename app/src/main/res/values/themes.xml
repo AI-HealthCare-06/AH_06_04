@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- [앱 v1 3] AppCompat 테마 (앱 안 언어 바꾸기) — 화면은 Compose 가 그린다 -->
+    <style name="Theme.GlowPass" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:windowBackground">@color/gp_paper</item>
+        <item name="colorPrimary">@color/gp_pink</item>
+    </style>
+    <color name="gp_pink">#E2557A</color>
+    <color name="gp_paper">#FFF7F8</color>
+</resources>

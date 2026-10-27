@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- [앱 v1 3] 처방전 사진 찍기 · 가이드 카드 공유용 임시 파일 (앱 캐시 안) -->
+<paths>
+    <cache-path name="shared" path="shared/" />
+</paths>
