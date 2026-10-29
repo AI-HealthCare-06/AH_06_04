@@ -78,7 +78,7 @@ function errorBox() { return h("div", { class: "error", role: "alert" }); }
 
 // ── 1. 첫 화면 (언어 선택) ───────────────────────
 function onboarding() {
-  const langs = [["ko", "한국어"], ["ja", "日本語"], ["zh", "中文"], ["en", "English"]];
+  const langs = [["ko", "한국어"], ["zh", "中文"], ["ja", "日本語"], ["en", "English"]];  // 오른쪽 위 메뉴와 같은 순서 (index.html)
   // 소개 영상 (frontend/assets) — 자동 재생은 소리 끔이어야 브라우저가 막지 않는다. 움직임 줄이기 설정이면 자동 재생 안 함
   const video = h("video", { class: "hero-video", loop: true, playsinline: true, controls: true, preload: "metadata",
     autoplay: !matchMedia("(prefers-reduced-motion: reduce)").matches,
