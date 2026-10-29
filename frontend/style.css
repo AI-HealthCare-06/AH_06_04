@@ -39,6 +39,19 @@ h1 { font-size: 24px; line-height: 1.4; margin: 8px 0 6px; } h2 { font-size: 18p
 .btn.secondary { background: var(--card); color: var(--primary-700); border: 1.5px solid var(--primary); box-shadow: none; }
 .btn.secondary:hover { background: var(--accent-light); }
 .btn:disabled, .btn[disabled] { opacity: .5; cursor: not-allowed; }
+/* 비밀번호 눈 아이콘 '보기/숨기기' — 칸 안 오른쪽 (누르는 영역 44×44) */
+.pw-wrap { position: relative; }
+.pw-wrap input { padding-right: 52px; }
+.pw-toggle { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; padding: 0;
+  display: grid; place-items: center; border: 0; border-radius: 12px; background: none; color: var(--muted); cursor: pointer; }
+.pw-toggle:hover, .pw-toggle[aria-pressed="true"] { color: var(--primary-700); }
+/* 눈 아이콘 말풍선 — 마우스를 올리거나 키보드로 고르면 바로 위에 (휴대폰은 마우스 올리기가 없어 안 뜸) */
+.pw-toggle::after { content: attr(data-tip); position: absolute; right: 0; bottom: calc(100% + 6px); padding: 5px 10px;
+  border-radius: 8px; background: var(--ink); color: #fff; font-size: 12px; font-weight: 500; white-space: nowrap;
+  pointer-events: none; opacity: 0; transform: translateY(4px); transition: opacity .12s, transform .12s; }
+.pw-toggle:hover::after, .pw-toggle:focus-visible::after { opacity: 1; transform: none; }
+@media (hover: none) { .pw-toggle::after { display: none; } }
+.pw-toggle:focus-visible { outline: 3px solid var(--accent-mid); outline-offset: -2px; }
 label { display: block; font-size: 13px; font-weight: 500; color: var(--muted); margin: 14px 0 6px; }
 .row { display: flex; gap: 10px; } .row > * { flex: 1; }
 .langs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 12px 0; }

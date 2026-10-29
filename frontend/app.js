@@ -74,6 +74,26 @@ function errorText(data, status) {
 const view = () => document.getElementById("view");
 function render(...nodes) { view().replaceChildren(...nodes.filter(Boolean)); window.scrollTo(0, 0); }
 function field(labelKey, input) { return [h("label", {}, t(labelKey)), input]; }
+
+// 비밀번호 칸 + 눈 아이콘 '보기/숨기기' — 기본은 가리고, 누를 때만 보인다
+//   아이콘은 언어와 상관없이 알아보고, 화면 읽기 프로그램에는 aria-label(4개 언어)로 알려 준다
+//   PC 에서 마우스를 올리면 작은 말풍선(data-tip · style.css)으로 바로 보인다 (브라우저 기본 title 은 늦게 뜨거나 안 떠서)
+const EYE = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+  <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>`;
+const EYE_ICON = `${EYE}</svg>`, EYE_OFF_ICON = `${EYE}<path d="M3 3l18 18"/></svg>`;
+function withReveal(input) {
+  const btn = h("button", { class: "pw-toggle", type: "button", "aria-pressed": "false", "aria-label": t("pw_show"), "data-tip": t("pw_show") });
+  btn.innerHTML = EYE_ICON;
+  btn.addEventListener("click", () => {
+    const show = input.type === "password";
+    input.type = show ? "text" : "password";
+    btn.innerHTML = show ? EYE_OFF_ICON : EYE_ICON;
+    const label = t(show ? "pw_hide" : "pw_show");
+    btn.setAttribute("aria-label", label); btn.dataset.tip = label;
+    btn.setAttribute("aria-pressed", String(show));
+  });
+  return h("div", { class: "pw-wrap" }, input, btn);
+}
 function errorBox() { return h("div", { class: "error", role: "alert" }); }
 
 // ── 1. 첫 화면 (언어 선택) ───────────────────────
@@ -117,7 +137,7 @@ function loginView(message) {
       // [리뷰 #12] 비밀번호 틀림 / 입력 형식 / 서버 문제를 나눠 보여준다
       err.textContent = [400, 401, 404].includes(ex.status) ? t("err_login") : ex.status === 422 ? t("err_input") : t("err_generic");
     }
-  } }, field("email", email), field("password", pw), h("button", { class: "btn", type: "submit" }, t("login")), err);
+  } }, field("email", email), field("password", withReveal(pw)), h("button", { class: "btn", type: "submit" }, t("login")), err);
   render(h("div", { class: "card" }, h("h1", {}, t("login")),
     message ? h("p", { class: "notice" }, message) : null, form,
     h("p", { class: "muted" }, t("no_account"), " ", h("a", { href: "#/signup" }, t("signup")))));
@@ -131,7 +151,9 @@ function signupView() {
     // 성별은 필수라 미리 골라 두지 않는다 (그대로 넘기면 틀린 값으로 가입되던 것)
     gender: h("select", { required: true }, h("option", { value: "", disabled: true, selected: true }, t("select_placeholder")),
       h("option", { value: "FEMALE" }, t("female")), h("option", { value: "MALE" }, t("male"))),
-    birth_date: h("input", { type: "date", required: true }),
+    // 생년월일은 숫자만 치면 '-' 가 들어간다 (브라우저 날짜 칸은 년도를 6자리까지 받아 4자리를 쳐도 월로 안 넘어가서)
+    birth_date: h("input", { type: "text", inputmode: "numeric", autocomplete: "bday", required: true, maxlength: 10,
+      pattern: "\\d{4}-\\d{2}-\\d{2}", placeholder: t("birth_hint") }),
     phone_number: h("input", { type: "tel", required: true, placeholder: t("phone_hint") }),  // 해외 번호 가능
     // 연락용 메신저 1개 (팀 결정: 전화 + 메신저) — 나라별로 많이 쓰는 것을 먼저
     messenger_type: h("select", { required: true }, [["WECHAT", "WeChat 微信"], ["LINE", "LINE"], ["WHATSAPP", "WhatsApp"],
@@ -140,6 +162,10 @@ function signupView() {
     nationality: h("select", {}, [["CN", "nat_cn"], ["JP", "nat_jp"], ["US", "nat_us"], ["KR", "nat_kr"], ["", "nat_other"]]
       .map(([code, key]) => h("option", { value: code }, t(key)))),
   };
+  inputs.birth_date.addEventListener("input", () => {
+    const d = inputs.birth_date.value.replace(/\D/g, "").slice(0, 8);  // 19950505 → 1995-05-05
+    inputs.birth_date.value = [d.slice(0, 4), d.slice(4, 6), d.slice(6)].filter(Boolean).join("-");
+  });
   const MESSENGER_BY_COUNTRY = { CN: "WECHAT", JP: "LINE", US: "WHATSAPP", KR: "KAKAOTALK" };
   inputs.nationality.addEventListener("change", () => { inputs.messenger_type.value = MESSENGER_BY_COUNTRY[inputs.nationality.value] || "WHATSAPP"; });
   inputs.messenger_type.value = MESSENGER_BY_COUNTRY[inputs.nationality.value] || "WHATSAPP";
@@ -149,9 +175,12 @@ function signupView() {
   const agrees = { agree_privacy: h("input", { type: "checkbox" }), agree_terms: h("input", { type: "checkbox" }) };
   const syncSubmit = () => { submit.disabled = !(agrees.agree_privacy.checked && agrees.agree_terms.checked); };
   Object.values(agrees).forEach((box) => box.addEventListener("change", syncSubmit));
-  const agreeRow = (key, fullKey) => h("div", {},
-    h("label", { class: "check" }, agrees[key], " ", t(key)),
-    h("details", {}, h("summary", {}, t("agree_view")), h("p", { class: "muted small agree-text" }, t(fullKey))));
+  // 체크하면 전문을 바로 아래에 펼친다 (무엇에 동의하는지 보고 넘어가게 · 팝업 없이). 체크를 풀어도 펼친 채로 둔다
+  const agreeRow = (key, fullKey) => {
+    const full = h("details", {}, h("summary", {}, t("agree_view")), h("p", { class: "muted small agree-text" }, t(fullKey)));
+    agrees[key].addEventListener("change", () => { if (agrees[key].checked) full.open = true; });
+    return h("div", {}, h("label", { class: "check" }, agrees[key], " ", t(key)), full);
+  };
   const form = h("form", { onsubmit: async (e) => {
     e.preventDefault();
     if (submit.disabled) { err.textContent = t("agree_needed"); return; }
@@ -162,7 +191,7 @@ function signupView() {
     try { await api("POST", "/auth/signup", body); loginView(t("signup_done")); history.replaceState(null, "", "#/login"); }
     catch (ex) { err.textContent = ex.message; }
   } },
-  field("email", inputs.email), field("password", inputs.password), field("name", inputs.name),
+  field("email", inputs.email), field("password", withReveal(inputs.password)), field("name", inputs.name),
   h("div", { class: "row" }, h("div", {}, field("gender", inputs.gender)), h("div", {}, field("birth", inputs.birth_date))),
   field("nationality", inputs.nationality), field("phone", inputs.phone_number),
   h("div", { class: "row" }, h("div", {}, field("messenger", inputs.messenger_type)), h("div", {}, field("messenger_id", inputs.messenger_id))),
