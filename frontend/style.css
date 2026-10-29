@@ -75,6 +75,12 @@ a { color: var(--primary-700); }
 .emergency strong { color: var(--warn); font-size: 18px; }
 .btn.danger { background: var(--warn); box-shadow: none; }
 .btn.danger:hover { background: #A51F1F; }
+/* 회원 탈퇴처럼 되돌릴 수 없는 일 — 큰 버튼과 섞이지 않게 작은 보라 글씨로, 위와 간격을 둔다 (누르는 영역은 44px)
+   빨강은 응급 경고에만 쓰고, 여기는 덜 튀는 보라 (흰 배경 대비 약 6.5:1) */
+.link-danger { display: block; margin: 28px auto 0; min-height: 44px; padding: 10px 16px; background: none; border: 0;
+  color: #6B4FA0; font: inherit; font-size: 13px; font-weight: 500; text-decoration: underline; cursor: pointer; }
+.link-danger:hover { color: #533B80; }
+.link-danger:focus-visible { outline: 3px solid var(--accent-mid); outline-offset: 2px; border-radius: 8px; }
 /* 👍/👎 피드백 */
 .feedback { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 10px; }
 .feedback > button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 4px 12px; cursor: pointer; font-size: 16px; }
