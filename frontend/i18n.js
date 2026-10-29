@@ -390,3 +390,24 @@ Object.assign(window.I18N.ko, { card_contact_note: "등록하신 연락처로 �
 Object.assign(window.I18N.ja, { card_contact_note: "ご登録の連絡先に病院から連絡します" });
 Object.assign(window.I18N.zh, { card_contact_note: "医院将通过您登记的联系方式与您联系" });
 Object.assign(window.I18N.en, { card_contact_note: "The clinic will contact you using your registered contact details" });
+// [10/26 멘토링] 진료기록 등록 때 병원 고르기 · 병원이 보낸 기록
+Object.assign(window.I18N.ko, { hosp_pick_placeholder: "병원을 고르세요", hosp_pick_contacted: "연락한 병원", hosp_pick_manual: "목록에 없어요 — 직접 입력",
+  hosp_pick_needed: "병원을 골라 주세요.", hospital_sent_badge: "병원에서 보냄",
+  hd_record_open: "시술 기록 보내기", hd_record_title: "환자에게 시술 기록 보내기", hd_note_ph: "주의사항·설명 (환자 화면에 그대로 보여요)",
+  hd_drug_ph: "약 이름 (선택)", hd_record_send: "환자에게 보내기", hd_record_sent: "환자 진료기록에 추가됐어요.", hd_guide_started: "AI 가이드도 만들고 있어요.",
+  hd_record_hint: "보내면 환자가 입력하지 않아도 기록이 생기고, 환자 언어로 AI 가이드가 자동으로 만들어져요. 요청은 '연락 완료'가 돼요." });
+Object.assign(window.I18N.ja, { hosp_pick_placeholder: "病院を選んでください", hosp_pick_contacted: "連絡した病院", hosp_pick_manual: "一覧にない — 直接入力",
+  hosp_pick_needed: "病院を選んでください。", hospital_sent_badge: "病院から送信",
+  hd_record_open: "施術記録を送る", hd_record_title: "患者に施術記録を送る", hd_note_ph: "注意事項・説明（患者の画面にそのまま表示）",
+  hd_drug_ph: "薬の名前（任意）", hd_record_send: "患者に送る", hd_record_sent: "患者の診療記録に追加しました。", hd_guide_started: "AIガイドも作成中です。",
+  hd_record_hint: "送ると患者が入力しなくても記録が作られ、患者の言語でAIガイドが自動作成されます。リクエストは「連絡済み」になります。" });
+Object.assign(window.I18N.zh, { hosp_pick_placeholder: "请选择医院", hosp_pick_contacted: "联系过的医院", hosp_pick_manual: "列表中没有 — 手动输入",
+  hosp_pick_needed: "请选择医院。", hospital_sent_badge: "医院发送",
+  hd_record_open: "发送治疗记录", hd_record_title: "向患者发送治疗记录", hd_note_ph: "注意事项·说明（会原样显示给患者）",
+  hd_drug_ph: "药名（可选）", hd_record_send: "发送给患者", hd_record_sent: "已添加到患者的诊疗记录。", hd_guide_started: "AI指南也在生成中。",
+  hd_record_hint: "发送后患者无需输入即可获得记录，并自动生成患者语言的AI指南。请求将变为“已联系”。" });
+Object.assign(window.I18N.en, { hosp_pick_placeholder: "Choose a clinic", hosp_pick_contacted: "Contacted", hosp_pick_manual: "Not in the list — type it",
+  hosp_pick_needed: "Please choose a clinic.", hospital_sent_badge: "Sent by clinic",
+  hd_record_open: "Send treatment record", hd_record_title: "Send a treatment record to the patient", hd_note_ph: "Instructions (shown to the patient as is)",
+  hd_drug_ph: "Medicine name (optional)", hd_record_send: "Send to patient", hd_record_sent: "Added to the patient's records.", hd_guide_started: "An AI guide is being created too.",
+  hd_record_hint: "The patient gets the record without typing anything, and an AI guide is created in their language. The request becomes 'Contacted'." });

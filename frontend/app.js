@@ -211,6 +211,7 @@ async function home() {
   const recordList = records.length
     ? records.map((r) => h("div", { class: "item" },
         h("strong", {}, `${r.visit_date} · ${r.hospital_name}`), r.source === "OCR" ? h("span", { class: "badge" }, t("ocr_badge")) : null,
+        r.source === "HOSPITAL" ? h("span", { class: "badge hot" }, t("hospital_sent_badge")) : null,  // [10/26 멘토링] 병원이 보낸 기록
         h("div", { class: "muted" }, [r.procedure_name, r.items.map((i) => i.drug_name).join(", ")].filter(Boolean).join(" / ")),
         h("div", { class: "row" },
           h("button", { class: "btn secondary", onclick: () => makeGuide(r.id) }, t("make_guide")),
@@ -250,7 +251,7 @@ async function makeGuide(recordId) {
 }
 
 // ── 4. 진료기록 입력 (FR-01) ────────────────────
-function recordForm() {
+async function recordForm() {
   if (!store.token) return (location.hash = "#/login");
   // 오늘 날짜 (사용자 기기 시간대 기준 — toISOString()은 UTC라 한국 오전엔 어제로 나온다)
   const today = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
@@ -260,6 +261,32 @@ function recordForm() {
     procedure_name: h("input", { maxlength: 100, placeholder: t("procedure_ph") }),
     doctor_note: h("textarea", { rows: 3, maxlength: 1000 }),
   };
+  // [10/26 멘토링] 병원은 다시 타이핑하지 않고 고른다 — 내가 연락 요청했던 병원이 맨 위, 그다음 전체 목록, 목록에 없으면 직접 입력
+  //   (외국인이 한국 병원 이름을 다시 치는 건 헷갈리고 틀리기 쉽다)
+  const [hospitals, contacts] = await Promise.all([
+    api("GET", "/hospitals?limit=50").then((r) => r.data.items).catch(() => []),
+    api("GET", "/hospital-contacts").then((r) => r.data.items).catch(() => []),
+  ]);
+  const contactedIds = [...new Set(contacts.map((c) => c.hospital_id))];
+  const byId = Object.fromEntries(hospitals.map((x) => [x.hospital_id, x]));
+  const option = (x, label) => h("option", { value: String(x.hospital_id) }, label ? `${label} · ${x.name}` : x.name);
+  const hospitalPick = h("select", {},
+    h("option", { value: "" }, t("hosp_pick_placeholder")),
+    ...contactedIds.filter((id) => byId[id]).map((id) => option(byId[id], t("hosp_pick_contacted"))),
+    ...hospitals.filter((x) => !contactedIds.includes(x.hospital_id)).map((x) => option(x)),
+    h("option", { value: "manual" }, t("hosp_pick_manual")));
+  let hospitalId = null;
+  const manualWrap = h("div", { hidden: true }, field("hospital", f.hospital_name));  // 직접 입력 칸은 '직접 입력' 을 골랐을 때만
+  hospitalPick.addEventListener("change", () => {
+    const v = hospitalPick.value;
+    hospitalId = v && v !== "manual" ? Number(v) : null;
+    manualWrap.hidden = v !== "manual";
+    f.hospital_name.required = v === "manual";
+    if (hospitalId) f.hospital_name.value = byId[hospitalId].name;  // 서버도 목록 이름으로 맞추지만 화면에도 보여준다
+    else if (v === "manual") f.hospital_name.value = "";
+  });
+  if (contactedIds.length && byId[contactedIds[0]]) { hospitalPick.value = String(contactedIds[0]); hospitalPick.dispatchEvent(new Event("change")); }
+  else f.hospital_name.required = false;
   const drugBox = h("div");
   // 약 한 줄 추가 (OCR 결과가 있으면 그 값으로 채운다)
   const addDrug = (v = {}) => drugBox.append(h("div", { class: "drug" },
@@ -306,7 +333,12 @@ function recordForm() {
     const d = job.draft;
     ocrJobId = job.job_id;
     if (d.visit_date) f.visit_date.value = d.visit_date;
-    if (d.hospital_name) f.hospital_name.value = d.hospital_name;
+    if (d.hospital_name) {  // 사진에서 읽은 병원 이름이 목록에 있으면 그 병원을 고르고, 없으면 직접 입력 칸에 넣는다
+      const hit = hospitals.find((x) => x.name === d.hospital_name || x.name.includes(d.hospital_name) || d.hospital_name.includes(x.name));
+      hospitalPick.value = hit ? String(hit.hospital_id) : "manual";
+      hospitalPick.dispatchEvent(new Event("change"));
+      if (!hit) f.hospital_name.value = d.hospital_name;
+    }
     if (d.procedure_name) f.procedure_name.value = d.procedure_name;
     if (d.items.length) { drugBox.replaceChildren(); d.items.forEach((it) => addDrug(it)); }
     ocrBox.replaceChildren(h("div", { class: "notice" },
@@ -321,8 +353,10 @@ function recordForm() {
       return { drug_name: v("drug_name"), dose: v("dose") || null,
         times_per_day: v("times_per_day") ? Number(v("times_per_day")) : null, days: v("days") ? Number(v("days")) : null };
     }).filter((i) => i.drug_name);
+    if (!hospitalPick.value) { err.textContent = t("hosp_pick_needed"); return; }
     const body = { visit_date: f.visit_date.value, hospital_name: f.hospital_name.value.trim(),
       procedure_name: f.procedure_name.value.trim() || null, doctor_note: f.doctor_note.value.trim() || null, items };
+    if (hospitalId) body.hospital_id = hospitalId;  // 목록에서 고른 병원이면 번호도 같이 (서버가 이름을 목록 값으로 맞춘다)
     if (ocrJobId) body.ocr_job_id = ocrJobId;  // 사진에서 읽은 기록이면 서버가 source=OCR 로 저장
     let rec;
     try { rec = await api("POST", "/medical-records", body); }
@@ -331,7 +365,7 @@ function recordForm() {
     try { await makeGuide(rec.id); }
     catch (ex) { location.hash = "#/home"; setTimeout(() => alert(t("record_saved_guide_failed") + "\n" + ex.message), 50); }
   } },
-  field("visit_date", f.visit_date), field("hospital", f.hospital_name), field("procedure", f.procedure_name),
+  field("visit_date", f.visit_date), field("hospital", hospitalPick), manualWrap, field("procedure", f.procedure_name),
   field("doctor_note", f.doctor_note), h("h2", { style: "margin-top:16px" }, t("drugs")), drugBox,
   h("button", { class: "btn secondary", type: "button", onclick: addDrug }, t("add_drug")),
   h("button", { class: "btn", type: "submit" }, t("save")), err);
@@ -597,7 +631,7 @@ async function route() {
     if (hash === "#/login") return loginView();
     if (hash === "#/signup") return signupView();
     if (hash === "#/home") return await home();
-    if (hash === "#/record/new") return recordForm();
+    if (hash === "#/record/new") return await recordForm();
     if (hash === "#/chat") return await chatView();
     if (hash.startsWith("#/hospitals")) return await hospitalsView(new URLSearchParams(hash.split("?")[1] || ""));
     if (hash === "#/contacts") return await contactsView();

@@ -42,6 +42,8 @@ def ensure_staff(c: httpx.Client) -> None:
         "preferred_language": "ko",
         "messenger_type": "KAKAOTALK",
         "messenger_id": "glowpass_demo_staff",  # 가입 필수 칸 (가짜 아이디)
+        "agree_privacy": True,  # [#41] 가입 동의 필수
+        "agree_terms": True,
     }
     r = c.post("/api/v1/auth/signup", json=signup)
     if r.status_code not in (201, 409):

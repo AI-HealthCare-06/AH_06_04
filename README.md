@@ -9,7 +9,7 @@
 
 | 기능 | 하는 일 | 참여기업 필수 |
 |---|---|---|
-| FR-01 진료기록 | 진료일·병원·시술·처방약 저장·조회·수정·삭제 (본인 것만) | |
+| FR-01 진료기록 | 진료일·병원·시술·처방약 저장·조회·수정·삭제 (본인 것만). 병원은 목록에서 고르고(연락한 병원 우선), **병원 접수대가 환자에게 기록을 보낼 수도 있다**(출처 HOSPITAL) | |
 | FR-05 처방전 OCR | 처방전·약봉투 사진 → 칸 자동 채우기 → 사용자가 확인 후 저장 | ✅ OCR |
 | FR-02 근거 검색 | FDA·NHS 등 공식 자료를 요약한 안내문에서 관련 문서 찾기 — 운영은 감수(`reviewed: true`)된 안내문만 · 낱말 검색 (벡터·혼합은 평가 스크립트로 비교) | |
 | FR-03 AI 가이드 | 진료기록 + 근거 안내문 → 복약·생활관리 가이드 (출처·면책 문구 포함) | ✅ LLM 가이드 생성 |
@@ -48,7 +48,7 @@ flowchart LR
 | OCR | `POST /ocr/prescriptions` (202) · `GET /ocr/prescriptions/{job_id}` |
 | AI 가이드 | `POST /guides` (202) · `GET /guides` · `GET /guides/{id}` · `GET /guides/{id}/sources` · `PUT /guides/{id}/feedback` · `GET /guides/feedback/summary` (관리자) |
 | 챗봇 | `GET /chat/langs` · `POST /chat/conversations` · `POST /chat/conversations/{id}/stream` (SSE) · `GET /chat/conversations/{id}/messages` · `DELETE /chat/conversations/{id}` · `GET /chat/usage` · `PUT /chat/conversations/{id}/messages/{mid}/feedback` |
-| 병원 · 연락 요청 | `GET /hospitals` · `POST/GET /hospital-contacts` · `GET/PATCH /hospital-contacts/{id}` (본인: 취소 · 관리자: 진행 중/완료) · `GET /hospital-contacts?scope=all` (관리자 접수대) |
+| 병원 · 연락 요청 | `GET /hospitals` · `POST/GET /hospital-contacts` · `GET/PATCH /hospital-contacts/{id}` (본인: 취소 · 관리자: 진행 중/완료) · `GET /hospital-contacts?scope=all` (관리자 접수대) · `POST /hospital-contacts/{id}/records` (병원 → 환자 시술 기록 전송, 가이드 자동 생성) |
 | 위험 신호 | `GET /chat/safety-alerts` · `GET /chat/safety-alerts/{id}` |
 | 리마인더 · 콘텐츠 · 서비스 정보 | `/reminders` · `/content-assets` · `GET /service-info` (데모 모드 표시용) |
 

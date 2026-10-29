@@ -6,6 +6,7 @@ from tortoise.transactions import in_transaction
 
 from app.dtos.medical_records import (
     GuideContextResponse,
+    HospitalSentRecordRequest,
     MedicalRecordCreateRequest,
     MedicalRecordResponse,
     MedicalRecordUpdateRequest,
@@ -14,6 +15,7 @@ from app.dtos.medical_records import (
 from app.models.medical_records import MedicalRecord, RecordSource
 from app.models.users import User
 from app.repositories.medical_record_repository import MedicalRecordRepository
+from app.services import hospitals
 from app.services.ocr import OcrService
 
 
@@ -28,6 +30,7 @@ class MedicalRecordService:
         return MedicalRecordResponse(
             id=record.id,
             hospital_name=record.hospital_name,
+            hospital_id=record.hospital_id,
             visit_date=record.visit_date,
             procedure_name=record.procedure_name,
             doctor_note=record.doctor_note,
@@ -47,6 +50,15 @@ class MedicalRecordService:
     async def create_record(self, user: User, data: MedicalRecordCreateRequest) -> MedicalRecordResponse:
         record_data = data.model_dump(exclude={"items", "ocr_job_id"})  # 진료기록 부분
         items = [item.model_dump() for item in data.items]  # 약 목록 부분
+        if (
+            data.hospital_id is not None
+        ):  # 목록에서 고른 병원: 번호가 진짜 있는지 확인하고 이름은 목록 값으로 [10/26 멘토링]
+            hospital = hospitals.get(data.hospital_id)
+            if hospital is None:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND, detail="해당 hospital_id를 찾을 수 없습니다."
+                )
+            record_data["hospital_name"] = str(hospital["name"])
         if data.ocr_job_id is None:
             record_data["source"] = RecordSource.MANUAL  # 입력 경로는 서버가 정한다
             record = await self.repo.create(user_id=user.id, record_data=record_data, items=items)
@@ -56,6 +68,17 @@ class MedicalRecordService:
             await OcrService().claim_for_record(user=user, job_id=data.ocr_job_id)
             record_data["source"] = RecordSource.OCR
             record = await self.repo.create(user_id=user.id, record_data=record_data, items=items)
+        return self.to_response(record)
+
+    async def create_from_hospital(
+        self, patient_id: int, hospital_id: int, hospital_name: str, data: HospitalSentRecordRequest
+    ) -> MedicalRecordResponse:
+        """병원(접수대)이 환자에게 보내는 시술 기록 — 환자는 아무것도 입력하지 않아도 기록이 생긴다 [10/26 멘토링]
+        누가 보낼 수 있는지(관리자 + 그 환자의 연락 요청)는 hospital_contacts 서비스가 확인한다"""
+        record_data = data.model_dump(exclude={"items"})
+        record_data.update(hospital_id=hospital_id, hospital_name=hospital_name, source=RecordSource.HOSPITAL)
+        items = [item.model_dump() for item in data.items]
+        record = await self.repo.create(user_id=patient_id, record_data=record_data, items=items)
         return self.to_response(record)
 
     async def list_records(self, user: User, limit: int, offset: int) -> list[MedicalRecordResponse]:
