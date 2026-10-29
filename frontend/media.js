@@ -51,14 +51,20 @@ function cardButton(g) {
     const c = document.createElement("canvas");
     c.width = W; c.height = H;
     const ctx = c.getContext("2d");
-    ctx.fillStyle = "#fff7f8"; ctx.fillRect(0, 0, W, H);  // 배경 (화면과 같은 핑크 톤)
-    ctx.fillStyle = "#e2557a"; ctx.font = "800 56px sans-serif"; ctx.fillText("GlowPass", PAD, 130);
-    ctx.fillStyle = "#2a2230"; ctx.font = "700 44px sans-serif"; ctx.fillText(t("guide_title"), PAD, 210);
+    // 색·글꼴은 화면 디자인(style.css 의 :root 변수)을 그대로 따른다 — 디자인을 바꾸면 카드도 같이 바뀐다
+    const css = getComputedStyle(document.documentElement);
+    const color = (name, fallback) => css.getPropertyValue(name).trim() || fallback;
+    const BG = color("--bg", "#F6FAFC"), BRAND = color("--primary-700", "#2C7A9E"), INK = color("--ink", "#22343B");
+    const MUTED = color("--muted", "#5E7783"), CAUTION = color("--caution-ink", "#7A4A00");
+    const BODY_FONT = `"Noto Sans KR", sans-serif`, DISPLAY_FONT = `"Jua", "Noto Sans KR", sans-serif`;
+    ctx.fillStyle = BG; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = BRAND; ctx.font = `56px ${DISPLAY_FONT}`; ctx.fillText("GlowPass", PAD, 130);
+    ctx.fillStyle = INK; ctx.font = `44px ${DISPLAY_FONT}`; ctx.fillText(t("guide_title"), PAD, 210);
     let y = 290;
     const section = (title, body) => {
       if (!body) return;
-      ctx.fillStyle = "#e2557a"; ctx.font = "700 36px sans-serif"; ctx.fillText(title, PAD, y); y += 56;
-      ctx.fillStyle = "#2a2230"; ctx.font = "32px sans-serif";
+      ctx.fillStyle = BRAND; ctx.font = `700 36px ${BODY_FONT}`; ctx.fillText(title, PAD, y); y += 56;
+      ctx.fillStyle = INK; ctx.font = `32px ${BODY_FONT}`;
       for (const line of wrapLines(ctx, body, W - PAD * 2)) {
         if (y > H - 220) { ctx.fillText("…", PAD, y); y += 46; return; }  // 넘치면 줄임 (전체는 앱에서)
         ctx.fillText(line, PAD, y); y += 46;
@@ -68,12 +74,12 @@ function cardButton(g) {
     section(t("tab_med"), g.medication_guide);
     section(t("tab_life"), g.lifestyle_guide);
     // 맨 아래: 출처 · (감수 전이면) 감수 전 표시 · 면책 문구 — 화면과 같은 기준 (카드는 밖으로 퍼지는 용도)
-    ctx.fillStyle = "#7a6f80"; ctx.font = "26px sans-serif";
+    ctx.fillStyle = MUTED; ctx.font = `26px ${BODY_FONT}`;
     const srcLine = (g.sources || []).map((s) => s.document_title).filter(Boolean).slice(0, 3).join(" · ");
     const unreviewed = (g.sources || []).some((s) => s.reviewed === false) || !document.getElementById("demo-banner").hidden;
     let fy = H - 230;
     if (srcLine) { ctx.fillText(`${t("chat_sources")} ${srcLine}`.slice(0, 60), PAD, fy); fy += 36; }
-    if (unreviewed) { ctx.fillStyle = "#7a4a00"; ctx.fillText(`※ ${t("unreviewed_badge")}`, PAD, fy); ctx.fillStyle = "#7a6f80"; fy += 36; }
+    if (unreviewed) { ctx.fillStyle = CAUTION; ctx.fillText(`※ ${t("unreviewed_badge")}`, PAD, fy); ctx.fillStyle = MUTED; fy += 36; }
     fy = Math.max(fy, H - 150);
     for (const line of wrapLines(ctx, g.disclaimer, W - PAD * 2).slice(0, 4)) { ctx.fillText(line, PAD, fy); fy += 36; }
     const a = document.createElement("a");
