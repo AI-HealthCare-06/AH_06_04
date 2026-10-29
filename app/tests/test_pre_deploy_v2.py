@@ -109,6 +109,18 @@ class TestPreDeployV2(TestCase):
             "/api/v1/hospital-contacts?scope=all", headers={"Authorization": f"Bearer {admin_token}"}
         )
         assert res.status_code == 200
+        items = res.json()["data"]["items"]
+        mine = [i for i in items if "0011" in (i["requester_contact"] or "")][0]
+        # 아직 맡지 않은 요청은 접수대에도 가린 값, '확인 시작' 뒤에만 원래 값 [10/26 멘토링]
+        assert mine["requester_contact"] == "010****0011"
+        await self.client.patch(
+            f"/api/v1/hospital-contacts/{mine['contact_id']}",
+            json={"status": "in_progress"},
+            headers={"Authorization": f"Bearer {admin_token}"},
+        )
+        res = await self.client.get(
+            "/api/v1/hospital-contacts?scope=all", headers={"Authorization": f"Bearer {admin_token}"}
+        )
         contacts = [i["requester_contact"] for i in res.json()["data"]["items"]]
         assert "01071000011" in contacts
 
