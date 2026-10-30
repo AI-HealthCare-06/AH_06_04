@@ -11,11 +11,13 @@ from app.dtos.hospital_contacts import (
     HospitalContactCreateRequest,
     HospitalContactResponse,
 )
+from app.dtos.medical_records import HospitalSentRecordRequest, MedicalRecordResponse
 from app.models.hospital_contacts import ContactMethod, ContactStatus, HospitalContact
 from app.models.medical_records import MedicalRecord
 from app.models.users import User
 from app.services import hospitals
 from app.services.ai_budget import today_start
+from app.services.medical_records import MedicalRecordService
 
 # 아직 끝나지 않은 요청 = 같은 병원에 또 요청하면 중복
 OPEN_STATUSES = (ContactStatus.REQUESTED, ContactStatus.IN_PROGRESS)
@@ -127,3 +129,25 @@ class HospitalContactService:
         contact.status = new_status
         await contact.save(update_fields=["status", "updated_at"])
         return contact
+
+    async def send_record(
+        self, user: User, contact_id: int, data: HospitalSentRecordRequest
+    ) -> tuple[HospitalContact, MedicalRecordResponse]:
+        """병원(접수대)이 연락 요청의 환자에게 시술 기록을 보낸다 [10/26 멘토링]
+        - 관리자(데모: 병원 역할)만 · 끝난(취소된) 요청엔 보낼 수 없다
+        - 병원 이름·번호는 요청에 적힌 그 병원, 환자는 요청을 보낸 사람 → 접수대가 고를 수 없게 (남의 기록에 끼워 넣기 방지)
+        - 보낸 뒤 요청은 '연락 완료' 로 바뀐다"""
+        if not user.is_admin:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="병원 접수대만 기록을 보낼 수 있습니다.")
+        contact = await HospitalContact.get_or_none(id=contact_id)
+        if contact is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="해당 contact_id를 찾을 수 없습니다.")
+        if contact.status == ContactStatus.CANCELLED:
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="취소된 요청에는 기록을 보낼 수 없습니다.")
+        record = await MedicalRecordService().create_from_hospital(
+            patient_id=contact.user_id, hospital_id=contact.hospital_id, hospital_name=contact.hospital_name, data=data
+        )
+        if contact.status != ContactStatus.COMPLETED:
+            contact.status = ContactStatus.COMPLETED
+            await contact.save(update_fields=["status", "updated_at"])
+        return contact, record

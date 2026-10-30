@@ -57,6 +57,8 @@ def main() -> None:
                 "preferred_language": LANG_BY_COUNTRY.get(key[:2], "ko"),
                 "messenger_type": MESSENGER_BY_COUNTRY.get(key[:2], "OTHER"),  # 연락용 메신저 (가짜 아이디)
                 "messenger_id": f"glowpass_demo_{key}",
+                "agree_privacy": True,  # [#41] 가입 동의 필수 — 시연 계정도 동의한 것으로
+                "agree_terms": True,
             }
             res = client.post("/api/v1/auth/signup", json=signup)
             if res.status_code not in (201, 409):  # 409 = 이미 있음 → 그대로 로그인

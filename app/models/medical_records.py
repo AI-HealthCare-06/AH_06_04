@@ -16,6 +16,7 @@ class RecordSource(StrEnum):
 
     MANUAL = "MANUAL"  # 사용자가 직접 입력
     OCR = "OCR"  # 처방전 사진에서 OCR로 추출(FR-05)
+    HOSPITAL = "HOSPITAL"  # 병원(접수대)이 환자에게 보낸 기록 [10/26 멘토링: 시술 후 자동으로 들어오게]
 
 
 class MedicalRecord(models.Model):
@@ -27,6 +28,8 @@ class MedicalRecord(models.Model):
         "models.User", related_name="medical_records", on_delete=fields.CASCADE
     )
     hospital_name = fields.CharField(max_length=100)  # 병원 이름
+    # 병원 목록(GET /hospitals)에서 고른 경우 그 번호 — 직접 입력한 병원이면 비어 있다 [10/26 멘토링]
+    hospital_id = fields.IntField(null=True)
     visit_date = fields.DateField()  # 진료(시술) 날짜
     procedure_name = fields.CharField(max_length=100, null=True)  # 받은 시술 (없으면 비움)
     doctor_note = fields.TextField(null=True)  # 의사가 설명한 내용 메모

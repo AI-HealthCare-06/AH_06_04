@@ -51,6 +51,8 @@ class MedicalRecordCreateRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")  # 모르는 칸(source 포함)을 보내면 422
 
     hospital_name: Annotated[str, Field(min_length=1, max_length=100, examples=["글로우피부과"])]
+    # 병원 목록에서 골랐으면 그 번호 (이름은 서버가 목록 값으로 맞춘다). 직접 입력이면 비운다 [10/26 멘토링]
+    hospital_id: Annotated[int | None, Field(None, ge=1)]
     visit_date: Annotated[date, Field(description="Date Format: YYYY-MM-DD")]
     procedure_name: Annotated[str | None, Field(None, max_length=100, examples=["리쥬란"])]
     doctor_note: Annotated[str | None, Field(None, max_length=1000)]
@@ -58,6 +60,20 @@ class MedicalRecordCreateRequest(BaseModel):
     items: list[PrescriptionItemRequest] = Field(default_factory=list, max_length=MAX_ITEMS_PER_RECORD)
     # FR-05: 사진 인식 결과를 확인·수정해서 저장할 때 그 작업 번호 (한 번만 쓸 수 있다)
     ocr_job_id: Annotated[int | None, Field(None, ge=1, le=MAX_DB_ID)]
+
+    _validate_visit_date = field_validator("visit_date")(_check_not_future)
+
+
+class HospitalSentRecordRequest(BaseModel):
+    """병원 접수대가 환자에게 보내는 시술 기록 (POST /hospital-contacts/{id}/records) [10/26 멘토링]
+    병원 이름·번호·환자는 연락 요청에서 가져오므로 받지 않는다"""
+
+    model_config = ConfigDict(extra="forbid")
+
+    visit_date: Annotated[date, Field(description="Date Format: YYYY-MM-DD")]
+    procedure_name: Annotated[str | None, Field(None, max_length=100, examples=["레이저 토닝"])]
+    doctor_note: Annotated[str | None, Field(None, max_length=1000, examples=["3일간 세안 시 비비지 마세요"])]
+    items: list[PrescriptionItemRequest] = Field(default_factory=list, max_length=MAX_ITEMS_PER_RECORD)
 
     _validate_visit_date = field_validator("visit_date")(_check_not_future)
 
@@ -90,6 +106,7 @@ class MedicalRecordResponse(BaseSerializerModel):
 
     id: int
     hospital_name: str
+    hospital_id: int | None = None  # 목록에서 고른 병원이면 번호, 직접 입력이면 null
     visit_date: date
     procedure_name: str | None
     doctor_note: str | None
