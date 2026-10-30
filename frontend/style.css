@@ -1,6 +1,7 @@
 /* GlowPass 화면 꾸밈 — 모바일 우선, 클린 스카이블루 · 민트 (디자인 시안 'GlowPass UI 디자인' 기준)
    글자색·버튼색은 시안 색을 쓰되, 흰 글자를 올리는 곳과 회색 글자는 대비 4.5:1 이 되게 한 단계 진하게 */
 :root {
+  color-scheme: only light;  /* 다크 모드 강제 변환 막기 (index.html meta 와 같게) */
   --primary: #3E9FC7; --primary-700: #2C7A9E; --primary-800: #22637F;
   --accent-light: #E7F4FA; --accent-mid: #AEDCEE;
   --mint: #6FC9A6; --mint-light: #E1F5EC;
@@ -59,7 +60,12 @@ label { display: block; font-size: 13px; font-weight: 500; color: var(--muted); 
   font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }
 .langs button.on { border-color: var(--primary-700); background: var(--primary-700); color: #fff; }
 .item { border-top: 1px solid var(--line); padding: 12px 0; } .item:first-child { border-top: 0; }
-.drug { background: var(--accent-light); border-radius: 14px; padding: 12px 14px; margin-top: 8px; }
+.drug { position: relative; background: var(--accent-light); border-radius: 14px; padding: 12px 14px; margin-top: 8px; }
+/* 약 줄 '삭제' — 오른쪽 위 작은 글씨 (누르는 영역 44px) */
+.drug-remove { position: absolute; top: 2px; right: 4px; min-height: 44px; padding: 0 10px; border: 0; border-radius: 10px;
+  background: none; color: var(--muted); font: inherit; font-size: 13px; font-weight: 500; cursor: pointer; }
+.drug-remove:hover { color: var(--warn); }
+.drug-remove:focus-visible { outline: 3px solid var(--accent-mid); outline-offset: -2px; }
 .tabs { display: flex; gap: 8px; margin-bottom: 12px; }
 .tabs button { flex: 1; padding: 9px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); color: var(--muted);
   font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
@@ -76,7 +82,13 @@ a { color: var(--primary-700); }
 .chatlog { display: flex; flex-direction: column; gap: 10px; margin: 12px 0; max-height: 55vh; overflow-y: auto; }
 .msg { padding: 12px 15px; border-radius: 20px; max-width: 88%; white-space: pre-wrap; word-break: break-word; font-size: 15px; line-height: 1.6; }
 .msg.user { align-self: flex-end; background: var(--primary-700); color: #fff; border-bottom-right-radius: 4px; }
-.msg.bot { align-self: flex-start; background: var(--card); border: 1px solid var(--line); border-bottom-left-radius: 4px; }
+.msg.bot { align-self: flex-start; background: var(--card); border: 1px solid var(--line); border-top-left-radius: 4px; }
+/* 챗봇 답 왼쪽 위에 물방울 캐릭터 (말풍선 꼬리도 위쪽) (로고와 같은 그림) — 글만 있으면 누가 말하는지 덜 보여서.
+   답 글자는 스트리밍 중 계속 바뀌므로 그림은 ::before 로 붙인다 (내용을 갈아끼워도 남는다) */
+.msg.bot { position: relative; margin-left: 42px; max-width: calc(88% - 42px); }
+.msg.bot::before { content: ""; position: absolute; left: -42px; top: -2px; width: 34px; height: 37px;
+  background: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 130'><ellipse cx='60' cy='72' rx='56' ry='52' fill='%23E7F4FA'/><path d='M60 14C90 54 100 76 100 92a40 40 0 01-80 0c0-16 10-38 40-78z' fill='%23fff' stroke='%233E9FC7' stroke-width='6'/><circle cx='46' cy='88' r='8' fill='%2322343B'/><circle cx='49' cy='85' r='2.8' fill='%23fff'/><circle cx='74' cy='88' r='8' fill='%2322343B'/><circle cx='77' cy='85' r='2.8' fill='%23fff'/><circle cx='38' cy='100' r='8' fill='%236FC9A6' opacity='.5'/><circle cx='82' cy='100' r='8' fill='%236FC9A6' opacity='.5'/><path d='M50 104q10 9 20 0' stroke='%2322343B' stroke-width='5' fill='none' stroke-linecap='round'/></svg>") no-repeat center / contain; }
+.chatlog > :not(.msg) { margin-left: 42px; }  /* 답 아래 출처 안내 · 👍/👎 도 답과 같은 줄에 맞춘다 */
 .msg.bot.emergency, .msg.bot.error { border-color: var(--warn); color: var(--warn); }
 .msg.bot.blocked, .msg.bot.no_doc, .msg.bot.limit { background: var(--caution); }
 .chatform { display: flex; gap: 8px; align-items: flex-end; }
