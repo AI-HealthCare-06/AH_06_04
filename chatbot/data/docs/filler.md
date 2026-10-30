@@ -6,6 +6,7 @@ title_ja: フィラー施術後のケア
 title_zh-Hans: 玻尿酸填充后的护理
 keywords: 필러, 히알루론산, filler, fillers, hyaluronic, 玻尿酸, 填充, 透明质酸, ヒアルロン酸, フィラー
 source: American Academy of Dermatology(AAD), Fillers: FAQs, https://www.aad.org/public/cosmetic/wrinkles/fillers-faqs (2026-10-24 확인) · 혈관 문제 신호는 미국 FDA Dermal Fillers 안내(filler-fda-safety 문서) · 요약·번역 GlowPass팀
+publisher: AAD
 reviewed: false
 ---
 ## ko

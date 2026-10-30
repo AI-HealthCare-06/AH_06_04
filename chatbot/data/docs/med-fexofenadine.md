@@ -6,6 +6,7 @@ title_ja: フェキソフェナジン（抗ヒスタミン薬）
 title_zh-Hans: 非索非那定（抗组胺药）
 keywords: 펙소페나딘, 알레그라, 항히스타민, fexofenadine, allegra, telfast, antihistamine, フェキソフェナジン, アレグラ, 抗ヒスタミン, 非索非那定, 阿莱格拉, 抗组胺
 source: NHS, Fexofenadine, https://www.nhs.uk/medicines/fexofenadine/ (검토 2025-04-22) · Open Government Licence v3.0 · 요약·번역 GlowPass팀
+publisher: NHS
 reviewed: false
 ---
 ## ko

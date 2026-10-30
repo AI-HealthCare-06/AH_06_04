@@ -169,7 +169,11 @@ async def _find_docs(
 
 
 def _sources_event(found: list[docs.Doc], lang: str) -> Event:
-    return "sources", {"docs": [{"id": d.id, "title": d.title(lang), "reviewed": d.reviewed} for d in found]}
+    return "sources", {
+        "docs": [
+            {"id": d.id, "title": d.title(lang), "reviewed": d.reviewed, "publishers": d.publishers} for d in found
+        ]
+    }
 
 
 async def run_turn(

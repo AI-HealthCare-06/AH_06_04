@@ -6,6 +6,7 @@ title_ja: 海外で施術を受けるときと帰国後のケア（NHS）
 title_zh-Hans: 在国外做医美及回国后的护理（NHS）
 keywords: 귀국, 출국, 비행기, 해외, 사후관리, 보험, abroad, flight, flying, fly home, travel insurance, follow-up, 帰国, 飛行機, 海外, 回国, 飞机, 出国, 境外, 复诊
 source: NHS, Cosmetic surgery abroad, https://www.nhs.uk/tests-and-treatments/cosmetic-procedures/advice/cosmetic-surgery-abroad/ (검토 2022-12-14) · Open Government Licence v3.0 · 요약·번역 GlowPass팀
+publisher: NHS
 reviewed: false
 ---
 ## ko

@@ -6,6 +6,7 @@ title_ja: ボトックス施術後のケア
 title_zh-Hans: 肉毒素注射后的护理
 keywords: 보톡스, 보툴리눔, 사각턱, 주름, botox, botulinum, wrinkle, 肉毒, 瘦脸针, 瘦臉針, 皱纹, ボトックス, ボツリヌス, しわ
 source: American Academy of Dermatology(AAD), Botulinum toxin therapy: FAQs, https://www.aad.org/public/cosmetic/wrinkles/botulinum-toxin-faqs (2026-10-24 확인) · 요약·번역 GlowPass팀
+publisher: AAD
 reviewed: false
 ---
 ## ko

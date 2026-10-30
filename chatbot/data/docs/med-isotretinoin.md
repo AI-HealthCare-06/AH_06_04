@@ -6,6 +6,7 @@ title_ja: イソトレチノイン（重症にきびの薬）
 title_zh-Hans: 异维A酸（重度痤疮用药）
 keywords: 이소트레티노인, 로아큐탄, 아큐탄, isotretinoin, roaccutane, accutane, イソトレチノイン, ロアキュテイン, アキュテイン, 异维A酸, 异维甲酸, 泰尔丝
 source: NHS, Isotretinoin capsules (Roaccutane), https://www.nhs.uk/medicines/isotretinoin-capsules/ (검토 2026-06-26) · Open Government Licence v3.0 · 요약·번역 GlowPass팀
+publisher: NHS
 reviewed: false
 ---
 ## ko

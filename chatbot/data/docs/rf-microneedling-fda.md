@@ -6,6 +6,7 @@ title_ja: 高周波マイクロニードリング（ポテンツァ等）のリ�
 title_zh-Hans: 射频微针（黄金微针等）的风险（FDA安全通报）
 keywords: 고주파, 포텐자, 시크릿, 인모드, rf, radiofrequency, potenza, 高周波, ポテンツァ, 射频, 黄金微针, 射频微针
 source: 미국 FDA, Potential Risks with Certain Uses of Radiofrequency (RF) Microneedling: FDA Safety Communication, https://www.fda.gov/medical-devices/safety-communications/potential-risks-certain-uses-radiofrequency-rf-microneedling-fda-safety-communication (2025-10-15) · 요약·번역 GlowPass팀
+publisher: FDA
 reviewed: false
 ---
 ## ko

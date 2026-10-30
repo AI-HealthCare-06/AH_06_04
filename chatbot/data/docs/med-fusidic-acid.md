@@ -6,6 +6,7 @@ title_ja: フシジン酸（抗生物質の塗り薬）
 title_zh-Hans: 夫西地酸（抗生素乳膏）
 keywords: 푸시드산, 후시딘, 항생제연고, 연고, fusidic, fucidin, ointment, フシジン酸, フシジン, 軟膏, 夫西地酸, 立思丁, 药膏
 source: NHS, Fusidic acid, https://www.nhs.uk/medicines/fusidic-acid/ (검토 2026-01-30) · Open Government Licence v3.0 · 요약·번역 GlowPass팀
+publisher: NHS
 reviewed: false
 ---
 ## ko
