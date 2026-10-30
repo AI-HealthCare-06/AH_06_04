@@ -33,9 +33,10 @@ async def test_sources_come_first_and_are_saved(client, llm):
     assert src[0] == {"id": "filler", "title": "필러 시술 후 관리", "reviewed": False}
     assert "필러 시술은" in answer_text(events)  # 가짜 AI 는 안내문 본문에서 답함
     saved = await Message.filter(role="assistant").first()
-    assert saved.sources == ["filler", "filler-fda-safety"]  # 필러 질문엔 FDA 필러 안전 안내도 함께 근거로 붙는다
+    # 필러 질문엔 식약처 필러 시술 후 관리(마사지·술·사우나 + 시력 저하 등 위험 신호)도 함께 근거로 붙는다
+    assert saved.sources == ["filler", "filler-aftercare-mfds"]
     body = (await client.get(f"/api/v1/chat/conversations/{cid}/messages")).json()
-    assert body["messages"][1]["sources"] == ["filler", "filler-fda-safety"]
+    assert body["messages"][1]["sources"] == ["filler", "filler-aftercare-mfds"]
 
 
 async def test_title_in_user_language(client):

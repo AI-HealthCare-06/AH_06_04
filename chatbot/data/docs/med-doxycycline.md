@@ -4,7 +4,7 @@ title_ko: 독시사이클린 (항생제) 안내
 title_en: Doxycycline (antibiotic)
 title_ja: ドキシサイクリン（抗生物質）
 title_zh-Hans: 多西环素（抗生素）
-keywords: 독시사이클린, 항생제, 여드름약, doxycycline, antibiotic, ドキシサイクリン, 抗生物質, 抗菌薬, 多西环素, 强力霉素, 抗生素
+keywords: 독시사이클린, 항생제, 여드름약, 술, 음주, doxycycline, antibiotic, alcohol, ドキシサイクリン, 抗生物質, 抗菌薬, 多西环素, 强力霉素, 抗生素
 source: NHS, Doxycycline, https://www.nhs.uk/medicines/doxycycline/ (검토 2025-09-05) · Open Government Licence v3.0 · 요약·번역 GlowPass팀
 reviewed: false
 ---

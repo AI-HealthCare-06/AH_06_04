@@ -10,3 +10,7 @@
 {"id": "s70", "lang": "en", "q": "What painkiller is okay after the procedure?", "expect": "ok", "doc": "med-paracetamol"}
 {"id": "s71", "lang": "ko", "q": "진통제 먹어도 간 괜찮아요?", "expect": "ok", "doc": "med-paracetamol"}
 {"id": "s72", "lang": "zh-Hans", "q": "打完填充后皮肤发白是怎么回事？", "expect": "ok", "doc": "filler-fda-safety"}
+{"id": "s73", "lang": "ko", "q": "레이저 하고 나서 선크림 바로 발라도 돼요?", "expect": "ok", "doc": "laser-aftercare-nhs"}
+{"id": "s74", "lang": "en", "q": "Can I hit the gym the day after my Botox?", "expect": "ok", "doc": "botox-aftercare-nhs"}
+{"id": "s75", "lang": "ko", "q": "필러 하고 찜질방 가도 될까요?", "expect": "ok", "doc": "filler-aftercare-mfds"}
+{"id": "s76", "lang": "ja", "q": "ボトックスの効果はいつから出ますか？", "expect": "ok", "doc": "botox-aftercare-nhs"}
