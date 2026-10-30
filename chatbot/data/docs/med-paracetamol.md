@@ -6,6 +6,7 @@ title_ja: パラセタモール（アセトアミノフェン）鎮痛薬
 title_zh-Hans: 对乙酰氨基酚（扑热息痛）止痛药
 keywords: 파라세타몰, 아세트아미노펜, 타이레놀, 진통제, paracetamol, acetaminophen, tylenol, painkiller, パラセタモール, アセトアミノフェン, タイレノール, 鎮痛薬, 痛み止め, 对乙酰氨基酚, 扑热息痛, 泰诺, 止痛药
 source: NHS, Paracetamol for adults, https://www.nhs.uk/medicines/paracetamol-for-adults/ (검토 2026-03-24) · Open Government Licence v3.0 · 요약·번역 GlowPass팀
+publisher: NHS
 reviewed: false
 ---
 ## ko

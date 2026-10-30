@@ -6,6 +6,7 @@ title_ja: フィラーの危険サイン（FDA）
 title_zh-Hans: 玻尿酸填充的危险信号（FDA）
 keywords: 필러, 히알루론산, 시야, 실명, 하얗게, filler, fillers, hyaluronic, blindness, vision, フィラー, ヒアルロン酸, 失明, 視力, 玻尿酸, 填充, 透明质酸, 失明, 视力
 source: 미국 FDA, Dermal Fillers (Soft Tissue Fillers), https://www.fda.gov/medical-devices/aesthetic-cosmetic-devices/dermal-fillers-soft-tissue-fillers (2023-07-06 기준) · 요약·번역 GlowPass팀
+publisher: FDA
 reviewed: false
 ---
 ## ko

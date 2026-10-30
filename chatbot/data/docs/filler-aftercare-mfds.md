@@ -6,6 +6,7 @@ title_ja: フィラー施術後の生活ケア（飲酒・喫煙・マッサー�
 title_zh-Hans: 玻尿酸填充后的生活护理（饮酒·吸烟·按摩·桑拿）— 韩国食品医药品安全处
 keywords: 필러, 술, 음주, 담배, 흡연, 찜질방, filler, alcohol, smoking, jjimjilbang, 玻尿酸, 喝酒, 饮酒, 抽烟, 吸烟, 汗蒸, フィラー, お酒, 飲酒, 喫煙, たばこ, チムジルバン
 source: 식품의약품안전처, 성형용 필러 안전사용을 위한 안내서, https://www.mfds.go.kr/brd/m_465/view.do?seq=27164 · 식품의약품안전처, 성형용 필러 시술 시 주의사항은?(2019-03-06, 정책브리핑), https://www.korea.kr/news/policyNewsView.do?newsId=148858925 (2026-10-30 확인) · 사실 정보를 GlowPass팀이 다시 써서 번역
+publisher: MFDS
 reviewed: false
 ---
 ## ko

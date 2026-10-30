@@ -6,6 +6,7 @@ title_ja: 皮膚レーザー施術後の生活ケア（メイク・運動・サ�
 title_zh-Hans: 皮肤激光治疗后的生活护理（化妆·运动·桑拿·防晒）
 keywords: 화장, 메이크업, 보습제, 수영, 사우나, 한증막, 목욕, 샤워, 면도, 딱지, 물집, make-up, makeup, moisturiser, moisturizer, swimming, sauna, steam, hot bath, shower, shave, shaving, scab, blister, 化妆, 保湿, 游泳, 桑拿, 泡澡, 淋浴, 剃须, 结痂, 水泡, メイク, 化粧, 保湿剤, 水泳, サウナ, 入浴, シャワー, ひげそり, かさぶた, 水ぶくれ
 source: Leeds Teaching Hospitals NHS Trust, Laser Treatment — Information for patients (Leeds Laser Centre, 2nd edition 05/2025, 검토 2025-07-01), https://www.leedsth.nhs.uk/patients/resources/laser-treatment-2/ (2026-10-30 확인) · 요약·번역 GlowPass팀
+publisher: NHS
 reviewed: false
 ---
 ## ko

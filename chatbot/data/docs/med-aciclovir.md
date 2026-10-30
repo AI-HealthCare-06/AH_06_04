@@ -6,6 +6,7 @@ title_ja: アシクロビル（ヘルペスの抗ウイルス薬）
 title_zh-Hans: 阿昔洛韦（疱疹抗病毒药）
 keywords: 아시클로버, 조비락스, 헤르페스, 입술물집, 대상포진, aciclovir, acyclovir, zovirax, herpes, cold sore, アシクロビル, ゾビラックス, ヘルペス, 阿昔洛韦, 无环鸟苷, 疱疹, 唇疱疹
 source: NHS, Aciclovir, https://www.nhs.uk/medicines/aciclovir/ (검토 2026-02-23) · Open Government Licence v3.0 · 요약·번역 GlowPass팀
+publisher: NHS
 reviewed: false
 ---
 ## ko

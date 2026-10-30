@@ -26,6 +26,8 @@ class Doc:
     source: str
     reviewed: bool
     bodies: dict[str, str] = field(default_factory=dict)  # 언어 → 본문
+    # 자료를 낸 기관 코드 (NHS · FDA · AAD · MFDS) — 화면이 나라 말로 바꿔 '출처' 한 줄로
+    publishers: list[str] = field(default_factory=list)
 
     def title(self, lang: str) -> str:
         """그 언어 제목이 없으면 영어 → 한국어."""
@@ -87,6 +89,7 @@ def parse_doc(text: str, name: str = "?") -> Doc:
         source=meta.get("source", ""),
         reviewed=meta.get("reviewed", "false").lower() == "true",
         bodies=_parse_bodies(rest, name),
+        publishers=[p.strip().upper() for p in meta.get("publisher", "").split(",") if p.strip()],
     )
 
 

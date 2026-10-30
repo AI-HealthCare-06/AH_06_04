@@ -6,6 +6,7 @@ title_ja: マイクロニードリング（ダーマペン）の注意点（FDA�
 title_zh-Hans: 微针（MTS·德玛笔）的注意事项（FDA）
 keywords: 마이크로니들, 니들링, 더마펜, mts, 미세침, microneedling, microneedle, dermapen, マイクロニードル, ダーマペン, 微针, 德玛笔
 source: 미국 FDA, Microneedling Devices, https://www.fda.gov/medical-devices/aesthetic-cosmetic-devices/microneedling-devices (2025-10-15 기준) · 요약·번역 GlowPass팀
+publisher: FDA
 reviewed: false
 ---
 ## ko
