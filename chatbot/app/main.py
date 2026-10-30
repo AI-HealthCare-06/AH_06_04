@@ -57,7 +57,8 @@ async def lifespan(app: FastAPI):
         log.warning("감수된 안내문이 0개 — 모든 질문이 '안내문 없음' 으로 답한다")
     async with RegisterTortoise(app, config=tortoise_config(settings.db_url), generate_schemas=True):
         task = asyncio.create_task(_purge_loop())
-        if settings.search_mode != "keyword":  # 첫 질문이 색인 만들기를 기다리지 않게 켤 때 미리 (실패해도 질문 때 다시)
+        # 첫 질문이 색인 만들기를 기다리지 않게 켤 때 미리 (실패해도 질문 때 다시)
+        if settings.search_mode != "keyword":
             asyncio.create_task(_warm_retrieval())
         try:
             yield
