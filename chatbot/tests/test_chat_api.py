@@ -186,6 +186,22 @@ async def test_delete_conversation_removes_messages(client):
     assert await Message.all().count() == 0
 
 
+async def test_list_my_conversations(client):
+    # [10/26 멘토링] 이전 대화 목록: 질문이 있는 대화만, 최신순, 미리보기는 첫 질문
+    empty = await new_conv(client, "ko")  # 인사말만 있는 빈 대화 → 목록에 없음
+    c1 = await new_conv(client, "ko")
+    await ask(client, c1, "햇빛 쬐어도 되나요")
+    c2 = await new_conv(client, "en")
+    await ask(client, c2, "sunscreen?")
+    items = (await client.get("/api/v1/chat/conversations")).json()["items"]
+    ids = [i["conversation_id"] for i in items]
+    assert ids[:2] == [c2, c1] and empty not in ids
+    assert items[1]["preview"] == "햇빛 쬐어도 되나요" and items[1]["message_count"] == 2
+    # 지우면 목록에서 빠진다
+    await client.delete(f"/api/v1/chat/conversations/{c1}")
+    assert c1 not in [i["conversation_id"] for i in (await client.get("/api/v1/chat/conversations")).json()["items"]]
+
+
 async def test_switch_language_mid_conversation(client):
     cid = await new_conv(client, "ko")
     events = await ask(client, cid, "sunscreen", lang="ja")

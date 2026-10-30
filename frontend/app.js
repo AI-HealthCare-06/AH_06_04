@@ -448,7 +448,7 @@ function guideResult(g) {
       // 가이드 평가: 서버 값은 대문자(UP/DOWN · WRONG_INFO …)
       feedbackBar(g.my_feedback ? g.my_feedback.toLowerCase() : null, (rating, reason) =>
         api("PUT", `/guides/${g.guide_id}/feedback`, { rating: rating.toUpperCase(), reason: reason ? reason.toUpperCase() : null }))),
-    h("a", { class: "btn", href: "#/chat" }, t("ask_ai")),
+    h("a", { class: "btn", href: "#/chat?new=1" }, t("ask_ai")),  // 가이드에서 오면 새 대화로 (이전 대화와 섞이지 않게)
     // 병원에 보여줄 한국어 문의 카드 (진료기록이 있는 가이드만)
     g.record_id ? h("a", { class: "btn secondary", href: `#/contact/${g.record_id}` }, t("contact_hospital")) : null);
 }
@@ -492,9 +492,12 @@ function disclaimer(g) { return h("p", { class: "muted" }, g.disclaimer); }
 const CHAT_LANG = { ko: "ko", ja: "ja", zh: "zh-Hans", en: "en" };
 let chatAbort = null;  // 답 받는 중에 화면을 떠나면 연결을 끊는다
 
-async function chatView() {
+// [10/26 멘토링] 대화 관리: 새 대화·삭제·이전 대화 목록. #/chat?new=1 로 오면(가이드·알림에서) 항상 새 대화로 시작
+async function chatView(params = new URLSearchParams()) {
   if (!store.token) return (location.hash = "#/login");
   const lang = CHAT_LANG[store.lang] || "ko";
+  if (params.get("new")) { sessionStorage.removeItem("gp_conv"); history.replaceState(null, "", "#/chat"); }
+  if (params.get("open")) { sessionStorage.setItem("gp_conv", JSON.stringify({ id: params.get("open"), lang })); history.replaceState(null, "", "#/chat"); }
   const log = h("div", { class: "chatlog", "aria-live": "polite" });
   const input = h("textarea", { rows: 2, maxlength: 500, placeholder: t("chat_ph") });
   const sendBtn = h("button", { class: "btn", type: "submit" }, t("send"));
@@ -535,11 +538,36 @@ async function chatView() {
     if (e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); form.requestSubmit(); }
   });
 
+  // 대화 관리 줄: 새 대화 · 이 대화 삭제 · 이전 대화 목록 (사용자가 직접 지울 수 있어야 한다 — 민감한 내용)
+  const newBtn = h("button", { class: "btn secondary", type: "button", onclick: () => { sessionStorage.removeItem("gp_conv"); chatView(); } }, t("chat_new"));
+  const delBtn = h("button", { class: "btn secondary", type: "button", onclick: async () => {
+    if (!confirm(t("chat_delete_confirm"))) return;
+    delBtn.disabled = true;
+    try { await api("DELETE", `/chat/conversations/${conv.id}`); } catch { /* 이미 지워졌어도 새 대화로 */ }
+    sessionStorage.removeItem("gp_conv"); chatView();
+  } }, t("chat_delete"));
+  const histBox = h("div");  // 이전 대화 목록이 들어갈 자리 (window.history 와 이름이 겹치지 않게)
+  const histBtn = h("button", { class: "btn secondary", type: "button", onclick: async () => {
+    histBtn.disabled = true;
+    try {
+      const { items } = await api("GET", "/chat/conversations");
+      const others = items.filter((c) => c.conversation_id !== conv.id);
+      histBox.replaceChildren(h("div", { class: "card" }, h("h2", {}, t("chat_history")),
+        others.length ? others.map((c) => h("div", { class: "item" },
+          h("a", { href: `#/chat?open=${c.conversation_id}` }, c.preview || "…"),
+          h("div", { class: "muted small" }, `${(c.last_message_at || c.created_at).slice(0, 16).replace("T", " ")} · ${t("chat_msgs", { n: c.message_count })}`)))
+          : h("p", { class: "muted" }, t("chat_history_none")),
+        h("p", { class: "muted small" }, t("chat_history_note"))));
+    } catch (ex) { histBox.replaceChildren(h("p", { class: "error" }, ex.message)); }
+    finally { histBtn.disabled = false; }
+  } }, t("chat_history"));
+
   render(h("a", { href: "#/home" }, t("back")),
     h("div", { class: "card" }, h("h1", {}, t("chat_title")), h("p", { class: "muted" }, t("chat_intro")),
+      h("div", { class: "row" }, newBtn, delBtn, histBtn),
       context.length ? h("p", { class: "muted small" }, t("chat_context"), " ", context.map((c) => h("span", { class: "badge" }, c))) : null,
-      emergencyBox, log, form,
-      h("button", { class: "btn secondary", type: "button", onclick: () => { sessionStorage.removeItem("gp_conv"); chatView(); } }, t("chat_new"))));
+      emergencyBox, log, form),
+    histBox);
   input.focus();
 }
 
@@ -632,7 +660,7 @@ async function route() {
     if (hash === "#/signup") return signupView();
     if (hash === "#/home") return await home();
     if (hash === "#/record/new") return await recordForm();
-    if (hash === "#/chat") return await chatView();
+    if (hash.startsWith("#/chat")) return await chatView(new URLSearchParams(hash.split("?")[1] || ""));
     if (hash.startsWith("#/hospitals")) return await hospitalsView(new URLSearchParams(hash.split("?")[1] || ""));
     if (hash === "#/contacts") return await contactsView();
     if (hash.startsWith("#/desk")) return await deskView(new URLSearchParams(hash.split("?")[1] || ""));
