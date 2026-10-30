@@ -152,7 +152,7 @@ async function deskView(params = new URLSearchParams()) {
         } catch (ex) { e2.textContent = ex.message; send.disabled = false; }
       } }, t("hd_record_send"));
       box.replaceChildren(h("div", { class: "card" }, h("h3", {}, t("hd_record_title")),
-        field("visit_date", date), field("procedure", proc), field("doctor_note", note),
+        field("visit_date", date), field("procedure", proc), field("hd_note", note),
         h("h4", {}, t("drugs")), field("drug_name", drug),
         h("div", { class: "row" }, h("div", {}, field("dose", dose)), h("div", {}, field("times_per_day", times)), h("div", {}, field("days", days))),
         e2, send, h("p", { class: "muted small" }, t("hd_record_hint"))));

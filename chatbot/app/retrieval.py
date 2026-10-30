@@ -98,11 +98,11 @@ class OpenAIEmbedder:
         self.transport = transport  # 테스트: 가짜 OpenAI 서버
         self.calls = 0
 
-    async def embed(self, texts: list[str]) -> list[Vector]:
+    async def embed(self, texts: list[str], timeout_s: float | None = None) -> list[Vector]:
         self.calls += 1
         headers = {"Authorization": f"Bearer {settings.openai_api_key}"} if settings.openai_api_key else {}
         body = {"model": settings.openai_embedding_model, "input": texts}
-        timeout = httpx.Timeout(settings.embedding_timeout_s, connect=5.0)
+        timeout = httpx.Timeout(timeout_s or settings.embedding_timeout_s, connect=5.0)
         try:
             async with httpx.AsyncClient(
                 base_url=settings.openai_base_url, timeout=timeout, transport=self.transport
@@ -146,7 +146,13 @@ class Retriever:
             if time.monotonic() < self._failed_until:
                 raise EmbeddingError("embedding cooldown")
             pairs = [(d.id, f"{d.title(lg)}\n{body}") for d in self.store.docs for lg, body in d.bodies.items()]
-            vectors = await self.embedder.embed([text for _, text in pairs]) if pairs else []
+            texts = [text for _, text in pairs]
+            if not texts:
+                vectors = []
+            elif isinstance(self.embedder, OpenAIEmbedder):  # 색인은 한 번뿐이라 넉넉한 시간 (질문용 2초와 따로)
+                vectors = await self.embedder.embed(texts, timeout_s=settings.embedding_build_timeout_s)
+            else:
+                vectors = await self.embedder.embed(texts)
             self._vectors = [(doc_id, v) for (doc_id, _), v in zip(pairs, vectors, strict=True)]
             log.info("retrieval index built: %d vectors (%s)", len(self._vectors), self.embedder.name)
 

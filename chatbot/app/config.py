@@ -29,6 +29,9 @@ class Settings(BaseSettings):
     embedding_mode: Literal["fake", "openai"] = "fake"
     openai_embedding_model: str = "text-embedding-3-small"
     embedding_timeout_s: float = 2.0  # [PR #8 리뷰 2] 늦게 실패하면 응답이 같이 늦어진다 (평가 기준 P95 3초)
+    # 안내문 전체(안내문 수 × 4개 언어)를 한 번에 임베딩하는 '색인 만들기'는 질문 1개보다 훨씬 오래 걸린다 (실측 2초 넘음)
+    #   → 질문용 2초를 그대로 쓰면 색인이 계속 실패해 hybrid 가 낱말 맞추기로만 돈다. 색인에만 넉넉한 시간을 준다
+    embedding_build_timeout_s: float = 30.0
     embedding_cooldown_s: float = 60.0  # 임베딩이 실패하면 이 시간 동안은 부르지 않고 바로 낱말 맞추기로
     vector_min_score: float = 0.35  # 이 유사도 미만이면 '관련 없음' — scripts/eval_search.py 로 정한다
     keyword_bonus: float = 0.15  # hybrid 에서 낱말까지 맞은 안내문에 더하는 점수

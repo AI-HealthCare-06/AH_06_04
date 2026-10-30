@@ -13,7 +13,7 @@ from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from tortoise.contrib.fastapi import RegisterTortoise
 
-from app import docs
+from app import docs, retrieval
 from app.config import settings
 from app.routes import router
 from app.service import purge_expired
@@ -37,6 +37,13 @@ async def _purge_loop() -> None:
         await asyncio.sleep(settings.purge_interval_s)
 
 
+async def _warm_retrieval() -> None:
+    try:
+        await retrieval.retriever().build()
+    except retrieval.EmbeddingError as e:
+        log.warning("retrieval warm-up failed (첫 질문 때 다시 시도): %s", e)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     problems = settings.startup_problems()
@@ -50,6 +57,8 @@ async def lifespan(app: FastAPI):
         log.warning("감수된 안내문이 0개 — 모든 질문이 '안내문 없음' 으로 답한다")
     async with RegisterTortoise(app, config=tortoise_config(settings.db_url), generate_schemas=True):
         task = asyncio.create_task(_purge_loop())
+        if settings.search_mode != "keyword":  # 첫 질문이 색인 만들기를 기다리지 않게 켤 때 미리 (실패해도 질문 때 다시)
+            asyncio.create_task(_warm_retrieval())
         try:
             yield
         finally:

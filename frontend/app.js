@@ -259,7 +259,7 @@ async function recordForm() {
     visit_date: h("input", { type: "date", max: today, value: today, required: true }),
     hospital_name: h("input", { required: true, maxlength: 100 }),
     procedure_name: h("input", { maxlength: 100, placeholder: t("procedure_ph") }),
-    doctor_note: h("textarea", { rows: 3, maxlength: 1000 }),
+    doctor_note: h("textarea", { rows: 3, maxlength: 1000, placeholder: t("doctor_note_ph") }),  // 병원에서 말로·안내지로 받은 주의사항 → AI 가이드에 함께 쓰인다
   };
   // [10/26 멘토링] 병원은 다시 타이핑하지 않고 고른다 — 내가 연락 요청했던 병원이 맨 위, 그다음 전체 목록, 목록에 없으면 직접 입력
   //   (외국인이 한국 병원 이름을 다시 치는 건 헷갈리고 틀리기 쉽다)
