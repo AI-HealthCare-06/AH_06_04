@@ -288,8 +288,9 @@ async function recordForm() {
   if (contactedIds.length && byId[contactedIds[0]]) { hospitalPick.value = String(contactedIds[0]); hospitalPick.dispatchEvent(new Event("change")); }
   else f.hospital_name.required = false;
   const drugBox = h("div");
-  // 약 한 줄 추가 (OCR 결과가 있으면 그 값으로 채운다)
+  // 약 한 줄 추가 (OCR 결과가 있으면 그 값으로 채운다) · 줄마다 오른쪽 위 '삭제'로 뺄 수 있다 (잘못 늘린 칸 정리)
   const addDrug = (v = {}) => drugBox.append(h("div", { class: "drug" },
+    h("button", { class: "drug-remove", type: "button", onclick: (e) => e.currentTarget.closest(".drug").remove() }, `✕ ${t("drug_remove")}`),
     field("drug_name", h("input", { name: "drug_name", maxlength: 100, value: v.drug_name ?? null })),
     h("div", { class: "row" },
       h("div", {}, field("dose", h("input", { name: "dose", maxlength: 50, placeholder: t("dose_ph"), value: v.dose ?? null }))),
