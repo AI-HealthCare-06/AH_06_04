@@ -79,6 +79,11 @@ class Config(BaseSettings):
     # [최종 점검 3회차] 서버 재시작 등으로 백그라운드 작업이 사라지면 PENDING 이 영원히 남는다 → 이 시간이 지나면 실패로
     OCR_PENDING_TIMEOUT_S: int = 120
     OPENAI_VISION_MODEL: str = "gpt-4o-mini"
+    # 사진 방향 자동 맞추기 — 옆·거꾸로 찍은 처방전을 바로 세운 뒤 읽는다 (누운 사진이면 약 이름을 지어내는 일이 있었다)
+    #   4방향 작은 사진 중 '글자가 바로 선 것'을 고르게 한다. 실측: gpt-4o 8/8 · gpt-4o-mini 6/8 정답 → 고르기만 gpt-4o (작은 사진 4장이라 비용 1원 미만)
+    OCR_AUTO_ROTATE: bool = True
+    OCR_ORIENT_MODEL: str = "gpt-4o"
+    OCR_MAX_SIDE: int = 2048  # 보내기 전 긴 변을 이 크기로 줄인다 (글자는 읽히고 전송·처리는 가볍게)
     OCR_LLM_MAX_TOKENS: int = 800  # [리뷰 #14] 약 30줄 JSON 여유
     CLOVA_OCR_SECRET_KEY: str = ""  # .env 에만 (공개 레포)
     CLOVA_OCR_INVOKE_URL: str = ""  # 콘솔의 General OCR 'APIGW Invoke URL' (이것도 비밀값)
