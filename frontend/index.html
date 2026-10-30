@@ -13,7 +13,7 @@
 </head>
 <body>
   <header class="topbar">
-    <a href="#/home" class="brand">
+    <a href="#/" class="brand"><!-- #/ : 로그인 전이면 소개 영상 첫 화면, 로그인 후면 내 홈 -->
       <!-- 물방울 캐릭터 (디자인 시안) -->
       <svg width="30" height="32" viewBox="0 0 120 130" aria-hidden="true">
         <ellipse cx="60" cy="72" rx="56" ry="52" fill="#E7F4FA"/>
@@ -25,8 +25,9 @@
       </svg>GlowPass</a>
     <select id="lang" aria-label="language">
       <option value="ko">한국어</option>
-      <option value="ja">日本語</option>
+      <!-- 순서: 2025년 외국인 환자 국적 순 (중국 61.9만 → 일본 60만, 보건복지부 2026.4 발표) -->
       <option value="zh">中文</option>
+      <option value="ja">日本語</option>
       <option value="en">English</option>
     </select>
   </header>

@@ -127,6 +127,39 @@ async function deskView(params = new URLSearchParams()) {
     try { await api("PATCH", `/hospital-contacts/${c.contact_id}`, { status: next }); deskView(params); }
     catch (ex) { err.textContent = ex.message; btn.disabled = false; }
   };
+  // [10/26 멘토링] 병원이 환자에게 시술 기록을 보낸다 — 환자는 아무것도 입력하지 않아도 홈에 기록 + AI 가이드가 생긴다
+  const sendRecordBox = (c) => {
+    const box = h("div");
+    const open = h("button", { class: "btn secondary", type: "button", onclick: () => {
+      const today = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+      const date = h("input", { type: "date", max: today, value: today, required: true });
+      const proc = h("input", { maxlength: 100, placeholder: t("procedure_ph") });
+      const note = h("textarea", { rows: 2, maxlength: 1000, placeholder: t("hd_note_ph") });
+      const drug = h("input", { maxlength: 100, placeholder: t("hd_drug_ph") });
+      const dose = h("input", { maxlength: 50, placeholder: t("dose_ph") });
+      const times = h("input", { type: "number", min: 1, max: 10, placeholder: t("times_per_day") });
+      const days = h("input", { type: "number", min: 1, max: 365, placeholder: t("days") });
+      const e2 = errorBox();
+      const send = h("button", { class: "btn", type: "button", onclick: async () => {
+        send.disabled = true;
+        const body = { visit_date: date.value, procedure_name: proc.value.trim() || null, doctor_note: note.value.trim() || null, items: [] };
+        if (drug.value.trim()) body.items.push({ drug_name: drug.value.trim(), dose: dose.value.trim() || null,
+          times_per_day: times.value ? Number(times.value) : null, days: days.value ? Number(days.value) : null });
+        try {
+          const { data } = await api("POST", `/hospital-contacts/${c.contact_id}/records`, body);
+          box.replaceChildren(h("p", { class: "notice" }, t("hd_record_sent"), data.guide_id ? ` ${t("hd_guide_started")}` : ""));
+          setTimeout(() => deskView(params), 1500);
+        } catch (ex) { e2.textContent = ex.message; send.disabled = false; }
+      } }, t("hd_record_send"));
+      box.replaceChildren(h("div", { class: "card" }, h("h3", {}, t("hd_record_title")),
+        field("visit_date", date), field("procedure", proc), field("doctor_note", note),
+        h("h4", {}, t("drugs")), field("drug_name", drug),
+        h("div", { class: "row" }, h("div", {}, field("dose", dose)), h("div", {}, field("times_per_day", times)), h("div", {}, field("days", days))),
+        e2, send, h("p", { class: "muted small" }, t("hd_record_hint"))));
+    } }, t("hd_record_open"));
+    box.append(open);
+    return box;
+  };
   const row = (c) => {
     const start = h("button", { class: "btn", type: "button" }, t("hd_start"));
     const done = h("button", { class: "btn secondary", type: "button" }, t("hd_done"));
@@ -141,7 +174,8 @@ async function deskView(params = new URLSearchParams()) {
       c.record_id ? h("div", { class: "muted small" }, `${t("hd_about_record")} #${c.record_id}`) : null,
       c.memo ? h("div", {}, c.memo) : null,  // 사용자 글은 textContent 로만 (XSS 방지)
       c.status === "requested" ? h("div", { class: "row" }, start, done) : null,
-      c.status === "in_progress" ? h("div", { class: "row" }, done) : null);
+      c.status === "in_progress" ? h("div", { class: "row" }, done) : null,
+      ["requested", "in_progress"].includes(c.status) ? sendRecordBox(c) : null);  // 시술 기록 보내기
   };
   render(h("a", { href: "#/home" }, t("back")),
     h("div", { class: "card" }, h("h1", {}, t("hd_title")), h("p", { class: "muted small" }, t("hd_desc")),

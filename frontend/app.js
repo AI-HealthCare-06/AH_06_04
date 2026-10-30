@@ -74,11 +74,31 @@ function errorText(data, status) {
 const view = () => document.getElementById("view");
 function render(...nodes) { view().replaceChildren(...nodes.filter(Boolean)); window.scrollTo(0, 0); }
 function field(labelKey, input) { return [h("label", {}, t(labelKey)), input]; }
+
+// 비밀번호 칸 + 눈 아이콘 '보기/숨기기' — 기본은 가리고, 누를 때만 보인다
+//   아이콘은 언어와 상관없이 알아보고, 화면 읽기 프로그램에는 aria-label(4개 언어)로 알려 준다
+//   PC 에서 마우스를 올리면 작은 말풍선(data-tip · style.css)으로 바로 보인다 (브라우저 기본 title 은 늦게 뜨거나 안 떠서)
+const EYE = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+  <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>`;
+const EYE_ICON = `${EYE}</svg>`, EYE_OFF_ICON = `${EYE}<path d="M3 3l18 18"/></svg>`;
+function withReveal(input) {
+  const btn = h("button", { class: "pw-toggle", type: "button", "aria-pressed": "false", "aria-label": t("pw_show"), "data-tip": t("pw_show") });
+  btn.innerHTML = EYE_ICON;
+  btn.addEventListener("click", () => {
+    const show = input.type === "password";
+    input.type = show ? "text" : "password";
+    btn.innerHTML = show ? EYE_OFF_ICON : EYE_ICON;
+    const label = t(show ? "pw_hide" : "pw_show");
+    btn.setAttribute("aria-label", label); btn.dataset.tip = label;
+    btn.setAttribute("aria-pressed", String(show));
+  });
+  return h("div", { class: "pw-wrap" }, input, btn);
+}
 function errorBox() { return h("div", { class: "error", role: "alert" }); }
 
 // ── 1. 첫 화면 (언어 선택) ───────────────────────
 function onboarding() {
-  const langs = [["ko", "한국어"], ["ja", "日本語"], ["zh", "中文"], ["en", "English"]];
+  const langs = [["ko", "한국어"], ["zh", "中文"], ["ja", "日本語"], ["en", "English"]];  // 오른쪽 위 메뉴와 같은 순서 (index.html)
   // 소개 영상 (frontend/assets) — 자동 재생은 소리 끔이어야 브라우저가 막지 않는다. 움직임 줄이기 설정이면 자동 재생 안 함
   const video = h("video", { class: "hero-video", loop: true, playsinline: true, controls: true, preload: "metadata",
     autoplay: !matchMedia("(prefers-reduced-motion: reduce)").matches,
@@ -117,7 +137,7 @@ function loginView(message) {
       // [리뷰 #12] 비밀번호 틀림 / 입력 형식 / 서버 문제를 나눠 보여준다
       err.textContent = [400, 401, 404].includes(ex.status) ? t("err_login") : ex.status === 422 ? t("err_input") : t("err_generic");
     }
-  } }, field("email", email), field("password", pw), h("button", { class: "btn", type: "submit" }, t("login")), err);
+  } }, field("email", email), field("password", withReveal(pw)), h("button", { class: "btn", type: "submit" }, t("login")), err);
   render(h("div", { class: "card" }, h("h1", {}, t("login")),
     message ? h("p", { class: "notice" }, message) : null, form,
     h("p", { class: "muted" }, t("no_account"), " ", h("a", { href: "#/signup" }, t("signup")))));
@@ -131,7 +151,9 @@ function signupView() {
     // 성별은 필수라 미리 골라 두지 않는다 (그대로 넘기면 틀린 값으로 가입되던 것)
     gender: h("select", { required: true }, h("option", { value: "", disabled: true, selected: true }, t("select_placeholder")),
       h("option", { value: "FEMALE" }, t("female")), h("option", { value: "MALE" }, t("male"))),
-    birth_date: h("input", { type: "date", required: true }),
+    // 생년월일은 숫자만 치면 '-' 가 들어간다 (브라우저 날짜 칸은 년도를 6자리까지 받아 4자리를 쳐도 월로 안 넘어가서)
+    birth_date: h("input", { type: "text", inputmode: "numeric", autocomplete: "bday", required: true, maxlength: 10,
+      pattern: "\\d{4}-\\d{2}-\\d{2}", placeholder: t("birth_hint") }),
     phone_number: h("input", { type: "tel", required: true, placeholder: t("phone_hint") }),  // 해외 번호 가능
     // 연락용 메신저 1개 (팀 결정: 전화 + 메신저) — 나라별로 많이 쓰는 것을 먼저
     messenger_type: h("select", { required: true }, [["WECHAT", "WeChat 微信"], ["LINE", "LINE"], ["WHATSAPP", "WhatsApp"],
@@ -140,6 +162,10 @@ function signupView() {
     nationality: h("select", {}, [["CN", "nat_cn"], ["JP", "nat_jp"], ["US", "nat_us"], ["KR", "nat_kr"], ["", "nat_other"]]
       .map(([code, key]) => h("option", { value: code }, t(key)))),
   };
+  inputs.birth_date.addEventListener("input", () => {
+    const d = inputs.birth_date.value.replace(/\D/g, "").slice(0, 8);  // 19950505 → 1995-05-05
+    inputs.birth_date.value = [d.slice(0, 4), d.slice(4, 6), d.slice(6)].filter(Boolean).join("-");
+  });
   const MESSENGER_BY_COUNTRY = { CN: "WECHAT", JP: "LINE", US: "WHATSAPP", KR: "KAKAOTALK" };
   inputs.nationality.addEventListener("change", () => { inputs.messenger_type.value = MESSENGER_BY_COUNTRY[inputs.nationality.value] || "WHATSAPP"; });
   inputs.messenger_type.value = MESSENGER_BY_COUNTRY[inputs.nationality.value] || "WHATSAPP";
@@ -149,9 +175,12 @@ function signupView() {
   const agrees = { agree_privacy: h("input", { type: "checkbox" }), agree_terms: h("input", { type: "checkbox" }) };
   const syncSubmit = () => { submit.disabled = !(agrees.agree_privacy.checked && agrees.agree_terms.checked); };
   Object.values(agrees).forEach((box) => box.addEventListener("change", syncSubmit));
-  const agreeRow = (key, fullKey) => h("div", {},
-    h("label", { class: "check" }, agrees[key], " ", t(key)),
-    h("details", {}, h("summary", {}, t("agree_view")), h("p", { class: "muted small agree-text" }, t(fullKey))));
+  // 체크하면 전문을 바로 아래에 펼친다 (무엇에 동의하는지 보고 넘어가게 · 팝업 없이). 체크를 풀어도 펼친 채로 둔다
+  const agreeRow = (key, fullKey) => {
+    const full = h("details", {}, h("summary", {}, t("agree_view")), h("p", { class: "muted small agree-text" }, t(fullKey)));
+    agrees[key].addEventListener("change", () => { if (agrees[key].checked) full.open = true; });
+    return h("div", {}, h("label", { class: "check" }, agrees[key], " ", t(key)), full);
+  };
   const form = h("form", { onsubmit: async (e) => {
     e.preventDefault();
     if (submit.disabled) { err.textContent = t("agree_needed"); return; }
@@ -162,7 +191,7 @@ function signupView() {
     try { await api("POST", "/auth/signup", body); loginView(t("signup_done")); history.replaceState(null, "", "#/login"); }
     catch (ex) { err.textContent = ex.message; }
   } },
-  field("email", inputs.email), field("password", inputs.password), field("name", inputs.name),
+  field("email", inputs.email), field("password", withReveal(inputs.password)), field("name", inputs.name),
   h("div", { class: "row" }, h("div", {}, field("gender", inputs.gender)), h("div", {}, field("birth", inputs.birth_date))),
   field("nationality", inputs.nationality), field("phone", inputs.phone_number),
   h("div", { class: "row" }, h("div", {}, field("messenger", inputs.messenger_type)), h("div", {}, field("messenger_id", inputs.messenger_id))),
@@ -182,6 +211,7 @@ async function home() {
   const recordList = records.length
     ? records.map((r) => h("div", { class: "item" },
         h("strong", {}, `${r.visit_date} · ${r.hospital_name}`), r.source === "OCR" ? h("span", { class: "badge" }, t("ocr_badge")) : null,
+        r.source === "HOSPITAL" ? h("span", { class: "badge hot" }, t("hospital_sent_badge")) : null,  // [10/26 멘토링] 병원이 보낸 기록
         h("div", { class: "muted" }, [r.procedure_name, r.items.map((i) => i.drug_name).join(", ")].filter(Boolean).join(" / ")),
         h("div", { class: "row" },
           h("button", { class: "btn secondary", onclick: () => makeGuide(r.id) }, t("make_guide")),
@@ -206,7 +236,8 @@ async function home() {
       store.token = null; location.hash = "#/";
     } }, t("logout")),
     // [최종 점검 5회차] 회원 탈퇴 — 한 번 더 묻고, 지운 뒤 첫 화면으로
-    h("button", { class: "btn secondary", type: "button", onclick: async () => {
+    //   되돌릴 수 없는 일이라 로그아웃과 같은 큰 버튼으로 두지 않는다 (작은 보라 글씨 · 간격을 두고 아래)
+    h("button", { class: "link-danger", type: "button", onclick: async () => {
       if (!confirm(t("withdraw_confirm"))) return;
       try { await api("DELETE", "/users/me"); await api("POST", "/auth/logout").catch(() => null); store.token = null; alert(t("withdraw_done")); location.hash = "#/"; }
       catch (ex) { alert(ex.message); }
@@ -220,7 +251,7 @@ async function makeGuide(recordId) {
 }
 
 // ── 4. 진료기록 입력 (FR-01) ────────────────────
-function recordForm() {
+async function recordForm() {
   if (!store.token) return (location.hash = "#/login");
   // 오늘 날짜 (사용자 기기 시간대 기준 — toISOString()은 UTC라 한국 오전엔 어제로 나온다)
   const today = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
@@ -230,6 +261,32 @@ function recordForm() {
     procedure_name: h("input", { maxlength: 100, placeholder: t("procedure_ph") }),
     doctor_note: h("textarea", { rows: 3, maxlength: 1000 }),
   };
+  // [10/26 멘토링] 병원은 다시 타이핑하지 않고 고른다 — 내가 연락 요청했던 병원이 맨 위, 그다음 전체 목록, 목록에 없으면 직접 입력
+  //   (외국인이 한국 병원 이름을 다시 치는 건 헷갈리고 틀리기 쉽다)
+  const [hospitals, contacts] = await Promise.all([
+    api("GET", "/hospitals?limit=50").then((r) => r.data.items).catch(() => []),
+    api("GET", "/hospital-contacts").then((r) => r.data.items).catch(() => []),
+  ]);
+  const contactedIds = [...new Set(contacts.map((c) => c.hospital_id))];
+  const byId = Object.fromEntries(hospitals.map((x) => [x.hospital_id, x]));
+  const option = (x, label) => h("option", { value: String(x.hospital_id) }, label ? `${label} · ${x.name}` : x.name);
+  const hospitalPick = h("select", {},
+    h("option", { value: "" }, t("hosp_pick_placeholder")),
+    ...contactedIds.filter((id) => byId[id]).map((id) => option(byId[id], t("hosp_pick_contacted"))),
+    ...hospitals.filter((x) => !contactedIds.includes(x.hospital_id)).map((x) => option(x)),
+    h("option", { value: "manual" }, t("hosp_pick_manual")));
+  let hospitalId = null;
+  const manualWrap = h("div", { hidden: true }, field("hospital", f.hospital_name));  // 직접 입력 칸은 '직접 입력' 을 골랐을 때만
+  hospitalPick.addEventListener("change", () => {
+    const v = hospitalPick.value;
+    hospitalId = v && v !== "manual" ? Number(v) : null;
+    manualWrap.hidden = v !== "manual";
+    f.hospital_name.required = v === "manual";
+    if (hospitalId) f.hospital_name.value = byId[hospitalId].name;  // 서버도 목록 이름으로 맞추지만 화면에도 보여준다
+    else if (v === "manual") f.hospital_name.value = "";
+  });
+  if (contactedIds.length && byId[contactedIds[0]]) { hospitalPick.value = String(contactedIds[0]); hospitalPick.dispatchEvent(new Event("change")); }
+  else f.hospital_name.required = false;
   const drugBox = h("div");
   // 약 한 줄 추가 (OCR 결과가 있으면 그 값으로 채운다)
   const addDrug = (v = {}) => drugBox.append(h("div", { class: "drug" },
@@ -276,7 +333,12 @@ function recordForm() {
     const d = job.draft;
     ocrJobId = job.job_id;
     if (d.visit_date) f.visit_date.value = d.visit_date;
-    if (d.hospital_name) f.hospital_name.value = d.hospital_name;
+    if (d.hospital_name) {  // 사진에서 읽은 병원 이름이 목록에 있으면 그 병원을 고르고, 없으면 직접 입력 칸에 넣는다
+      const hit = hospitals.find((x) => x.name === d.hospital_name || x.name.includes(d.hospital_name) || d.hospital_name.includes(x.name));
+      hospitalPick.value = hit ? String(hit.hospital_id) : "manual";
+      hospitalPick.dispatchEvent(new Event("change"));
+      if (!hit) f.hospital_name.value = d.hospital_name;
+    }
     if (d.procedure_name) f.procedure_name.value = d.procedure_name;
     if (d.items.length) { drugBox.replaceChildren(); d.items.forEach((it) => addDrug(it)); }
     ocrBox.replaceChildren(h("div", { class: "notice" },
@@ -291,8 +353,10 @@ function recordForm() {
       return { drug_name: v("drug_name"), dose: v("dose") || null,
         times_per_day: v("times_per_day") ? Number(v("times_per_day")) : null, days: v("days") ? Number(v("days")) : null };
     }).filter((i) => i.drug_name);
+    if (!hospitalPick.value) { err.textContent = t("hosp_pick_needed"); return; }
     const body = { visit_date: f.visit_date.value, hospital_name: f.hospital_name.value.trim(),
       procedure_name: f.procedure_name.value.trim() || null, doctor_note: f.doctor_note.value.trim() || null, items };
+    if (hospitalId) body.hospital_id = hospitalId;  // 목록에서 고른 병원이면 번호도 같이 (서버가 이름을 목록 값으로 맞춘다)
     if (ocrJobId) body.ocr_job_id = ocrJobId;  // 사진에서 읽은 기록이면 서버가 source=OCR 로 저장
     let rec;
     try { rec = await api("POST", "/medical-records", body); }
@@ -301,7 +365,7 @@ function recordForm() {
     try { await makeGuide(rec.id); }
     catch (ex) { location.hash = "#/home"; setTimeout(() => alert(t("record_saved_guide_failed") + "\n" + ex.message), 50); }
   } },
-  field("visit_date", f.visit_date), field("hospital", f.hospital_name), field("procedure", f.procedure_name),
+  field("visit_date", f.visit_date), field("hospital", hospitalPick), manualWrap, field("procedure", f.procedure_name),
   field("doctor_note", f.doctor_note), h("h2", { style: "margin-top:16px" }, t("drugs")), drugBox,
   h("button", { class: "btn secondary", type: "button", onclick: addDrug }, t("add_drug")),
   h("button", { class: "btn", type: "submit" }, t("save")), err);
@@ -595,7 +659,7 @@ async function route() {
     if (hash === "#/login") return loginView();
     if (hash === "#/signup") return signupView();
     if (hash === "#/home") return await home();
-    if (hash === "#/record/new") return recordForm();
+    if (hash === "#/record/new") return await recordForm();
     if (hash.startsWith("#/chat")) return await chatView(new URLSearchParams(hash.split("?")[1] || ""));
     if (hash.startsWith("#/hospitals")) return await hospitalsView(new URLSearchParams(hash.split("?")[1] || ""));
     if (hash === "#/contacts") return await contactsView();

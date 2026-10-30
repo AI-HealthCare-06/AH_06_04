@@ -6,6 +6,7 @@ window.I18N = {
     intro: "진료받은 내용을 바탕으로 GlowPass가 복약·관리 방법을 쉽게 알려드려요.",
     choose_lang: "언어 선택", login: "로그인", signup: "회원가입", logout: "로그아웃", withdraw: "회원 탈퇴", withdraw_confirm: "탈퇴하면 진료기록·가이드·병원 요청이 모두 지워지고 되돌릴 수 없어요. 탈퇴할까요?", withdraw_done: "탈퇴가 끝났어요. 챗봇 대화는 30일 안에 자동으로 지워져요.",
     email: "이메일", password: "비밀번호", password_hint: "8자 이상, 대·소문자·숫자·특수문자 포함",
+    pw_show: "비밀번호 보기", pw_hide: "비밀번호 숨기기", birth_hint: "숫자만 · 예: 19950505",
     name: "이름", gender: "성별", female: "여성", male: "남성", birth: "생년월일", select_placeholder: "선택하세요", intro_video: "GlowPass 소개 영상",
     phone: "휴대폰 번호", phone_hint: "필수 · 예: 01012345678 또는 +86 138 1234 5678",
     no_account: "계정이 없으신가요?", have_account: "이미 계정이 있으신가요?",
@@ -32,6 +33,7 @@ window.I18N = {
     intro: "受診内容をもとに、GlowPassがお薬とケアの方法をわかりやすくお伝えします。",
     choose_lang: "言語を選択", login: "ログイン", signup: "新規登録", logout: "ログアウト", withdraw: "退会", withdraw_confirm: "退会すると診療記録・ガイド・病院への依頼がすべて削除され、元に戻せません。退会しますか？", withdraw_done: "退会しました。チャットの会話は30日以内に自動で削除されます。",
     email: "メールアドレス", password: "パスワード", password_hint: "8文字以上・大文字・小文字・数字・記号を含む",
+    pw_show: "パスワードを表示", pw_hide: "パスワードを隠す", birth_hint: "数字のみ・例: 19950505",
     name: "お名前", gender: "性別", female: "女性", male: "男性", birth: "生年月日", select_placeholder: "選択してください", intro_video: "GlowPass 紹介動画",
     phone: "携帯電話番号", phone_hint: "必須 · 例: +81 90 1234 5678",
     no_account: "アカウントをお持ちでないですか？", have_account: "すでにアカウントをお持ちですか？",
@@ -58,6 +60,7 @@ window.I18N = {
     intro: "GlowPass 根据您的就诊内容，用简单的方式告诉您用药和护理方法。",
     choose_lang: "选择语言", login: "登录", signup: "注册", logout: "退出", withdraw: "注销账号", withdraw_confirm: "注销后，诊疗记录、指南和医院请求将全部删除且无法恢复。确定注销吗？", withdraw_done: "账号已注销。聊天记录将在30天内自动删除。",
     email: "邮箱", password: "密码", password_hint: "至少8位，包含大小写字母、数字和符号",
+    pw_show: "显示密码", pw_hide: "隐藏密码", birth_hint: "仅数字 · 例: 19950505",
     name: "姓名", gender: "性别", female: "女", male: "男", birth: "出生日期", select_placeholder: "请选择", intro_video: "GlowPass 介绍视频",
     phone: "手机号码", phone_hint: "必填 · 例如: +86 138 1234 5678",
     no_account: "还没有账号？", have_account: "已有账号？",
@@ -84,6 +87,7 @@ window.I18N = {
     intro: "GlowPass explains your medicines and after-care simply, based on your clinic visit.",
     choose_lang: "Choose language", login: "Log in", signup: "Sign up", logout: "Log out", withdraw: "Delete account", withdraw_confirm: "Deleting your account permanently removes your records, guides and clinic requests. This cannot be undone. Delete?", withdraw_done: "Your account was deleted. Chat history is removed automatically within 30 days.",
     email: "Email", password: "Password", password_hint: "8+ characters with upper, lower, number and symbol",
+    pw_show: "Show password", pw_hide: "Hide password", birth_hint: "Numbers only · e.g. 19950505",
     name: "Name", gender: "Gender", female: "Female", male: "Male", birth: "Date of birth", select_placeholder: "Select", intro_video: "GlowPass intro video",
     phone: "Mobile number", phone_hint: "Required · e.g. +1 415 555 0100",
     no_account: "No account yet?", have_account: "Already have an account?",
@@ -386,6 +390,27 @@ Object.assign(window.I18N.ko, { card_contact_note: "등록하신 연락처로 �
 Object.assign(window.I18N.ja, { card_contact_note: "ご登録の連絡先に病院から連絡します" });
 Object.assign(window.I18N.zh, { card_contact_note: "医院将通过您登记的联系方式与您联系" });
 Object.assign(window.I18N.en, { card_contact_note: "The clinic will contact you using your registered contact details" });
+// [10/26 멘토링] 진료기록 등록 때 병원 고르기 · 병원이 보낸 기록
+Object.assign(window.I18N.ko, { hosp_pick_placeholder: "병원을 고르세요", hosp_pick_contacted: "연락한 병원", hosp_pick_manual: "목록에 없어요 — 직접 입력",
+  hosp_pick_needed: "병원을 골라 주세요.", hospital_sent_badge: "병원에서 보냄",
+  hd_record_open: "시술 기록 보내기", hd_record_title: "환자에게 시술 기록 보내기", hd_note_ph: "주의사항·설명 (환자 화면에 그대로 보여요)",
+  hd_drug_ph: "약 이름 (선택)", hd_record_send: "환자에게 보내기", hd_record_sent: "환자 진료기록에 추가됐어요.", hd_guide_started: "AI 가이드도 만들고 있어요.",
+  hd_record_hint: "보내면 환자가 입력하지 않아도 기록이 생기고, 환자 언어로 AI 가이드가 자동으로 만들어져요. 요청은 '연락 완료'가 돼요." });
+Object.assign(window.I18N.ja, { hosp_pick_placeholder: "病院を選んでください", hosp_pick_contacted: "連絡した病院", hosp_pick_manual: "一覧にない — 直接入力",
+  hosp_pick_needed: "病院を選んでください。", hospital_sent_badge: "病院から送信",
+  hd_record_open: "施術記録を送る", hd_record_title: "患者に施術記録を送る", hd_note_ph: "注意事項・説明（患者の画面にそのまま表示）",
+  hd_drug_ph: "薬の名前（任意）", hd_record_send: "患者に送る", hd_record_sent: "患者の診療記録に追加しました。", hd_guide_started: "AIガイドも作成中です。",
+  hd_record_hint: "送ると患者が入力しなくても記録が作られ、患者の言語でAIガイドが自動作成されます。リクエストは「連絡済み」になります。" });
+Object.assign(window.I18N.zh, { hosp_pick_placeholder: "请选择医院", hosp_pick_contacted: "联系过的医院", hosp_pick_manual: "列表中没有 — 手动输入",
+  hosp_pick_needed: "请选择医院。", hospital_sent_badge: "医院发送",
+  hd_record_open: "发送治疗记录", hd_record_title: "向患者发送治疗记录", hd_note_ph: "注意事项·说明（会原样显示给患者）",
+  hd_drug_ph: "药名（可选）", hd_record_send: "发送给患者", hd_record_sent: "已添加到患者的诊疗记录。", hd_guide_started: "AI指南也在生成中。",
+  hd_record_hint: "发送后患者无需输入即可获得记录，并自动生成患者语言的AI指南。请求将变为“已联系”。" });
+Object.assign(window.I18N.en, { hosp_pick_placeholder: "Choose a clinic", hosp_pick_contacted: "Contacted", hosp_pick_manual: "Not in the list — type it",
+  hosp_pick_needed: "Please choose a clinic.", hospital_sent_badge: "Sent by clinic",
+  hd_record_open: "Send treatment record", hd_record_title: "Send a treatment record to the patient", hd_note_ph: "Instructions (shown to the patient as is)",
+  hd_drug_ph: "Medicine name (optional)", hd_record_send: "Send to patient", hd_record_sent: "Added to the patient's records.", hd_guide_started: "An AI guide is being created too.",
+  hd_record_hint: "The patient gets the record without typing anything, and an AI guide is created in their language. The request becomes 'Contacted'." });
 // [10/26 멘토링] 연락처 가리기 안내
 Object.assign(window.I18N.ko, { hd_masked_hint: "연락처는 '확인 시작'을 누른 요청에서만 전체가 보여요." });
 Object.assign(window.I18N.ja, { hd_masked_hint: "連絡先は「確認開始」を押したリクエストでのみ全体が表示されます。" });

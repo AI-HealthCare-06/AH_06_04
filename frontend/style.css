@@ -39,6 +39,19 @@ h1 { font-size: 24px; line-height: 1.4; margin: 8px 0 6px; } h2 { font-size: 18p
 .btn.secondary { background: var(--card); color: var(--primary-700); border: 1.5px solid var(--primary); box-shadow: none; }
 .btn.secondary:hover { background: var(--accent-light); }
 .btn:disabled, .btn[disabled] { opacity: .5; cursor: not-allowed; }
+/* 비밀번호 눈 아이콘 '보기/숨기기' — 칸 안 오른쪽 (누르는 영역 44×44) */
+.pw-wrap { position: relative; }
+.pw-wrap input { padding-right: 52px; }
+.pw-toggle { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; padding: 0;
+  display: grid; place-items: center; border: 0; border-radius: 12px; background: none; color: var(--muted); cursor: pointer; }
+.pw-toggle:hover, .pw-toggle[aria-pressed="true"] { color: var(--primary-700); }
+/* 눈 아이콘 말풍선 — 마우스를 올리거나 키보드로 고르면 바로 위에 (휴대폰은 마우스 올리기가 없어 안 뜸) */
+.pw-toggle::after { content: attr(data-tip); position: absolute; right: 0; bottom: calc(100% + 6px); padding: 5px 10px;
+  border-radius: 8px; background: var(--ink); color: #fff; font-size: 12px; font-weight: 500; white-space: nowrap;
+  pointer-events: none; opacity: 0; transform: translateY(4px); transition: opacity .12s, transform .12s; }
+.pw-toggle:hover::after, .pw-toggle:focus-visible::after { opacity: 1; transform: none; }
+@media (hover: none) { .pw-toggle::after { display: none; } }
+.pw-toggle:focus-visible { outline: 3px solid var(--accent-mid); outline-offset: -2px; }
 label { display: block; font-size: 13px; font-weight: 500; color: var(--muted); margin: 14px 0 6px; }
 .row { display: flex; gap: 10px; } .row > * { flex: 1; }
 .langs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 12px 0; }
@@ -75,6 +88,12 @@ a { color: var(--primary-700); }
 .emergency strong { color: var(--warn); font-size: 18px; }
 .btn.danger { background: var(--warn); box-shadow: none; }
 .btn.danger:hover { background: #A51F1F; }
+/* 회원 탈퇴처럼 되돌릴 수 없는 일 — 큰 버튼과 섞이지 않게 작은 보라 글씨로, 위와 간격을 둔다 (누르는 영역은 44px)
+   빨강은 응급 경고에만 쓰고, 여기는 덜 튀는 보라 (흰 배경 대비 약 6.5:1) */
+.link-danger { display: block; margin: 28px auto 0; min-height: 44px; padding: 10px 16px; background: none; border: 0;
+  color: #6B4FA0; font: inherit; font-size: 13px; font-weight: 500; text-decoration: underline; cursor: pointer; }
+.link-danger:hover { color: #533B80; }
+.link-danger:focus-visible { outline: 3px solid var(--accent-mid); outline-offset: 2px; border-radius: 8px; }
 /* 👍/👎 피드백 */
 .feedback { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 10px; }
 .feedback > button { border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 4px 12px; cursor: pointer; font-size: 16px; }
