@@ -30,7 +30,7 @@ async def test_sources_come_first_and_are_saved(client, llm):
     kinds = [e for e, _ in events]
     assert kinds.index("sources") < kinds.index("token")  # 근거가 답보다 먼저
     src = next(d for e, d in events if e == "sources")["docs"]
-    assert src[0] == {"id": "filler", "title": "필러 시술 후 관리", "reviewed": False}
+    assert src[0] == {"id": "filler", "title": "필러 시술 후 관리", "reviewed": False, "publishers": ["AAD"]}
     assert "필러 시술은" in answer_text(events)  # 가짜 AI 는 안내문 본문에서 답함
     saved = await Message.filter(role="assistant").first()
     # 필러 질문엔 식약처 필러 시술 후 관리(마사지·술·사우나 + 시력 저하 등 위험 신호)도 함께 근거로 붙는다
@@ -284,3 +284,10 @@ async def test_v3_local_server_without_key(monkeypatch):
     llm = OpenAILLM(transport=httpx.MockTransport(handler))
     assert "".join([p async for p in llm.stream([{"role": "user", "content": "hi"}], 5, "en")]) == "OK"
     assert seen == {"auth": False, "url": "http://localhost:11434/v1/chat/completions"}
+
+
+def test_every_doc_names_its_publisher():
+    # 챗봇 답 아래 '📚 출처: 영국 NHS · 식약처' 한 줄 — 안내문마다 기관 코드가 있어야 하고, 화면이 아는 코드만
+    known = {"NHS", "FDA", "AAD", "MFDS"}
+    for d in docs.store().docs:
+        assert d.publishers and set(d.publishers) <= known, d.id

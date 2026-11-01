@@ -620,10 +620,12 @@ async function ask(convId, message, lang, bubble, emergencyBox, context = []) {
           (box.nextElementSibling && box.nextElementSibling.classList.contains("small") ? box.nextElementSibling : box).after(bar);
         }
         if (sources.length && ["ok", "cached"].includes(d.outcome)) {
-          box.append(h("div", { class: "srcs" }, t("chat_sources"), " ",
-            sources.map((s) => h("span", { class: "badge" }, s.title)),
-            // 감수 전 안내문이 근거에 섞였으면 그 사실을 답 바로 아래에 밝힌다
-            sources.some((s) => s.reviewed === false) ? h("span", { class: "badge badge-warn" }, t("unreviewed_badge")) : null));
+          // 답 아래 한 줄: '📚 출처: 영국 NHS · 식약처 (의료진 감수 전)' — 긴 안내문 제목 대신 기관 이름 (제목은 마우스를 올리면 보임)
+          const orgs = [...new Set(sources.flatMap((s) => s.publishers || []))].map((p) => t(`pub_${p}`));
+          const unreviewed = sources.some((s) => s.reviewed === false);  // 감수 전 안내문이 섞였으면 그 사실도 같은 줄에
+          box.append(h("div", { class: "srcs", title: sources.map((s) => s.title).join("\n") },
+            `📚 ${t("chat_src_from")} ${(orgs.length ? orgs : sources.map((s) => s.title)).join(" · ")}`,
+            unreviewed ? ` (${t("chat_src_unreviewed")})` : ""));
         }
       }
     }

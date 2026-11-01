@@ -6,6 +6,7 @@ title_ja: 処方されたお薬のスケジュールを守る
 title_zh-Hans: 按时遵守处方药的时间安排
 keywords: 복약, 약을, 약은, 약이, 먹는 약, 바르는 약, 깜빡, 잊어, 알림, medicine, medication, pill, schedule, forgot, missed, reminder, 吃药, 吃藥, 忘了, 用药, 用藥, 药物, 薬, 飲み忘れ
 source: NHS Specialist Pharmacy Service(SPS), Advising on missed or delayed doses of medicines, https://sps.nhs.uk/articles/advising-on-missed-or-delayed-doses-of-medicines/ (갱신 2025-03-04) · 요약·번역 GlowPass팀
+publisher: NHS
 reviewed: false
 ---
 ## ko

@@ -6,6 +6,7 @@ title_ja: セチリジン（抗ヒスタミン薬）
 title_zh-Hans: 西替利嗪（抗组胺药）
 keywords: 세티리진, 지르텍, 항히스타민, cetirizine, zirtek, zyrtec, antihistamine, セチリジン, ジルテック, 抗ヒスタミン, 西替利嗪, 仙特明, 抗组胺
 source: NHS, Cetirizine, https://www.nhs.uk/medicines/cetirizine/ (검토 2025-02-18) · Open Government Licence v3.0 · 요약·번역 GlowPass팀
+publisher: NHS
 reviewed: false
 ---
 ## ko

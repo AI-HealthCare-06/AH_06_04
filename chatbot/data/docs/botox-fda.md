@@ -6,6 +6,7 @@ title_ja: ボトックスの注意サイン（FDA患者向けガイド）
 title_zh-Hans: 肉毒素（保妥适）的警示信号（FDA用药指南）
 keywords: 보톡스, 보툴리눔, 톡신, 사각턱, botox, botulinum, toxin, ボトックス, ボツリヌス, 肉毒, 肉毒素, 保妥适, 瘦脸针
 source: 미국 FDA 승인 BOTOX Medication Guide, https://rxabbvie.com/pdf/botox_medguide.pdf (개정 2024-10, 2026-10-23 내용 대조) · 이전판 https://www.fda.gov/media/77359/download (2016-01) · 요약·번역 GlowPass팀
+publisher: FDA
 reviewed: false
 ---
 ## ko

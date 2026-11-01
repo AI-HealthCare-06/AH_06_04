@@ -6,6 +6,7 @@ title_ja: 施術後の日常ケア（日焼け・洗顔・メイク・お酒・�
 title_zh-Hans: 术后日常护理（防晒、洗脸、化妆、饮酒、运动）
 keywords: 햇빛, 자외선, 선크림, 썬크림, 세안, 화장, 메이크업, 사우나, 찜질, 술, 음주, 운동, 보습, sun, sunscreen, uv, wash, washing, makeup, sauna, alcohol, drink, exercise, gym, moistur, 防晒, 防曬, 洗脸, 洗臉, 化妆, 化妝, 喝酒, 饮酒, 运动, 運動, 桑拿, 日焼け, 紫外線, 洗顔, メイク, 化粧, お酒, 飲酒, サウナ
 source: NHS, Sunscreen and sun safety, https://www.nhs.uk/live-well/seasonal-health/sunscreen-and-sun-safety/ (검토 2026-03-24) · Open Government Licence v3.0 · American Academy of Dermatology(AAD), Botulinum toxin therapy: FAQs · Fillers: FAQs (2026-10-24 확인) · 요약·번역 GlowPass팀
+publisher: NHS
 reviewed: false
 ---
 ## ko

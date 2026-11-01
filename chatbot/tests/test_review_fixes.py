@@ -40,7 +40,7 @@ async def test_p0_reviewed_doc_is_used(client, llm, monkeypatch):
     events = await ask(client, await new_conv(client, "ko"), "필링 받았어요")
     assert done(events)["outcome"] == "ok"
     assert next(d for e, d in events if e == "sources")["docs"] == [
-        {"id": "peel", "title": "필링 후 관리", "reviewed": True}
+        {"id": "peel", "title": "필링 후 관리", "reviewed": True, "publishers": []}  # 시험용 안내문엔 기관 코드 없음
     ]
 
 

@@ -6,6 +6,7 @@ title_ja: ヒドロコルチゾン（皮膚用ステロイド）
 title_zh-Hans: 氢化可的松（皮肤外用激素）
 keywords: 하이드로코티손, 스테로이드, 스테로이드연고, hydrocortisone, steroid, ヒドロコルチゾン, ステロイド, 氢化可的松, 激素, 类固醇
 source: NHS, Hydrocortisone for skin, https://www.nhs.uk/medicines/hydrocortisone-for-skin/ (검토 2025-08-28) · Open Government Licence v3.0 · 요약·번역 GlowPass팀
+publisher: NHS
 reviewed: false
 ---
 ## ko

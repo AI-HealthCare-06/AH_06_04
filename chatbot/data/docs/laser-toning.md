@@ -6,6 +6,7 @@ title_ja: レーザートーニング後のケア
 title_zh-Hans: 激光嫩肤后的护理
 keywords: 레이저, 토닝, 피코, laser, toning, pico, 激光, 雷射, 镭射, 光子, レーザー, トーニング, ピコ
 source: American Academy of Dermatology(AAD), 10 things to know before having laser treatment for your scar, https://www.aad.org/public/cosmetic/scars-stretch-marks/laser-treatment-scar (2026-10-24 확인) · NHS, Sunscreen and sun safety, https://www.nhs.uk/live-well/seasonal-health/sunscreen-and-sun-safety/ (검토 2026-03-24) · Open Government Licence v3.0 · 요약·번역 GlowPass팀
+publisher: AAD, NHS
 reviewed: false
 ---
 ## ko

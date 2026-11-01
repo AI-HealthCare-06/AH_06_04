@@ -6,6 +6,7 @@ title_ja: 過酸化ベンゾイル（にきびの塗り薬）
 title_zh-Hans: 过氧化苯甲酰（痤疮外用药）
 keywords: 과산화벤조일, 벤조일, 브레박신, benzoyl, peroxide, ベンゾイル, 過酸化ベンゾイル, ベピオ, 过氧化苯甲酰, 苯甲酰
 source: NHS, Benzoyl peroxide, https://www.nhs.uk/medicines/benzoyl-peroxide/ (검토 2026-09-07) · Open Government Licence v3.0 · 요약·번역 GlowPass팀
+publisher: NHS
 reviewed: false
 ---
 ## ko

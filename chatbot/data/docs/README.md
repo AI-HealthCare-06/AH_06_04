@@ -13,6 +13,7 @@ title_ja: ピーリング後のケア              ← 있으면 일본어 화�
 title_zh-Hans: 化学换肤后的护理           ← 있으면 중국어 화면에서 이 제목
 keywords: 필링, peel, ピーリング, 换肤     ← 쉼표로. 4개 언어로 많이
 source: 출처 (예: ○○병원 시술 안내문 2026-10)
+publisher: NHS                         ← 자료를 낸 기관 코드 (NHS · FDA · AAD · MFDS, 여럿이면 쉼표). 챗봇 답 아래 "📚 출처: 영국 NHS" 한 줄로 보인다
 reviewed: false                       ← 멘토·의료진 감수가 끝나면 true
 ---
 ## ko
