@@ -150,28 +150,28 @@ Object.assign(window.I18N.ko, {
   ocr_upload: "처방전·약봉투 사진으로 입력", ocr_hint: "이름·주민등록번호는 가리고 찍어 주세요. 글자 인식을 위해 사진이 외부 AI 서비스로 전송될 수 있고, 사진 자체는 저장하지 않아요.",
   ocr_reading: "사진을 읽고 있어요…", ocr_done: "사진에서 읽은 내용으로 채웠어요.",
   ocr_check: "글자를 잘못 읽을 수 있어요. 처방전과 한 번 더 비교해 고친 뒤 저장해 주세요.",
-  ocr_items_not_read: "약 목록은 읽지 못했어요. 직접 입력해 주세요.", ocr_fake: "(데모용 가짜 인식 결과)",
+  ocr_items_not_read: "약 목록은 읽지 못했어요. 직접 입력하거나, 약 이름이 또렷하게 보이게 다시 찍어 주세요.", ocr_fake: "(데모용 가짜 인식 결과)",
   ocr_failed: "사진을 읽지 못했어요. 밝고 선명하게 다시 찍거나 직접 입력해 주세요.", ocr_badge: "사진 입력",
 });
 Object.assign(window.I18N.ja, {
   ocr_upload: "処方箋・薬袋の写真で入力", ocr_hint: "氏名・個人番号は隠して撮影してください。文字認識のため写真が外部AIサービスに送信される場合があり、写真自体は保存しません。",
   ocr_reading: "写真を読み取っています…", ocr_done: "写真から読み取った内容で入力しました。",
   ocr_check: "文字を読み間違えることがあります。処方箋と見比べて修正してから保存してください。",
-  ocr_items_not_read: "お薬の一覧は読み取れませんでした。直接入力してください。", ocr_fake: "（デモ用の仮の読み取り結果）",
+  ocr_items_not_read: "お薬の一覧は読み取れませんでした。直接入力するか、薬の名前がはっきり見えるように撮り直してください。", ocr_fake: "（デモ用の仮の読み取り結果）",
   ocr_failed: "写真を読み取れませんでした。明るく鮮明に撮り直すか、直接入力してください。", ocr_badge: "写真入力",
 });
 Object.assign(window.I18N.zh, {
   ocr_upload: "拍摄处方或药袋自动填写", ocr_hint: "请遮住姓名和身份证号后拍摄。为识别文字，照片可能会发送至外部AI服务；照片本身不会保存。",
   ocr_reading: "正在识别照片…", ocr_done: "已根据照片识别内容填写。",
   ocr_check: "识别可能有误。请与处方核对并修改后再保存。",
-  ocr_items_not_read: "未能识别药品列表，请手动填写。", ocr_fake: "（演示用的模拟识别结果）",
+  ocr_items_not_read: "未能识别药品列表，请手动填写，或重新拍摄让药名清晰可见。", ocr_fake: "（演示用的模拟识别结果）",
   ocr_failed: "未能识别照片。请在光线充足处清晰重拍，或手动填写。", ocr_badge: "照片录入",
 });
 Object.assign(window.I18N.en, {
   ocr_upload: "Fill in from a prescription photo", ocr_hint: "Cover your name and ID number before taking the photo. The photo may be sent to an external AI service to read the text; the photo itself is not stored.",
   ocr_reading: "Reading the photo…", ocr_done: "Filled in from the photo.",
   ocr_check: "The text may be misread. Compare with your prescription and fix it before saving.",
-  ocr_items_not_read: "We couldn't read the medicine list. Please enter it yourself.", ocr_fake: "(Demo: simulated result)",
+  ocr_items_not_read: "We couldn't read the medicine list. Please enter it yourself, or retake the photo so the medicine names are clear.", ocr_fake: "(Demo: simulated result)",
   ocr_failed: "We couldn't read the photo. Retake it bright and sharp, or enter the details yourself.", ocr_badge: "From photo",
 });
 

@@ -1,12 +1,15 @@
 # ─────────────────────────────────────────────
 # FR-05 OCR API 테스트 — 가짜 엔진(fake)·가짜 외부 서버(MockTransport)로 키·비용 없이 확인
 # ─────────────────────────────────────────────
+import base64
+import io
 import json
 from datetime import date, timedelta
 from unittest.mock import patch
 
 import httpx
 from httpx import ASGITransport, AsyncClient
+from PIL import Image
 from starlette import status
 from tortoise.contrib.test import TestCase
 
@@ -180,6 +183,70 @@ async def test_clova_text_and_rule_parse_without_ai():
 
 
 def test_clean_draft_limits():
-    raw = {"hospital_name": "가" * 300, "items": [{"drug_name": f"약{i}"} for i in range(50)] + ["x", None]}
+    raw = {"hospital_name": "가" * 300, "items": [{"drug_name": f"테스트정{i}"} for i in range(50)] + ["x", None]}
     draft = clean_draft(raw)
     assert len(draft.hospital_name or "") == 100 and len(draft.items) == 30
+
+
+def test_placeholder_names_are_dropped_and_warned():
+    # 누운 사진에서 AI 가 지어내던 '약품1' 같은 이름은 버리고, 하나도 안 남으면 '직접 입력·다시 찍기' 안내
+    draft = clean_draft({"items": [{"drug_name": "약품1", "dose": "1"}, {"drug_name": "Drug 2"}]})
+    assert draft.items == [] and "items_not_read" in draft.warnings
+    kept = clean_draft({"items": [{"drug_name": "약품1"}, {"drug_name": "잘티진정"}]})
+    assert [i.drug_name for i in kept.items] == ["잘티진정"] and "items_not_read" not in kept.warnings
+
+
+def _jpeg(width: int, height: int) -> bytes:
+    buf = io.BytesIO()
+    Image.new("RGB", (width, height), "white").save(buf, "JPEG")
+    return buf.getvalue()
+
+
+def _sent_size(url: str) -> tuple[int, int]:
+    return Image.open(io.BytesIO(base64.b64decode(url.split(",", 1)[1]))).size
+
+
+async def test_openai_vision_turns_sideways_photo_upright_before_reading():
+    # 옆으로 찍은 사진: ① 4방향 중 '글자가 선 것' 고르기(방향 모델 · 작은 사진 4장 · 지시문 없음) → ② 그 방향으로 돌려 읽기
+    calls = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        body = json.loads(request.content)
+        calls.append(body)
+        if len(calls) == 1:
+            return httpx.Response(200, json={"choices": [{"message": {"content": '{"upright": 2}'}}]})
+        content = json.dumps({"items": [{"drug_name": "잘티진정", "dose": "1", "times_per_day": 1, "days": 30}]})
+        return httpx.Response(200, json={"choices": [{"message": {"content": content}}]})
+
+    with (
+        patch.object(config, "OCR_MODE", "openai"),
+        patch.object(config, "OPENAI_API_KEY", "test-key"),
+        patch.object(ocr_engine.httpx, "AsyncClient", _mock_client(handler)),
+    ):
+        draft = await ocr_engine.read(_jpeg(400, 200), "jpg")
+    orient, extract = calls
+    assert orient["model"] == config.OCR_ORIENT_MODEL and orient["messages"][0]["role"] == "user"
+    assert [c["type"] for c in orient["messages"][0]["content"]] == ["text"] + ["image_url"] * 4
+    image = extract["messages"][1]["content"][1]["image_url"]
+    assert image["detail"] == "high" and _sent_size(image["url"]) == (200, 400)  # 2번 후보 = 시계 방향 90도
+    assert draft.items[0].drug_name == "잘티진정" and draft.items[0].days == 30
+
+
+async def test_openai_vision_reads_as_is_when_orientation_check_fails():
+    # 방향 고르기가 실패해도 사진 읽기는 계속한다 (원래 방향 그대로)
+    calls = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        calls.append(json.loads(request.content))
+        if len(calls) == 1:
+            return httpx.Response(500, json={})
+        return httpx.Response(200, json={"choices": [{"message": {"content": '{"items": []}'}}]})
+
+    with (
+        patch.object(config, "OCR_MODE", "openai"),
+        patch.object(config, "OPENAI_API_KEY", "test-key"),
+        patch.object(ocr_engine.httpx, "AsyncClient", _mock_client(handler)),
+    ):
+        draft = await ocr_engine.read(_jpeg(400, 200), "jpg")
+    assert len(calls) == 2 and _sent_size(calls[1]["messages"][1]["content"][1]["image_url"]["url"]) == (400, 200)
+    assert draft.items == [] and "items_not_read" in draft.warnings

@@ -2,6 +2,7 @@
 # FR-05 OCR API 주문서 양식
 #   AI·OCR 결과는 믿지 않고 이 양식으로 한 번 더 걸러서(clean_draft) 돌려준다
 # ─────────────────────────────────────────────
+import re
 from datetime import date, datetime
 from typing import Any
 
@@ -73,6 +74,10 @@ def _past_date(value: Any) -> date | None:
     return parsed if parsed <= datetime.now(config.TIMEZONE).date() else None
 
 
+# AI 가 약 이름을 못 읽었을 때 지어내던 자리 채움 이름 ("약품1" · "Drug 2" · "medicine 3") — 진짜 약 이름이 아니므로 버린다
+_PLACEHOLDER_NAME = re.compile(r"^(약품|약|의약품|drug|medicine|medication|item)\s*\d+$", re.IGNORECASE)
+
+
 def clean_draft(raw: dict[str, Any], warnings: list[str] | None = None) -> OcrDraft:
     """AI가 돌려준 JSON → 안전한 초안. 형식이 이상한 칸은 버리고 비워 둔다"""
     items: list[OcrDraftItem] = []
@@ -81,7 +86,7 @@ def clean_draft(raw: dict[str, Any], warnings: list[str] | None = None) -> OcrDr
         if not isinstance(row, dict):
             continue
         name = _text(row.get("drug_name"), 100)
-        if not name:
+        if not name or _PLACEHOLDER_NAME.match(name):
             continue
         items.append(
             OcrDraftItem(
@@ -94,6 +99,8 @@ def clean_draft(raw: dict[str, Any], warnings: list[str] | None = None) -> OcrDr
         if len(items) >= MAX_ITEMS_PER_RECORD:
             break
     notes = list(warnings or [])
+    if not items and "items_not_read" not in notes:  # 약을 하나도 못 읽었으면 화면이 '직접 입력·다시 찍기'를 안내
+        notes.append("items_not_read")
     notes.append("check_before_save")  # 항상: 저장 전에 처방전과 한 번 더 비교
     return OcrDraft(
         hospital_name=_text(raw.get("hospital_name"), 100),
