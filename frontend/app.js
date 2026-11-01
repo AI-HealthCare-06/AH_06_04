@@ -222,12 +222,14 @@ async function home() {
     h("span", { class: "badge" }, t(`status_${g.status}`))));
   render(
     h("h1", {}, t("home_title")),
-    h("a", { class: "btn", href: "#/record/new" }, t("add_record")),
-    h("a", { class: "btn secondary", href: "#/chat" }, t("chat_open")),
-    h("a", { class: "btn secondary", href: "#/hospitals" }, t("hosp_title")),
-    h("a", { class: "btn secondary", href: "#/contacts" }, t("hc_mine")),
-    h("a", { class: "btn secondary", href: "#/reminders" }, t("rm_title")),
-    me && me.is_admin ? h("a", { class: "btn secondary", href: "#/desk" }, t("hd_title")) : null,  // 병원 접수대 (관리자만)
+    // 메뉴는 타일 격자(.menu, style.css) — 첫 타일(기록 추가)만 짙은 색
+    h("nav", { class: "menu", "aria-label": "menu" },
+      h("a", { class: "btn", href: "#/record/new" }, t("add_record")),
+      h("a", { class: "btn secondary", href: "#/chat" }, t("chat_open")),
+      h("a", { class: "btn secondary", href: "#/hospitals" }, t("hosp_title")),
+      h("a", { class: "btn secondary", href: "#/contacts" }, t("hc_mine")),
+      h("a", { class: "btn secondary", href: "#/reminders" }, t("rm_title")),
+      me && me.is_admin ? h("a", { class: "btn secondary", href: "#/desk" }, t("hd_title")) : null),  // 병원 접수대 (관리자만)
     h("div", { class: "card" }, h("h2", {}, t("my_records")), recordList),
     guides.length ? h("div", { class: "card" }, h("h2", {}, t("my_guides")), guideList) : null,
     // [배포 전 v2 통독 4] 서버에도 알려 refresh 쿠키를 지운다 (실패해도 이 탭에서는 로그아웃)
