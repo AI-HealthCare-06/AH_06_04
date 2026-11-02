@@ -3,10 +3,10 @@
 # ─────────────────────────────────────────────
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.dtos.base import MAX_DB_ID
-from app.models.hospital_contacts import ContactMethod, ContactStatus
+from app.models.hospital_contacts import ContactMethod, ContactStatus, MessageSender
 
 
 class HospitalContactCreateRequest(BaseModel):
@@ -15,7 +15,7 @@ class HospitalContactCreateRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")  # 정해진 칸 말고는 받지 않는다
 
     hospital_id: int = Field(gt=0, le=MAX_DB_ID)
-    contact_method: ContactMethod
+    contact_method: ContactMethod = ContactMethod.APP  # [11/3] 기본은 앱 안 메시지 — 연락처를 병원에 넘기지 않는다
     memo: str | None = Field(default=None, max_length=500)
     record_id: int | None = Field(default=None, gt=0, le=MAX_DB_ID)  # 내 시술 기록에 대한 문의면 그 번호
     safety_alert_id: int | None = Field(default=None, gt=0, le=MAX_DB_ID)  # 챗봇 위험 신호에서 넘어온 경우
@@ -40,8 +40,41 @@ class HospitalContactResponse(BaseModel):
     memo: str | None
     record_id: int | None
     safety_alert_id: int | None
+    appointment_at: datetime | None = None  # [11/3] 병원이 잡아 준 예약 일시
     created_at: datetime
     updated_at: datetime
+
+
+class ContactMessageRequest(BaseModel):
+    """POST /hospital-contacts/{id}/messages — 환자·병원 누구나 (요청 당사자 또는 관리자)"""
+
+    model_config = ConfigDict(extra="forbid")
+
+    body: str = Field(min_length=1, max_length=500)
+
+    @field_validator("body")
+    @classmethod
+    def _not_blank(cls, v: str) -> str:  # 공백만 보내는 건 막는다
+        v = v.strip()
+        if not v:
+            raise ValueError("메시지를 입력해 주세요.")
+        return v
+
+
+class ContactMessageResponse(BaseModel):
+    message_id: int
+    sender: MessageSender
+    body: str
+    created_at: datetime
+
+
+class AppointmentRequest(BaseModel):
+    """POST /hospital-contacts/{id}/appointment — 병원(관리자)만. 상담이 예약으로 이어지는 순간"""
+
+    model_config = ConfigDict(extra="forbid")
+
+    appointment_at: datetime
+    note: str | None = Field(default=None, max_length=200)  # 예: "3층 접수대로 오세요"
 
 
 class HospitalContactAdminItem(HospitalContactResponse):

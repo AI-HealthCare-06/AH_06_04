@@ -41,7 +41,7 @@ async function hospitalsView(params = new URLSearchParams()) {
             h("div", {}, x.languages.map((l) => h("span", { class: "badge" }, LANG_NAME[l] || l)), " "),
             h("a", { class: "btn secondary", href: `tel:${x.phone}` }, `📞 ${x.phone}`),
             sent
-              ? h("a", { class: "btn secondary", href: "#/contacts" }, t("hc_view_mine"))  // 요청한 병원: 또 보내는 대신 내 요청 보기
+              ? h("a", { class: "btn secondary", href: `#/contacts/${sent.contact_id}` }, t("hc_view_mine"))  // 요청한 병원: 또 보내는 대신 그 상담 대화로
               : contactRequestBox(x, recordId, alertId));
         }));
     } catch (ex) { list.replaceChildren(h("p", { class: "error" }, ex.message)); }
@@ -65,23 +65,22 @@ function contactRequestBox(hospital, recordId, alertId) {
   const box = h("div");
   if (!store.token) return h("p", { class: "muted small" }, t("hc_login_needed"));
   const open = h("button", { class: "btn secondary", type: "button", onclick: () => {
-    const method = h("select", {}, ["messenger", "phone", "email", "visit"]
-      .map((m) => h("option", { value: m }, t(`hc_m_${m}`))));
-    const memo = h("textarea", { rows: 2, maxlength: 500 });
+    // [11/3] 연락 방법을 고르지 않는다 — 연락처를 병원에 넘기지 않고 앱 안에서 대화(contact_method 기본값 app)
+    const memo = h("textarea", { rows: 2, maxlength: 500, placeholder: t("cv_placeholder") });
     const err = errorBox();
     const send = h("button", { class: "btn", type: "button", onclick: async () => {
       send.disabled = true;  // 두 번 눌러 두 번 가지 않게
       try {
-        const body = { hospital_id: hospital.hospital_id, contact_method: method.value };
+        const body = { hospital_id: hospital.hospital_id };
         if (memo.value.trim()) body.memo = memo.value.trim();
         if (recordId) body.record_id = recordId;
         if (alertId) body.safety_alert_id = alertId;
-        await api("POST", "/hospital-contacts", body);
-        box.replaceChildren(h("p", { class: "notice" }, t("hc_sent"), " ", h("a", { href: "#/contacts" }, t("hc_mine"))));
+        const { data } = await api("POST", "/hospital-contacts", body);
+        location.hash = `#/contacts/${data.contact_id}`;  // 바로 대화 화면으로
       } catch (ex) { err.textContent = ex.status === 409 ? t("hc_already") : ex.message; send.disabled = false; }
     } }, t("hc_send"));
-    box.replaceChildren(h("div", { class: "card" }, field("hc_method", method), field("hc_memo", memo), err, send,
-      h("p", { class: "muted small" }, t("hc_demo"))));
+    box.replaceChildren(h("div", { class: "card" }, field("hc_memo", memo), err, send,
+      h("p", { class: "muted small" }, t("hc_no_contact_note")), h("p", { class: "muted small" }, t("hc_demo"))));
   } }, t("hc_request"));
   box.append(open);
   return box;
@@ -93,21 +92,67 @@ async function contactsView() {
   const { data } = await api("GET", "/hospital-contacts");
   const err = errorBox();
   const row = (c) => h("div", { class: "item" },
-    h("strong", {}, c.hospital_name), " ", h("span", { class: "badge" }, t(`hc_status_${c.status}`)),
-    h("div", { class: "muted small" }, `${c.created_at.slice(0, 16).replace("T", " ")} · ${t(`hc_m_${c.contact_method}`)}`),
+    h("div", { class: "rec-head" }, h("strong", {}, c.hospital_name), h("span", { class: "badge" }, t(`hc_status_${c.status}`)),
+      c.appointment_at ? h("span", { class: "badge hot" }, `${t("cv_appt")} · ${fmtWhen(c.appointment_at)}`) : null),
+    h("div", { class: "muted small" }, c.created_at.slice(0, 16).replace("T", " ")),
     c.memo ? h("div", {}, c.memo) : null,
-    ["requested", "in_progress"].includes(c.status)
-      ? h("button", { class: "btn secondary", type: "button", onclick: async (e) => {
-          e.target.disabled = true;
-          try { await api("PATCH", `/hospital-contacts/${c.contact_id}`, { status: "cancelled" }); contactsView(); }
-          catch (ex) { err.textContent = ex.message; e.target.disabled = false; }  // 예: 다른 탭에서 이미 취소 → 409
-        } }, t("hc_cancel"))
-      : null);
+    h("div", { class: "row" },
+      h("a", { class: "btn", href: `#/contacts/${c.contact_id}` }, t("cv_open")),
+      ["requested", "in_progress"].includes(c.status)
+        ? h("button", { class: "btn secondary", type: "button", onclick: async (e) => {
+            e.target.disabled = true;
+            try { await api("PATCH", `/hospital-contacts/${c.contact_id}`, { status: "cancelled" }); contactsView(); }
+            catch (ex) { err.textContent = ex.message; e.target.disabled = false; }  // 예: 다른 탭에서 이미 취소 → 409
+          } }, t("hc_cancel"))
+        : null));
   render(h("a", { href: "#/home" }, t("back")),
     h("div", { class: "card" }, h("h1", {}, t("hc_mine")), err,
       data.items.length ? data.items.map(row) : h("p", { class: "muted" }, t("hc_none")),
       h("a", { class: "btn secondary", href: "#/hospitals" }, t("hosp_title")),
       h("p", { class: "muted small" }, t("hc_demo"))));
+}
+
+// 날짜·시간 짧게 (기기 시간대)
+function fmtWhen(iso) { const d = new Date(iso); return `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`; }
+
+// [11/3] 상담 메시지 묶음 — 환자 화면과 접수대가 같이 쓴다. mine = 내 쪽(patient 또는 hospital)
+function threadBox(contactId, mine, closed, onSent) {
+  const log = h("div", { class: "chatlog thread" });
+  const load = async () => {
+    const { data } = await api("GET", `/hospital-contacts/${contactId}/messages`);
+    log.replaceChildren(...(data.items.length
+      ? data.items.map((m) => h("div", { class: "msg " + (m.sender === mine ? "user" : "bot plain") + (m.body.startsWith("[예약 확정]") ? " appt" : "") },
+          h("span", { class: "who" }, m.sender === "patient" ? t("cv_me") : t("cv_hospital")), m.body,
+          h("time", { class: "small" }, fmtWhen(m.created_at))))
+      : [h("p", { class: "muted small" }, t("cv_empty"))]));
+    log.scrollTop = log.scrollHeight;
+  };
+  const input = h("textarea", { rows: 2, maxlength: 500, placeholder: mine === "patient" ? t("cv_placeholder") : t("hd_reply_ph") });
+  const err = errorBox();
+  const send = h("button", { class: "btn", type: "button", onclick: async () => {
+    const body = input.value.trim(); if (!body) return;
+    send.disabled = true;
+    try { await api("POST", `/hospital-contacts/${contactId}/messages`, { body }); input.value = ""; await load(); if (onSent) onSent(); }
+    catch (ex) { err.textContent = ex.message; }
+    send.disabled = false;
+  } }, mine === "patient" ? t("cv_send") : t("hd_reply"));
+  load();
+  return h("div", { class: "thread-wrap" }, log, err,
+    closed ? h("p", { class: "muted small" }, t("cv_closed")) : h("div", { class: "chatform" }, input, send));
+}
+
+// 환자: 상담 1건 — 예약 상태 + 메시지 (#/contacts/{id})
+async function contactThreadView(id) {
+  if (!store.token) return (location.hash = "#/login");
+  const { data: c } = await api("GET", `/hospital-contacts/${id}`);
+  const closed = ["completed", "cancelled"].includes(c.status);
+  render(h("a", { href: "#/contacts" }, t("back")),
+    h("h1", {}, c.hospital_name), h("p", { class: "muted" }, t("cv_intro")),
+    h("div", { class: "card today" }, h("h2", {}, t("cv_title")),
+      h("div", { class: "trow" }, h("i", { class: "ic ic-hospital", "aria-hidden": "true" }), h("span", { class: "tl" }, t(`hc_status_${c.status}`)),
+        h("b", {}, c.appointment_at ? fmtWhen(c.appointment_at) : t("cv_appt_none")))),
+    h("div", { class: "card" }, threadBox(c.contact_id, "patient", closed),
+      h("p", { class: "muted small" }, t("hc_no_contact_note"))));
 }
 
 // ── 병원 접수대 (#/desk) — 관리자 계정이 병원 역할을 대신해 요청 상태를 바꾼다 (데모) ──
@@ -160,6 +205,21 @@ async function deskView(params = new URLSearchParams()) {
     box.append(open);
     return box;
   };
+  const appointmentBox = (c) => {
+    const when = h("input", { type: "datetime-local", required: true });
+    const note = h("input", { maxlength: 200, placeholder: t("hd_appt_note") });
+    const e3 = errorBox();
+    const ok = h("button", { class: "btn secondary", type: "button", onclick: async () => {
+      if (!when.value) return;
+      ok.disabled = true;
+      try {
+        await api("POST", `/hospital-contacts/${c.contact_id}/appointment`, { appointment_at: new Date(when.value).toISOString(), note: note.value.trim() || null });
+        box.replaceChildren(h("p", { class: "notice" }, t("hd_appt_done"))); setTimeout(() => deskView(params), 1200);
+      } catch (ex) { e3.textContent = ex.message; ok.disabled = false; }
+    } }, t("hd_appt_set"));
+    const box = h("div", { class: "appt-box" }, h("p", { class: "lab" }, t("hd_appt_when")), h("div", { class: "row" }, when, note), e3, ok);
+    return box;
+  };
   const row = (c) => {
     const start = h("button", { class: "btn", type: "button" }, t("hd_start"));
     const done = h("button", { class: "btn secondary", type: "button" }, t("hd_done"));
@@ -168,11 +228,15 @@ async function deskView(params = new URLSearchParams()) {
     return h("div", { class: "item" + (c.safety_alert_id ? " urgent" : "") },
       c.safety_alert_id ? h("div", { class: "error" }, t("hd_about_alert")) : null,
       h("strong", {}, `#${c.contact_id} · ${c.hospital_name}`), " ", h("span", { class: "badge" }, t(`hc_status_${c.status}`)),
-      h("div", { class: "muted small" }, `${c.created_at.slice(0, 16).replace("T", " ")} · ${t(`hc_m_${c.contact_method}`)}`),
+      h("div", { class: "muted small" }, c.created_at.slice(0, 16).replace("T", " ") + (c.contact_method !== "app" ? ` · ${t(`hc_m_${c.contact_method}`)}` : "")),
       h("div", {}, `${t("hd_requester")}: ${c.requester_name} · ${t("hd_lang")}: ${c.requester_language}`),
       c.requester_contact ? h("div", {}, `${t("hd_contact")}: ${c.requester_contact}`) : null,
+      c.appointment_at ? h("div", {}, h("span", { class: "badge hot" }, `${t("cv_appt")} · ${fmtWhen(c.appointment_at)}`)) : null,
       c.record_id ? h("div", { class: "muted small" }, `${t("hd_about_record")} #${c.record_id}`) : null,
       c.memo ? h("div", {}, c.memo) : null,  // 사용자 글은 textContent 로만 (XSS 방지)
+      // [11/3] 앱 안 상담: 답장 + 예약 확정 (연락처 없이 끝난다)
+      ["requested", "in_progress"].includes(c.status) ? h("details", { open: !!c.safety_alert_id }, h("summary", {}, t("hd_msgs")),
+        threadBox(c.contact_id, "hospital", false, () => { c.status = "in_progress"; }), appointmentBox(c)) : null,
       c.status === "requested" ? h("div", { class: "row" }, start, done) : null,
       c.status === "in_progress" ? h("div", { class: "row" }, done) : null,
       ["requested", "in_progress"].includes(c.status) ? sendRecordBox(c) : null);  // 시술 기록 보내기

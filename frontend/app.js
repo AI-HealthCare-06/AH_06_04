@@ -307,7 +307,8 @@ function todayCard(records, guides, reminders, contacts) {
   // 2) 진행 중인 병원 요청 (가장 최근 것)
   const open = (contacts || []).filter((c) => ["requested", "in_progress"].includes(c.status))
     .sort((x, y) => (y.created_at > x.created_at ? 1 : -1))[0];
-  if (open) rows.push(["hospital", `${t("today_req")} · ${open.hospital_name}`, t(`hc_status_${open.status}`), "#/contacts"]);
+  if (open) rows.push(["hospital", `${t("today_req")} · ${open.hospital_name}`,
+    open.appointment_at ? fmtWhen(open.appointment_at) : t(`hc_status_${open.status}`), `#/contacts/${open.contact_id}`]);
   // 3) 병원이 보낸 기록 / 완료된 새 가이드 (둘 중 하나만, 기록이 우선)
   const sent = (records || []).filter((r) => r.source === "HOSPITAL").length;
   const done = (guides || []).filter((g) => g.status === "DONE").sort((x, y) => y.guide_id - x.guide_id)[0];
@@ -748,6 +749,8 @@ async function route() {
     if (hash.startsWith("#/chat")) return await chatView(new URLSearchParams(hash.split("?")[1] || ""));
     if (hash.startsWith("#/hospitals")) return await hospitalsView(new URLSearchParams(hash.split("?")[1] || ""));
     if (hash === "#/contacts") return await contactsView();
+    const ct = hash.match(/^#\/contacts\/(\d+)$/);
+    if (ct) return await contactThreadView(ct[1]);  // [11/3] 병원 상담 대화
     if (hash.startsWith("#/desk")) return await deskView(new URLSearchParams(hash.split("?")[1] || ""));
     if (hash === "#/reminders") return await remindersView();
     const m = hash.match(/^#\/guide\/(\d+)$/);

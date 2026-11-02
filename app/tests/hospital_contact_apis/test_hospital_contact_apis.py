@@ -208,3 +208,59 @@ class TestHospitalSendsRecord(TestCase):
         ).json()["data"]["contact_id"]
         await self.client.patch(f"{URL}/{cid2}", json={"status": "cancelled"}, headers=patient)
         assert (await self.client.post(f"{URL}/{cid2}/records", json=body, headers=staff)).status_code == 409
+
+
+class TestInAppConsultation(TestCase):
+    """[11/3] 연락처를 넘기지 않고 앱 안에서 상담 → 병원이 예약을 잡아 준다"""
+
+    async def asyncSetUp(self):
+        await super().asyncSetUp()
+        self.client = AsyncClient(transport=ASGITransport(app=app), base_url="http://test")
+
+    async def asyncTearDown(self):
+        await self.client.aclose()
+        await super().asyncTearDown()
+
+    async def test_messages_and_appointment(self):
+        patient = await signup_and_login(self.client, "ia_patient@example.com", "01050000031")
+        staff = await signup_and_login(self.client, "ia_staff@example.com", "01050000032")
+        other = await signup_and_login(self.client, "ia_other@example.com", "01050000033")
+        await User.filter(email="ia_staff@example.com").update(is_admin=True)
+        # 연락 방법을 안 보내면 기본이 '앱 안 메시지' — 접수대에는 연락처가 아예 안 넘어간다
+        res = await self.client.post(URL, json={"hospital_id": 2, "memo": "레이저 후 붓기가 있어요"}, headers=patient)
+        assert res.status_code == 201, res.text
+        c = res.json()["data"]
+        assert c["contact_method"] == "app" and c["appointment_at"] is None
+        cid = c["contact_id"]
+        desk = (await self.client.get(f"{URL}?scope=all", headers=staff)).json()["data"]["items"]
+        mine = [x for x in desk if x["contact_id"] == cid][0]
+        assert mine["requester_contact"] is None
+        # 환자가 메시지 → 남은 못 본다(404) → 병원이 답하면 '확인 중'으로
+        r1 = await self.client.post(f"{URL}/{cid}/messages", json={"body": "언제 방문하면 될까요?"}, headers=patient)
+        assert r1.status_code == 201 and r1.json()["data"]["sender"] == "patient"
+        assert (await self.client.get(f"{URL}/{cid}/messages", headers=other)).status_code == 404
+        assert (await self.client.post(f"{URL}/{cid}/messages", json={"body": "x"}, headers=other)).status_code == 404
+        r2 = await self.client.post(f"{URL}/{cid}/messages", json={"body": "내일 오후 괜찮으세요?"}, headers=staff)
+        assert r2.status_code == 201 and r2.json()["data"]["sender"] == "hospital"
+        assert (await self.client.get(f"{URL}/{cid}", headers=patient)).json()["data"]["status"] == "in_progress"
+        msgs = (await self.client.get(f"{URL}/{cid}/messages", headers=patient)).json()["data"]["items"]
+        assert [m["sender"] for m in msgs] == ["patient", "hospital"]
+        # 예약 확정은 병원만 · 환자 카드에 일시가 보이고 메시지로도 남는다
+        appt = {"appointment_at": "2026-11-10T14:00:00+09:00", "note": "3층 접수대"}
+        assert (await self.client.post(f"{URL}/{cid}/appointment", json=appt, headers=patient)).status_code == 403
+        r3 = await self.client.post(f"{URL}/{cid}/appointment", json=appt, headers=staff)
+        assert r3.status_code == 200, r3.text
+        assert r3.json()["data"]["appointment_at"] is not None
+        msgs = (await self.client.get(f"{URL}/{cid}/messages", headers=patient)).json()["data"]["items"]
+        assert (
+            msgs[-1]["sender"] == "hospital" and "[예약 확정]" in msgs[-1]["body"] and "3층 접수대" in msgs[-1]["body"]
+        )
+        # 빈 메시지·500자 초과는 422 · 취소된 요청엔 409
+        assert (await self.client.post(f"{URL}/{cid}/messages", json={"body": " "}, headers=patient)).status_code == 422
+        assert (
+            await self.client.post(f"{URL}/{cid}/messages", json={"body": "a" * 501}, headers=patient)
+        ).status_code == 422
+        await self.client.patch(f"{URL}/{cid}", json={"status": "cancelled"}, headers=patient)
+        assert (
+            await self.client.post(f"{URL}/{cid}/messages", json={"body": "늦었지만"}, headers=patient)
+        ).status_code == 409

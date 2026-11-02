@@ -248,3 +248,19 @@ details summary { cursor: pointer; color: var(--mocha); font-weight: 500; margin
 .more.center { display: block; text-align: center; margin: 4px 0 8px; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; font-weight: 400; }
 .more:hover { color: var(--mocha-800); }
 main > p.muted { margin: -8px 0 16px; }
+
+/* ── [11/3] 병원 상담 대화(앱 안) · 예약 ── */
+.thread { max-height: 48vh; min-height: 120px; }
+.thread .msg { position: relative; padding-top: 22px; }
+.thread .msg.bot.plain { margin-left: 0; max-width: 88%; }
+.thread .msg.bot.plain::before { display: none; }   /* 병원 메시지엔 GP 마크를 붙이지 않는다 (AI 가 아니라 사람) */
+.thread .who { position: absolute; top: 6px; left: 14px; font-size: 11px; font-weight: 600; letter-spacing: .06em; opacity: .7; text-transform: uppercase; }
+.thread time { display: block; margin-top: 4px; font-size: 11px; opacity: .6; }
+.thread .msg.appt { border-left: 3px solid var(--gold); background: var(--gold-light); color: var(--ink); }
+.thread-wrap .chatform { margin-top: 10px; }
+.appt-box { margin: 12px 0 4px; padding: 12px 14px; border: 1px dashed var(--line-2); border-radius: var(--r-s); }
+.appt-box .lab { margin: 0 0 6px; font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.appt-box .btn { margin-top: 10px; }
+details summary { list-style: none; cursor: pointer; }
+details summary::before { content: "▸ "; color: var(--gold-2); }
+details[open] summary::before { content: "▾ "; }

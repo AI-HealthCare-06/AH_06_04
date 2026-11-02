@@ -6,6 +6,9 @@
 #   GET   /api/v1/hospital-contacts/{contact_id}  요청 1건 상태
 #   PATCH /api/v1/hospital-contacts/{contact_id}  본인: 취소 · 관리자(병원 역할 대신): 진행 중·완료
 #   POST  /api/v1/hospital-contacts/{contact_id}/records  관리자(병원): 환자에게 시술 기록 보내기 → 201 (+ 가이드 자동 생성)
+#   GET   /api/v1/hospital-contacts/{contact_id}/messages      [11/3] 상담 메시지 목록 (당사자·관리자)
+#   POST  /api/v1/hospital-contacts/{contact_id}/messages      [11/3] 메시지 보내기 → 201 (병원 첫 답이면 '확인 중')
+#   POST  /api/v1/hospital-contacts/{contact_id}/appointment   [11/3] 관리자(병원): 예약 일시 확정
 # ─────────────────────────────────────────────
 from typing import Annotated, Literal
 
@@ -15,7 +18,12 @@ from fastapi.responses import ORJSONResponse
 from app.dependencies.security import get_request_user
 from app.dtos.base import MAX_DB_ID
 from app.dtos.guides import GuideCreateRequest
-from app.dtos.hospital_contacts import HospitalContactCreateRequest, HospitalContactStatusRequest
+from app.dtos.hospital_contacts import (
+    AppointmentRequest,
+    ContactMessageRequest,
+    HospitalContactCreateRequest,
+    HospitalContactStatusRequest,
+)
 from app.dtos.medical_records import HospitalSentRecordRequest
 from app.models.guides import GuideLanguage
 from app.models.users import User
@@ -104,3 +112,40 @@ async def send_record_to_patient(
         },
     }
     return ORJSONResponse(body, status_code=status.HTTP_201_CREATED)
+
+
+@hospital_contact_router.get("/{contact_id}/messages", status_code=status.HTTP_200_OK)
+async def list_messages(
+    contact_id: Annotated[int, Path(le=MAX_DB_ID)],
+    user: Annotated[User, Depends(get_request_user)],
+    service: Annotated[HospitalContactService, Depends(HospitalContactService)],
+) -> ORJSONResponse:
+    """[11/3] 앱 안 상담 — 연락처를 주고받지 않고 여기서 대화한다"""
+    items = [m.model_dump(mode="json") for m in await service.list_messages(user, contact_id)]
+    body = {"message": "상담 메시지 조회에 성공했습니다.", "data": {"total": len(items), "items": items}}
+    return ORJSONResponse(body, status_code=status.HTTP_200_OK)
+
+
+@hospital_contact_router.post("/{contact_id}/messages", status_code=status.HTTP_201_CREATED)
+async def add_message(
+    contact_id: Annotated[int, Path(le=MAX_DB_ID)],
+    data: ContactMessageRequest,
+    user: Annotated[User, Depends(get_request_user)],
+    service: Annotated[HospitalContactService, Depends(HospitalContactService)],
+) -> ORJSONResponse:
+    msg = await service.add_message(user, contact_id, data)
+    body = {"message": "메시지를 보냈습니다.", "data": msg.model_dump(mode="json")}
+    return ORJSONResponse(body, status_code=status.HTTP_201_CREATED)
+
+
+@hospital_contact_router.post("/{contact_id}/appointment", status_code=status.HTTP_200_OK)
+async def set_appointment(
+    contact_id: Annotated[int, Path(le=MAX_DB_ID)],
+    data: AppointmentRequest,
+    user: Annotated[User, Depends(get_request_user)],
+    service: Annotated[HospitalContactService, Depends(HospitalContactService)],
+) -> ORJSONResponse:
+    """[11/3] 상담 → 예약: 병원 접수대가 일시를 잡으면 환자 카드에 바로 보인다"""
+    contact = await service.set_appointment(user, contact_id, data)
+    body = {"message": "예약이 확정되었습니다.", "data": to_response(contact).model_dump(mode="json")}
+    return ORJSONResponse(body, status_code=status.HTTP_200_OK)
