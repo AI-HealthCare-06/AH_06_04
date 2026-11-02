@@ -235,13 +235,14 @@ async function home() {
     // [배포 전 v2 통독 4] 서버에도 알려 refresh 쿠키를 지운다 (실패해도 이 탭에서는 로그아웃)
     h("button", { class: "btn secondary", onclick: async () => {
       await api("POST", "/auth/logout").catch(() => null);
-      store.token = null; location.hash = "#/";
+      // 홈 주소가 이미 #/ 이면 hashchange 가 안 일어나 화면이 그대로다 → 그때는 직접 다시 그린다
+      store.token = null; if (location.hash === "#/") route(); else location.hash = "#/";
     } }, t("logout")),
     // [최종 점검 5회차] 회원 탈퇴 — 한 번 더 묻고, 지운 뒤 첫 화면으로
     //   되돌릴 수 없는 일이라 로그아웃과 같은 큰 버튼으로 두지 않는다 (작은 보라 글씨 · 간격을 두고 아래)
     h("button", { class: "link-danger", type: "button", onclick: async () => {
       if (!confirm(t("withdraw_confirm"))) return;
-      try { await api("DELETE", "/users/me"); await api("POST", "/auth/logout").catch(() => null); store.token = null; alert(t("withdraw_done")); location.hash = "#/"; }
+      try { await api("DELETE", "/users/me"); await api("POST", "/auth/logout").catch(() => null); store.token = null; alert(t("withdraw_done")); if (location.hash === "#/") route(); else location.hash = "#/"; }
       catch (ex) { alert(ex.message); }
     } }, t("withdraw")),
   );
