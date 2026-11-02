@@ -490,3 +490,9 @@ Object.assign(window.I18N.en, { cv_title: "Clinic consultation", cv_intro: "Chat
   cv_appt: "Appointment confirmed", cv_appt_none: "Awaiting appointment", cv_open: "Open chat", cv_refresh: "Refresh", cv_closed: "This consultation is closed.",
   hd_reply: "Reply", hd_reply_ph: "Reply to the patient", hd_appt_set: "Confirm appointment", hd_appt_when: "Date & time", hd_appt_note: "Note (e.g. 3F front desk)", hd_appt_done: "Appointment confirmed. The patient sees it right away.",
   hd_msgs: "Consultation messages", hc_no_contact_note: "Your contact details are not sent to the clinic. Chat and booking happen in the app." });
+
+// [11/3] 챗봇 시점 맞춤 — 최근 시술 후 며칠째인지 칩으로
+Object.assign(window.I18N.ko, { chat_day_n: "시술 후 {n}일째" });
+Object.assign(window.I18N.ja, { chat_day_n: "施術後{n}日目" });
+Object.assign(window.I18N.zh, { chat_day_n: "治疗后第{n}天" });
+Object.assign(window.I18N.en, { chat_day_n: "Day {n} after treatment" });

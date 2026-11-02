@@ -117,7 +117,13 @@ class DocStore:
         if len(ids) != len(set(ids)):
             raise DocError("같은 id 가 두 번 있음")
         self.docs = docs
-        self._patterns = {d.id: [_keyword_pattern(k) for k in d.keywords] for d in docs}
+        self._patterns = {d.id: [(_keyword_pattern(k), k) for k in d.keywords] for d in docs}
+        # 낱말이 몇 안내문에 들어 있나 — 여러 안내문이 같이 쓰는 낱말('레이저'·'激光')은 가볍게, 한 곳만 쓰는 낱말('疱疹')은 무겁게
+        df: dict[str, int] = {}
+        for d in docs:
+            for k in set(k.strip().lower() for k in d.keywords):
+                df[k] = df.get(k, 0) + 1
+        self._df = df
         # 안내문이 바뀌면 캐시도 새로 (캐시 키에 들어감)
         raw = "".join(f"{d.id}{d.keywords}{d.bodies}{d.reviewed}" for d in docs)
         self.version = hashlib.sha256(raw.encode()).hexdigest()[:12]
@@ -132,15 +138,20 @@ class DocStore:
         return d.reviewed or settings.allow_unreviewed_docs
 
     def search(self, question: str, limit: int = 2) -> list[Doc]:
-        """keywords 가 질문에 몇 개 들어 있나 (대소문자 무시). 1개 이상인 것 중 많은 순서로. 감수 안 된 것은 설정에 따라 뺌."""
+        """keywords 가 질문에 들어 있는 안내문을 '얼마나 구체적으로 맞았나' 순으로.
+        [11/3] 점수 = 맞은 낱말 수 + Σ(낱말 길이 ÷ 그 낱말을 쓰는 안내문 수) — '보톡스'(3글자)가 '멍'(1글자)보다,
+        한 안내문만 쓰는 '疱疹'이 여러 안내문이 같이 쓰는 '激光'보다 무겁다.
+        안내문이 32개로 늘면서 '마사지'·'운동' 같은 일반 낱말 하나로 엉뚱한 안내문이 앞에 오던 것을 막는다.
+        같은 점수면 id 순(항상 같은 결과). 감수 안 된 것은 설정에 따라 뺌."""
         q = question.lower()
         scored = []
         for d in self.docs:
             if not self.usable(d):
                 continue
-            score = sum(1 for p in self._patterns[d.id] if p.search(q))
-            if score > 0:
-                scored.append((score, d))
+            hits = [kw for p, kw in self._patterns[d.id] if p.search(q)]
+            if hits:
+                weight = sum(len(k.strip()) / self._df.get(k.strip().lower(), 1) for k in hits)
+                scored.append((round(len(hits) + weight, 6), d))
         scored.sort(key=lambda x: (-x[0], x[1].id))
         return [d for _, d in scored[:limit]]
 

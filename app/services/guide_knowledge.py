@@ -136,11 +136,17 @@ def search(text: str, limit: int = 4) -> list[tuple[KnowledgeDoc, float]]:
             continue
         if doc.source.startswith("가짜"):  # 챗봇 개발용 가짜 예시 안내문은 가이드 근거로 절대 쓰지 않는다
             continue
-        hits = sum(1 for kw in doc.keywords if _keyword_hit(kw, text))
-        if hits:
-            scored.append((doc, min(1.0, round(hits / 2, 2))))  # 낱말 2개 이상 맞으면 1.0
+        matched = frozenset(kw.lower() for kw in doc.keywords if _keyword_hit(kw, text))
+        if matched:
+            scored.append((doc, min(1.0, round(len(matched) / 2, 2)), matched))  # 낱말 2개 이상 맞으면 1.0
     scored.sort(key=lambda x: (-x[1], x[0].id))  # 관련도 높은 순, 같으면 id 순 (항상 같은 결과)
-    return scored[:limit]
+    # [11/3] 넓게 덮기 먼저: 이미 고른 안내문이 맞힌 낱말만 맞히는 안내문은 뒤로 미룬다
+    #   (안내문이 늘어 '필러' 안내문 4개가 자리를 다 차지하면 같은 기록의 '아세트아미노펜' 안내문이 빠졌다)
+    picked, later, covered = [], [], set()
+    for doc, rel, matched in scored:
+        (later if matched <= covered else picked).append((doc, rel))
+        covered |= matched
+    return (picked + later)[:limit]
 
 
 @lru_cache(maxsize=1)

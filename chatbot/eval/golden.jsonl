@@ -82,3 +82,21 @@
 {"id": "g94", "lang": "ko", "q": "보톡스 맞고 운동은 언제부터 해도 돼요?", "expect": "ok", "doc": "botox-aftercare-nhs"}
 {"id": "g96", "lang": "ko", "q": "필러 맞고 술 마셔도 되나요?", "expect": "ok", "doc": "filler-aftercare-mfds"}
 {"id": "g97", "lang": "zh-Hans", "q": "打完玻尿酸可以抽烟吗？", "expect": "ok", "doc": "filler-aftercare-mfds"}
+{"id": "g95", "lang": "ko", "q": "케미컬 필링 하고 각질이 벗겨지는데 정상이에요?", "expect": "ok", "doc": "chemical-peel-aad"}
+{"id": "g201", "lang": "zh-Hans", "q": "做完果酸换肤几天可以化妆？", "expect": "ok", "doc": "chemical-peel-aad"}
+{"id": "g202", "lang": "ko", "q": "선크림은 얼마나 자주 덧발라야 해요?", "expect": "ok", "doc": "sunscreen-after-procedure-aad"}
+{"id": "g98", "lang": "en", "q": "Do I need SPF on cloudy days?", "expect": "ok", "doc": "sunscreen-after-procedure-aad"}
+{"id": "g99", "lang": "ko", "q": "여드름 흉터 때문에 니들링 받는데 몇 번 받아야 해요?", "expect": "ok", "doc": "microneedling-care-aad"}
+{"id": "g100", "lang": "ja", "q": "ニキビ跡の治療は何回くらい必要？", "expect": "ok", "doc": "microneedling-care-aad"}
+{"id": "g101", "lang": "ko", "q": "보톡스 효과 얼마나 가요?", "expect": "ok", "doc": "botox-care-aad"}
+{"id": "g102", "lang": "zh-Hans", "q": "打肉毒后眼皮有点下垂怎么办？", "expect": "ok", "doc": "botox-care-aad"}
+{"id": "g103", "lang": "ko", "q": "필러 맞은 데 덩어리가 만져져요", "expect": "ok", "doc": "filler-care-aad"}
+{"id": "g104", "lang": "en", "q": "How long does hyaluronic filler last?", "expect": "ok", "doc": "filler-care-aad"}
+{"id": "g105", "lang": "ko", "q": "겨드랑이 제모 몇 번 받아야 해요?", "expect": "ok", "doc": "laser-hair-removal-aad"}
+{"id": "g106", "lang": "zh-Hans", "q": "腋下脱毛要做几次？", "expect": "ok", "doc": "laser-hair-removal-aad"}
+{"id": "g107", "lang": "ko", "q": "시술 부위에 딱지가 생겼는데 바셀린 발라도 돼요?", "expect": "ok", "doc": "wound-care-aad"}
+{"id": "g108", "lang": "en", "q": "Should I put a bandage on the scab?", "expect": "ok", "doc": "wound-care-aad"}
+{"id": "g109", "lang": "ko", "q": "다이아몬드 필링 하고 붉어졌어요", "expect": "ok", "doc": "microdermabrasion-aad"}
+{"id": "g110", "lang": "ko", "q": "레이저 후 생긴 색소침착은 얼마나 오래 가요?", "expect": "ok", "doc": "dark-spots-aad"}
+{"id": "g111", "lang": "zh-Hans", "q": "痘印多久能变淡？", "expect": "ok", "doc": "dark-spots-aad"}
+{"id": "g112", "lang": "ja", "q": "色素沈着はどのくらいで薄くなりますか？", "expect": "ok", "doc": "dark-spots-aad"}

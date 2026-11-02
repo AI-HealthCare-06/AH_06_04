@@ -582,6 +582,9 @@ async function chatView(params = new URLSearchParams()) {
   // 내 최근 진료기록의 약·시술 이름 → "이 약 먹고 …" 질문에서 '이 약' 이 무엇인지 챗봇이 알 수 있게
   const latest = (await api("GET", "/medical-records?limit=1").catch(() => []))[0];
   const context = latest ? [latest.procedure_name, ...latest.items.map((i) => i.drug_name)].filter(Boolean).slice(0, 10) : [];
+  // [11/3] 시점 맞춤: 최근 시술 이름·날짜를 따로 보낸다 → 서버가 '시술 후 며칠째' 를 계산해 안내문의 기간과 비교해 답한다
+  const treat = latest && latest.procedure_name ? { procedure: latest.procedure_name, procedure_date: latest.visit_date } : {};
+  const dayN = treat.procedure_date ? Math.floor((Date.now() - new Date(treat.procedure_date + "T00:00:00+09:00")) / 86400000) : null;
   const bubble = (role, text) => { const b = h("div", { class: `msg ${role}` }, text); log.append(b); b.scrollIntoView({ block: "end" }); return b; };
 
   // 대화방: 이 탭에서 쓰던 게 있으면 이어서, 없거나 언어가 바뀌었으면 새로
@@ -606,7 +609,7 @@ async function chatView(params = new URLSearchParams()) {
     input.value = "";
     bubble("user", q);
     sendBtn.disabled = true;
-    try { await ask(conv.id, q, lang, bubble, emergencyBox, context); }
+    try { await ask(conv.id, q, lang, bubble, emergencyBox, context, treat); }
     catch (ex) { bubble("bot error", ex.message || t("chat_error")); }
     finally { sendBtn.disabled = false; input.focus(); }
   } }, input, sendBtn);
@@ -642,19 +645,20 @@ async function chatView(params = new URLSearchParams()) {
   render(h("a", { href: "#/home" }, t("back")),
     h("div", { class: "card" }, h("h1", {}, t("chat_title")), h("p", { class: "muted" }, t("chat_intro")),
       h("div", { class: "row" }, newBtn, delBtn, histBtn),
-      context.length ? h("p", { class: "muted small" }, t("chat_context"), " ", context.map((c) => h("span", { class: "badge" }, c))) : null,
+      context.length ? h("p", { class: "muted small" }, t("chat_context"), " ", context.map((c) => h("span", { class: "badge" }, c)),
+        dayN !== null && dayN >= 0 && dayN <= 365 ? h("span", { class: "badge hot" }, t("chat_day_n", { n: dayN })) : null) : null,
       emergencyBox, log, form),
     histBox);
   input.focus();
 }
 
 // 질문 하나 보내고 SSE 답을 끝까지 읽는다
-async function ask(convId, message, lang, bubble, emergencyBox, context = []) {
+async function ask(convId, message, lang, bubble, emergencyBox, context = [], treat = {}) {
   chatAbort = new AbortController();
   const res = await fetch(`${API}/chat/conversations/${convId}/stream`, {
     method: "POST", signal: chatAbort.signal,
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${store.token}` },
-    body: JSON.stringify({ message, lang, context }),
+    body: JSON.stringify({ message, lang, context, ...treat }),
   });
   if (res.status === 401) { store.token = null; location.hash = "#/login"; throw new Error(t("err_login")); }
   if (!res.ok || !res.body) throw new Error(t("chat_error"));

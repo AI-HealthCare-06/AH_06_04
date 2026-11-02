@@ -18,6 +18,7 @@
 
 import json
 import uuid
+from datetime import date
 from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, Request, Response
@@ -69,6 +70,9 @@ class Ask(BaseModel):
     # FR-01 → 챗봇: 내 최근 진료기록의 약·시술 이름 ("이 약 먹고 술 마셔도 돼요?" 의 '이 약')
     # [최종 점검 6회차] 개수(10)만 막고 한 칸 길이는 무제한이었다 → 약·시술 이름 칸 길이(100자)로 막는다
     context: list[Annotated[str, Field(max_length=100)]] | None = Field(None, max_length=10)
+    # [11/3] 시점 맞춤 답: 최근 시술 이름과 시술일 → 서버가 '시술 후 며칠째' 를 계산해 안내문의 기간과 비교하게 한다
+    procedure: str | None = Field(None, max_length=100)
+    procedure_date: date | None = None
 
     @field_validator("message")
     @classmethod
@@ -161,7 +165,9 @@ async def stream(
 
     async def gen():
         n = 0
-        async for event, data in run_turn(conv, body.message, lang, llm, request.is_disconnected, body.context):
+        async for event, data in run_turn(
+            conv, body.message, lang, llm, request.is_disconnected, body.context, body.procedure, body.procedure_date
+        ):
             if event == "done":  # 이 턴에서 저장한 답 번호를 붙인다 → 화면이 👍/👎 를 이 번호로 보낸다
                 data = {**data, "message_id": getattr(conv, "last_answer_id", None)}
             yield f"id: {n}\nevent: {event}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"

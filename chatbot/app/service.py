@@ -140,6 +140,14 @@ _MY_RECORD = re.compile(
 )
 
 
+def days_since(procedure_date: date | None) -> int | None:
+    """시술일 → 오늘(한국 시간)까지 며칠째인가. 시술 당일 = 0일째. 미래 날짜·1년 넘은 날짜는 쓰지 않는다 (잘못된 값 방어)"""
+    if procedure_date is None:
+        return None
+    n = (kst_today() - procedure_date).days
+    return n if 0 <= n <= 365 else None
+
+
 def clean_context(items: list[str] | None) -> list[str]:
     """화면이 보낸 내 기록 이름 정리 — 최대 10개 · 각 60자 · 꺾쇠 제거 (프롬프트 태그 깨기 방지)"""
     out: list[str] = []
@@ -151,10 +159,15 @@ def clean_context(items: list[str] | None) -> list[str]:
 
 
 async def _find_docs(
-    conv: Conversation, question: str, first_turn: bool, context: list[str] | None = None
+    conv: Conversation, question: str, first_turn: bool, context: list[str] | None = None, procedure: str | None = None
 ) -> list[docs.Doc]:
-    """질문으로 찾기. ① '내 약' 질문이면 기록의 약 이름으로 찾은 안내문을 앞에 ② 못 찾았고 '이어지는 질문' 이면 앞 답의 안내문."""
+    """질문으로 찾기. ① '내 약' 질문이면 기록의 약 이름으로 찾은 안내문을 앞에 ② 못 찾았고 '이어지는 질문' 이면 앞 답의 안내문.
+    [11/3] 최근 시술 이름이 있으면 질문에 붙여서 찾는다 — "화장 언제부터?" 가 일반 관리가 아니라 '레이저 후 관리' 를 찾게"""
     found = await retrieval.search(question, settings.docs_per_answer)  # FR-02: SEARCH_MODE 에 따라 낱말·벡터·혼합
+    if procedure:
+        with_proc = await retrieval.search(f"{question} {procedure}", settings.docs_per_answer)
+        if with_proc:
+            found = [*with_proc, *(d for d in found if d not in with_proc)][: settings.docs_per_answer]
     if context and _MY_RECORD.search(question):
         # '내 약' 질문 → 기록의 약 안내문을 앞에 두고, 질문으로 찾은 것은 뒤에 (같은 건 한 번만)
         mine = await retrieval.search(" ".join(context), settings.docs_per_answer)
@@ -183,6 +196,8 @@ async def run_turn(
     llm,
     is_disconnected: Callable[[], Awaitable[bool]] | None = None,
     context: list[str] | None = None,
+    procedure: str | None = None,
+    procedure_date: date | None = None,
 ) -> AsyncIterator[Event]:
     yield "meta", {"conversation_id": str(conv.public_id), "lang": lang}
 
@@ -210,7 +225,9 @@ async def run_turn(
     trigger = emergency or blocked
     # ④ 안내문 찾기 — 없으면 AI 를 부르지 않는다 (지어낼 틈 0 · 비용 0)
     context = clean_context(context)
-    found = [] if key else await _find_docs(conv, question, first_turn, context)
+    proc = (clean_context([procedure]) or [None])[0] if procedure else None
+    day = days_since(procedure_date) if proc else None
+    found = [] if key else await _find_docs(conv, question, first_turn, context, proc)
     if key or not found:
         async for ev in _fixed(conv, key or "no_doc", lang, trigger):
             yield ev
@@ -219,7 +236,7 @@ async def run_turn(
     yield _sources_event(found, lang)
 
     # ⑤ 캐시 (첫 질문만 · 사용자마다 따로) — 키에 안내문 버전·id 를 넣어 안내문이 바뀌면 새로
-    cache_q = f"{docs.store().version}|{','.join(source_ids)}|{','.join(context)}|{question}"
+    cache_q = f"{docs.store().version}|{','.join(source_ids)}|{','.join(context)}|{proc}|{day}|{question}"  # 며칠째가 바뀌면 답도 바뀐다
     if first_turn and (cached := answer_cache.get(conv.user_id, lang, cache_q)) is not None:
         sentences, tail = safety.split_complete_sentences(cached)
         for s in [*sentences, tail]:
@@ -231,7 +248,7 @@ async def run_turn(
         return
 
     # ⑥ LLM — 질문 1개당 1번 (반복문 안에서 부르지 않는다 — 테스트가 calls == 1 을 확인)
-    messages = build_messages(lang, question, await _history(conv, history_rows), found, context)
+    messages = build_messages(lang, question, await _history(conv, history_rows), found, context, proc, day)
     st = _TurnState()
     try:
         async for ev in _stream_checked(llm, messages, lang, is_disconnected, st):
