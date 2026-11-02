@@ -447,3 +447,24 @@ Object.assign(window.I18N.en, { today_title: "Today", today_next_rm: "Next medic
   today_req: "Clinic request", today_guide_ready: "A new guide is ready", today_hospital_rec: "{n} record(s) sent by your clinic", today_all_good: "Add a record and today’s to-dos will show here",
   empty_records_title: "No visit records yet", empty_records_body: "Fill one in from a prescription photo, or wait for the record your clinic sends you.",
   land_step1: "Before", land_step1_d: "Evidence-based info in your language", land_step2: "Clinic", land_step2_d: "No ranking — you choose from the list", land_step3: "After", land_step3_d: "Medication & care, even after you fly home" });
+// [11/3 결정] 환자 화면은 '내 시술 기록'(병원이 보낸 기록 확인)이 메인, 직접 입력은 보조
+Object.assign(window.I18N.ko, { rec_title: "내 시술 기록", rec_intro: "시술받은 병원이 보내준 기록이 여기에 모여요. 기록마다 AI 가이드와 복약 알림을 이어서 쓸 수 있어요.",
+  rec_empty_title: "아직 받은 기록이 없어요", rec_empty_body: "시술 후 병원 접수대에서 기록을 보내면 바로 여기에 보여요.",
+  rec_manual_link: "병원이 보내주지 않았다면 직접 입력하기", rec_sent_by: "병원에서 보냄", rec_manual: "직접 입력", rec_from_photo: "사진으로 입력",
+  rec_note: "병원 안내사항", rec_items: "처방약", rec_no_items: "처방약 없음", rec_dose: "1회", rec_times: "하루 {n}회", rec_days: "{n}일분",
+  rec_view_guide: "AI 가이드 보기", rec_guide_pending: "가이드 생성 중", rec_set_alarm: "복약 알림", rec_view_all: "전체 보기", rec_recent: "최근 기록" });
+Object.assign(window.I18N.ja, { rec_title: "わたしの施術記録", rec_intro: "施術を受けた病院から届いた記録がここに集まります。記録ごとにAIガイドと服薬リマインドを続けて使えます。",
+  rec_empty_title: "まだ届いた記録がありません", rec_empty_body: "施術後、病院の受付が記録を送るとすぐここに表示されます。",
+  rec_manual_link: "病院から届かない場合は自分で入力", rec_sent_by: "病院から", rec_manual: "自分で入力", rec_from_photo: "写真から入力",
+  rec_note: "病院からの案内", rec_items: "処方薬", rec_no_items: "処方薬なし", rec_dose: "1回", rec_times: "1日{n}回", rec_days: "{n}日分",
+  rec_view_guide: "AIガイドを見る", rec_guide_pending: "ガイド作成中", rec_set_alarm: "服薬リマインド", rec_view_all: "すべて見る", rec_recent: "最近の記録" });
+Object.assign(window.I18N.zh, { rec_title: "我的治疗记录", rec_intro: "就诊医院发送的记录会汇总在这里。每条记录都可以继续使用AI指南和用药提醒。",
+  rec_empty_title: "还没有收到记录", rec_empty_body: "治疗后，医院前台发送记录就会立即显示在这里。",
+  rec_manual_link: "医院未发送时可自行填写", rec_sent_by: "医院发送", rec_manual: "自行填写", rec_from_photo: "照片录入",
+  rec_note: "医院说明", rec_items: "处方药", rec_no_items: "无处方药", rec_dose: "每次", rec_times: "每天{n}次", rec_days: "{n}天",
+  rec_view_guide: "查看AI指南", rec_guide_pending: "指南生成中", rec_set_alarm: "用药提醒", rec_view_all: "查看全部", rec_recent: "最近记录" });
+Object.assign(window.I18N.en, { rec_title: "My treatment records", rec_intro: "Records sent by the clinic that treated you appear here. Each one links to an AI guide and medication reminders.",
+  rec_empty_title: "No records received yet", rec_empty_body: "After your treatment, the clinic front desk sends the record and it shows up here right away.",
+  rec_manual_link: "Clinic didn’t send one? Enter it yourself", rec_sent_by: "Sent by clinic", rec_manual: "Entered by you", rec_from_photo: "From photo",
+  rec_note: "Clinic instructions", rec_items: "Prescriptions", rec_no_items: "No prescriptions", rec_dose: "per dose", rec_times: "{n}× a day", rec_days: "{n} days",
+  rec_view_guide: "View AI guide", rec_guide_pending: "Guide in progress", rec_set_alarm: "Reminder", rec_view_all: "View all", rec_recent: "Recent records" });

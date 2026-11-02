@@ -214,16 +214,12 @@ async function home() {
     api("GET", "/reminders").catch(() => []),
     api("GET", "/hospital-contacts").then((r) => r.data.items).catch(() => []),
   ]);
+  // 홈에는 최근 기록 2건만 요약 — 자세한 건 '내 시술 기록'(#/records)
   const recordList = records.length
-    ? records.map((r) => h("div", { class: "item" },
-        h("strong", {}, `${r.visit_date} · ${r.hospital_name}`), r.source === "OCR" ? h("span", { class: "badge" }, t("ocr_badge")) : null,
-        r.source === "HOSPITAL" ? h("span", { class: "badge hot" }, t("hospital_sent_badge")) : null,  // [10/26 멘토링] 병원이 보낸 기록
-        h("div", { class: "muted" }, [r.procedure_name, r.items.map((i) => i.drug_name).join(", ")].filter(Boolean).join(" / ")),
-        h("div", { class: "row" },
-          h("button", { class: "btn secondary", onclick: () => makeGuide(r.id) }, t("make_guide")),
-          h("a", { class: "btn secondary", href: `#/contact/${r.id}` }, t("contact_hospital")))))
+    ? [...records.slice(0, 2).map((r) => recordRow(r, guides, true)),
+       records.length > 2 ? h("a", { class: "more", href: "#/records" }, `${t("rec_view_all")} (${records.length}) →`) : null]
     : [h("div", { class: "empty" }, h("i", { class: "ic ic-record", "aria-hidden": "true" }),
-        h("strong", {}, t("empty_records_title")), h("p", { class: "muted" }, t("empty_records_body")))];  // 빈 상태: 글 한 줄 대신 그림+설명
+        h("strong", {}, t("rec_empty_title")), h("p", { class: "muted" }, t("rec_empty_body")))];  // 빈 상태: 글 한 줄 대신 그림+설명
   const guideList = guides.map((g) => h("div", { class: "item" },
     h("a", { href: `#/guide/${g.guide_id}` }, `#${g.guide_id} · ${g.created_at.slice(0, 10)}`), " ",
     h("span", { class: "badge" }, t(`status_${g.status}`))));
@@ -232,13 +228,13 @@ async function home() {
     todayCard(records, guides, reminders, contacts),  // [UX 묶음] 메뉴보다 '지금 상태'를 먼저
     // 메뉴는 타일 격자(.menu, style.css) — 첫 타일(기록 추가)만 짙은 색. data-icon 은 style.css 의 선 아이콘
     h("nav", { class: "menu", "aria-label": "menu" },
-      h("a", { class: "btn", href: "#/record/new", "data-icon": "record" }, t("add_record")),
+      h("a", { class: "btn", href: "#/records", "data-icon": "record" }, t("rec_title")),  // [11/3] 환자는 병원이 보낸 기록을 '확인'하는 게 메인
       h("a", { class: "btn secondary", href: "#/chat", "data-icon": "chat" }, t("chat_open")),
       h("a", { class: "btn secondary", href: "#/hospitals", "data-icon": "hospital" }, t("hosp_title")),
       h("a", { class: "btn secondary", href: "#/contacts", "data-icon": "contacts" }, t("hc_mine")),
       h("a", { class: "btn secondary", href: "#/reminders", "data-icon": "bell" }, t("rm_title")),
       me && me.is_admin ? h("a", { class: "btn secondary", href: "#/desk", "data-icon": "desk" }, t("hd_title")) : null),  // 병원 접수대 (관리자만)
-    h("div", { class: "card" }, h("h2", {}, t("my_records")), recordList),
+    h("div", { class: "card" }, h("h2", {}, t("rec_recent")), recordList),
     guides.length ? h("div", { class: "card" }, h("h2", {}, t("my_guides")), guideList) : null,
     // [배포 전 v2 통독 4] 서버에도 알려 refresh 쿠키를 지운다 (실패해도 이 탭에서는 로그아웃)
     h("button", { class: "btn secondary", onclick: async () => {
@@ -253,6 +249,48 @@ async function home() {
       catch (ex) { alert(ex.message); }
     } }, t("withdraw")),
   );
+}
+
+// 기록 한 건 — 출처 배지(병원에서 보냄/직접/사진) · 시술명 · 처방약 · 병원 안내 · 가이드/문의/알림 버튼
+//   compact=true(홈)면 약 이름만 한 줄, 아니면 처방약 표와 병원 안내까지 다 보여준다
+function recordRow(r, guides, compact) {
+  const g = (guides || []).filter((x) => x.record_id === r.id).sort((x, y) => y.guide_id - x.guide_id)[0];  // 이 기록으로 만든 최신 가이드
+  const srcBadge = r.source === "HOSPITAL" ? h("span", { class: "badge hot" }, t("rec_sent_by"))
+    : r.source === "OCR" ? h("span", { class: "badge" }, t("rec_from_photo")) : h("span", { class: "badge" }, t("rec_manual"));
+  const guideBtn = !g ? h("button", { class: "btn secondary", onclick: () => makeGuide(r.id) }, t("make_guide"))
+    : g.status === "PENDING" ? h("a", { class: "btn secondary", href: `#/guide/${g.guide_id}` }, t("rec_guide_pending"))
+    : h("a", { class: "btn", href: `#/guide/${g.guide_id}` }, t("rec_view_guide"));
+  const items = r.items.length
+    ? (compact ? h("div", { class: "muted" }, r.items.map((i) => i.drug_name).join(", "))
+      : h("ul", { class: "rx" }, r.items.map((i) => h("li", {},
+          h("b", {}, i.drug_name), " ",
+          h("span", { class: "muted" }, [i.dose ? `${t("rec_dose")} ${i.dose}` : null, i.times_per_day ? t("rec_times", { n: i.times_per_day }) : null,
+            i.days ? t("rec_days", { n: i.days }) : null].filter(Boolean).join(" · "))))))
+    : h("div", { class: "muted" }, t("rec_no_items"));
+  return h("div", { class: "item rec" },
+    h("div", { class: "rec-head" }, h("strong", {}, r.hospital_name), srcBadge),
+    h("div", { class: "muted small" }, [r.visit_date, r.procedure_name].filter(Boolean).join(" · ")),
+    // h() 는 자식 배열을 한 단계만 펴므로 중첩 배열 대신 ...펼침으로 넣는다
+    ...(compact ? [items] : [h("p", { class: "lab" }, t("rec_items")), items,
+      ...(r.doctor_note ? [h("p", { class: "lab" }, t("rec_note")), h("div", { class: "notice" }, r.doctor_note)] : [])]),
+    compact
+      ? h("div", { class: "row" }, guideBtn, h("a", { class: "btn secondary", href: `#/contact/${r.id}` }, t("contact_hospital")))
+      : [guideBtn, h("div", { class: "row" },
+          h("a", { class: "btn secondary", href: `#/contact/${r.id}` }, t("contact_hospital")),
+          h("a", { class: "btn secondary", href: "#/reminders" }, t("rec_set_alarm")))]);
+}
+
+// 내 시술 기록 — 병원이 보낸 기록이 메인. 직접 입력은 맨 아래 작은 링크(병원이 안 보내 준 경우·OCR 시연용)
+async function recordsView() {
+  if (!store.token) return (location.hash = "#/login");
+  const [records, guides] = await Promise.all([api("GET", "/medical-records"), api("GET", "/guides")]);
+  const sorted = [...records].sort((x, y) => (y.visit_date > x.visit_date ? 1 : y.visit_date < x.visit_date ? -1 : y.id - x.id));
+  render(h("a", { href: "#/home" }, t("back")),
+    h("h1", {}, t("rec_title")), h("p", { class: "muted" }, t("rec_intro")),
+    h("div", { class: "card" }, sorted.length ? sorted.map((r) => recordRow(r, guides, false))
+      : h("div", { class: "empty" }, h("i", { class: "ic ic-record", "aria-hidden": "true" }),
+          h("strong", {}, t("rec_empty_title")), h("p", { class: "muted" }, t("rec_empty_body")))),
+    h("a", { class: "more center", href: "#/record/new" }, t("rec_manual_link")));
 }
 
 // '오늘' 카드 — 다음 복약 알림 · 진행 중인 병원 요청 · 새 가이드/병원이 보낸 기록. 줄마다 눌러서 바로 이동
@@ -273,7 +311,7 @@ function todayCard(records, guides, reminders, contacts) {
   // 3) 병원이 보낸 기록 / 완료된 새 가이드 (둘 중 하나만, 기록이 우선)
   const sent = (records || []).filter((r) => r.source === "HOSPITAL").length;
   const done = (guides || []).filter((g) => g.status === "DONE").sort((x, y) => y.guide_id - x.guide_id)[0];
-  if (sent) rows.push(["record", t("today_hospital_rec", { n: sent }), "", "#/home"]);
+  if (sent) rows.push(["record", t("today_hospital_rec", { n: sent }), "", "#/records"]);
   else if (done) rows.push(["guide", t("today_guide_ready"), `#${done.guide_id}`, `#/guide/${done.guide_id}`]);
   if (!records.length && rows.length === 1) rows.push(["record", t("today_all_good"), "", "#/record/new"]);
   return h("section", { class: "card today", "aria-label": t("today_title") },
@@ -408,7 +446,7 @@ async function recordForm() {
   h("button", { class: "btn secondary", type: "button", onclick: addDrug }, t("add_drug")),
   h("button", { class: "btn", type: "submit" }, t("save")), err);
   // 사진 입력을 맨 위에: 찍으면 아래 칸이 채워지고, 사용자는 확인만 하면 된다
-  render(h("a", { href: "#/home" }, t("back")), h("div", { class: "card" }, h("h1", {}, t("add_record")),
+  render(h("a", { href: "#/records" }, t("back")), h("div", { class: "card" }, h("h1", {}, t("add_record")),
     h("button", { class: "btn secondary", type: "button", onclick: () => fileInput.click() }, "📷 " + t("ocr_upload")),
     h("p", { class: "muted small" }, t("ocr_hint")), fileInput, ocrBox, form));
 }
@@ -705,6 +743,7 @@ async function route() {
     if (hash === "#/login") return loginView();
     if (hash === "#/signup") return signupView();
     if (hash === "#/home") return await home();
+    if (hash === "#/records") return await recordsView();
     if (hash === "#/record/new") return await recordForm();
     if (hash.startsWith("#/chat")) return await chatView(new URLSearchParams(hash.split("?")[1] || ""));
     if (hash.startsWith("#/hospitals")) return await hospitalsView(new URLSearchParams(hash.split("?")[1] || ""));

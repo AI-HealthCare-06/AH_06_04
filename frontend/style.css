@@ -235,3 +235,16 @@ details summary { cursor: pointer; color: var(--mocha); font-weight: 500; margin
 .steps3 .ic { color: var(--mocha); width: 20px; height: 20px; margin-bottom: 2px; }
 .steps3 strong { font-family: var(--display); font-size: 14px; color: var(--mocha-800); }
 .steps3 span { font-size: 12px; line-height: 1.4; color: var(--muted); }
+
+/* ── [11/3] 내 시술 기록 — 기록 카드 · 처방약 표 · '더 보기' 링크 ── */
+.rec-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.rec-head strong { font-size: 17px; }
+.rec .lab { margin: 12px 0 6px; font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.rx { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.rx li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--r-s); background: var(--card-2); }
+.rx li b { font-weight: 600; }
+.rx li .muted { font-size: 13px; }
+.more { display: inline-block; margin-top: 12px; font-size: 14px; color: var(--mocha); text-decoration: none; font-weight: 500; }
+.more.center { display: block; text-align: center; margin: 4px 0 8px; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; font-weight: 400; }
+.more:hover { color: var(--mocha-800); }
+main > p.muted { margin: -8px 0 16px; }
