@@ -430,3 +430,20 @@ Object.assign(window.I18N.zh, { chat_delete: "删除此对话", chat_delete_conf
   chat_history_none: "没有以前的对话。", chat_msgs: "{n}条消息", chat_history_note: "对话会在30天后自动删除。" });
 Object.assign(window.I18N.en, { chat_delete: "Delete this chat", chat_delete_confirm: "Delete this chat? This cannot be undone.", chat_history: "Previous chats",
   chat_history_none: "No previous chats.", chat_msgs: "{n} messages", chat_history_note: "Chats are deleted automatically after 30 days." });
+// [UX 묶음 11/3] 홈 '오늘' 상태 카드 · 빈 상태 · 첫 화면 3단계
+Object.assign(window.I18N.ko, { today_title: "오늘", today_next_rm: "다음 복약 알림", today_no_rm: "복약 알림이 없어요", today_rm_set: "알림 설정하기",
+  today_req: "병원 요청", today_guide_ready: "새 가이드가 준비됐어요", today_hospital_rec: "병원에서 보낸 기록 {n}건", today_all_good: "기록을 추가하면 여기에 오늘 할 일이 보여요",
+  empty_records_title: "아직 진료기록이 없어요", empty_records_body: "처방전 사진으로 입력하거나, 시술받은 병원이 보내준 기록을 기다려 주세요.",
+  land_step1: "사전 상담", land_step1_d: "근거 있는 정보를 내 언어로", land_step2: "병원 연결", land_step2_d: "추천 없이 리스트에서 직접 선택", land_step3: "사후 관리", land_step3_d: "복약·주의사항을 귀국 후까지" });
+Object.assign(window.I18N.ja, { today_title: "今日", today_next_rm: "次の服薬リマインド", today_no_rm: "服薬リマインドはありません", today_rm_set: "リマインドを設定",
+  today_req: "病院への依頼", today_guide_ready: "新しいガイドができました", today_hospital_rec: "病院から届いた記録 {n}件", today_all_good: "記録を追加すると、今日やることがここに表示されます",
+  empty_records_title: "まだ診療記録がありません", empty_records_body: "処方箋の写真で入力するか、施術した病院から届く記録をお待ちください。",
+  land_step1: "事前相談", land_step1_d: "根拠のある情報を自分の言語で", land_step2: "病院とつながる", land_step2_d: "おすすめなし、リストから自分で選ぶ", land_step3: "アフターケア", land_step3_d: "服薬・注意点を帰国後まで" });
+Object.assign(window.I18N.zh, { today_title: "今天", today_next_rm: "下一次用药提醒", today_no_rm: "没有用药提醒", today_rm_set: "设置提醒",
+  today_req: "医院请求", today_guide_ready: "新的指南已准备好", today_hospital_rec: "医院发送的记录 {n}条", today_all_good: "添加记录后，今天要做的事会显示在这里",
+  empty_records_title: "还没有就诊记录", empty_records_body: "可以拍摄处方录入，或等待就诊医院发送的记录。",
+  land_step1: "术前咨询", land_step1_d: "用您的语言获取有依据的信息", land_step2: "医院对接", land_step2_d: "不推荐，从列表中自行选择", land_step3: "术后管理", land_step3_d: "用药与注意事项，回国后仍可查看" });
+Object.assign(window.I18N.en, { today_title: "Today", today_next_rm: "Next medication reminder", today_no_rm: "No medication reminders", today_rm_set: "Set a reminder",
+  today_req: "Clinic request", today_guide_ready: "A new guide is ready", today_hospital_rec: "{n} record(s) sent by your clinic", today_all_good: "Add a record and today’s to-dos will show here",
+  empty_records_title: "No visit records yet", empty_records_body: "Fill one in from a prescription photo, or wait for the record your clinic sends you.",
+  land_step1: "Before", land_step1_d: "Evidence-based info in your language", land_step2: "Clinic", land_step2_d: "No ranking — you choose from the list", land_step3: "After", land_step3_d: "Medication & care, even after you fly home" });

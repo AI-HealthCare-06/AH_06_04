@@ -189,3 +189,49 @@ details summary { cursor: pointer; color: var(--mocha); font-weight: 500; margin
   padding: 12px 18px; border-radius: var(--r-s); font-size: 14px; z-index: 10; max-width: 90vw; box-shadow: 0 10px 30px rgba(43, 35, 32, .3); }
 .item.urgent { border-left: 2px solid var(--warn); padding-left: 12px; }  /* 위험 신호에서 넘어온 요청 — 접수대에서 먼저 보이게 */
 .badge.hot { background: var(--gold-light); color: var(--gold-ink); }  /* 요청 보낸 병원 · 병원이 보낸 기록 표시 [10/26 멘토링] */
+
+/* ── [UX 묶음 11/3] 선 아이콘 · '오늘' 카드 · 빈 상태 · 첫 화면 3단계 ── */
+/* 아이콘은 SVG 를 마스크로 써서 글자색(currentColor)을 그대로 따른다 — 밝은 바탕·모카 바탕 어디서나 같은 그림 */
+.ic { display: inline-block; width: 22px; height: 22px; flex: none; background-color: currentColor;
+  -webkit-mask: var(--svg) no-repeat center / contain; mask: var(--svg) no-repeat center / contain; }
+.ic-record { --svg: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><path d='M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z'/><path d='M14 3v5h5'/><path d='M12 11v6M9 14h6'/></svg>"); }
+.ic-chat { --svg: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><path d='M4 6a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2H9l-5 4z'/><path d='M8 9h8M8 12h5'/></svg>"); }
+.ic-hospital { --svg: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><path d='M4 21V5a2 2 0 012-2h12a2 2 0 012 2v16'/><path d='M2 21h20'/><path d='M12 7v6M9 10h6'/><path d='M9 21v-4h6v4'/></svg>"); }
+.ic-contacts { --svg: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><path d='M4 4h16v12H4z'/><path d='M4 16l3-4h10l3 4'/><path d='M8 8h8M8 11h5'/></svg>"); }
+.ic-bell { --svg: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><path d='M6 16V11a6 6 0 0112 0v5l2 2H4z'/><path d='M10 21h4'/></svg>"); }
+.ic-desk { --svg: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><path d='M6 4h12a1 1 0 011 1v15a1 1 0 01-1 1H6a1 1 0 01-1-1V5a1 1 0 011-1z'/><path d='M9 3h6v3H9z'/><path d='M8 11l2 2 4-4M8 16h8'/></svg>"); }
+.ic-guide { --svg: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><path d='M4 5a2 2 0 012-2h5v18H6a2 2 0 01-2-2z'/><path d='M11 3h7a2 2 0 012 2v14a2 2 0 01-2 2h-7'/><path d='M14 8h3M14 12h3'/></svg>"); }
+
+
+:root { --i-record: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><path d='M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z'/><path d='M14 3v5h5'/><path d='M12 11v6M9 14h6'/></svg>"); --i-chat: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><path d='M4 6a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2H9l-5 4z'/><path d='M8 9h8M8 12h5'/></svg>"); --i-hospital: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><path d='M4 21V5a2 2 0 012-2h12a2 2 0 012 2v16'/><path d='M2 21h20'/><path d='M12 7v6M9 10h6'/><path d='M9 21v-4h6v4'/></svg>"); --i-contacts: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><path d='M4 4h16v12H4z'/><path d='M4 16l3-4h10l3 4'/><path d='M8 8h8M8 11h5'/></svg>"); --i-bell: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><path d='M6 16V11a6 6 0 0112 0v5l2 2H4z'/><path d='M10 21h4'/></svg>"); --i-desk: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><path d='M6 4h12a1 1 0 011 1v15a1 1 0 01-1 1H6a1 1 0 01-1-1V5a1 1 0 011-1z'/><path d='M9 3h6v3H9z'/><path d='M8 11l2 2 4-4M8 16h8'/></svg>"); --i-guide: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'><path d='M4 5a2 2 0 012-2h5v18H6a2 2 0 01-2-2z'/><path d='M11 3h7a2 2 0 012 2v14a2 2 0 01-2 2h-7'/><path d='M14 8h3M14 12h3'/></svg>"); }
+/* 홈 메뉴 타일 오른쪽 위에 아이콘 (번호는 왼쪽 위) */
+.menu .btn[data-icon] { padding-right: 52px; }
+.menu .btn[data-icon]::after { content: ""; position: absolute; top: 12px; right: 14px; width: 24px; height: 24px; background-color: var(--gold-2); opacity: .95;
+  -webkit-mask: var(--svg) no-repeat center / contain; mask: var(--svg) no-repeat center / contain; }
+.menu .btn:not(.secondary)[data-icon]::after { background-color: var(--gold); }
+.menu .btn[data-icon="record"]::after { --svg: var(--i-record); } .menu .btn[data-icon="chat"]::after { --svg: var(--i-chat); }
+.menu .btn[data-icon="hospital"]::after { --svg: var(--i-hospital); } .menu .btn[data-icon="contacts"]::after { --svg: var(--i-contacts); }
+.menu .btn[data-icon="bell"]::after { --svg: var(--i-bell); } .menu .btn[data-icon="desk"]::after { --svg: var(--i-desk); }
+
+/* '오늘' 카드 — 줄마다 아이콘 · 글 · 값, 누르면 그 화면으로 */
+.today { padding: 18px 20px 8px; }
+.today h2 { font-size: 13px; font-family: var(--body); font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--gold-ink); border: 0; padding: 0; margin: 0 0 4px; }
+.trow { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid var(--line); color: var(--ink); text-decoration: none; min-height: 48px; }
+.trow:first-of-type { border-top: 0; }
+.trow .ic { color: var(--mocha); }
+.trow .tl { flex: 1; font-size: 15px; }
+.trow b { font-family: var(--latin); font-size: 20px; font-weight: 600; color: var(--mocha); letter-spacing: .02em; white-space: nowrap; }
+.trow:hover .tl { color: var(--mocha); }
+
+/* 빈 상태 — 아이콘 + 제목 + 설명 */
+.empty { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; padding: 22px 8px 14px; }
+.empty .ic { width: 36px; height: 36px; color: var(--gold-2); margin-bottom: 4px; }
+.empty strong { font-family: var(--display); font-size: 17px; color: var(--mocha-800); }
+.empty p { margin: 0; max-width: 300px; }
+
+/* 첫 화면 3단계 띠 */
+.steps3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin: 14px 0 18px; }
+.steps3 > div { display: flex; flex-direction: column; gap: 4px; padding: 12px 10px; border: 1px solid var(--line); border-radius: var(--r-s); background: var(--card-2); }
+.steps3 .ic { color: var(--mocha); width: 20px; height: 20px; margin-bottom: 2px; }
+.steps3 strong { font-family: var(--display); font-size: 14px; color: var(--mocha-800); }
+.steps3 span { font-size: 12px; line-height: 1.4; color: var(--muted); }

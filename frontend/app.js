@@ -110,6 +110,9 @@ function onboarding() {
       video,
       h("h1", {}, t("tagline")),
       h("p", { class: "muted" }, t("intro")),
+      // 무엇을 해 주는 앱인지 3단계로 (사전 상담 → 병원 연결 → 사후 관리)
+      h("div", { class: "steps3" }, [["chat", "land_step1"], ["hospital", "land_step2"], ["guide", "land_step3"]].map(([ic, k]) =>
+        h("div", {}, h("i", { class: `ic ic-${ic}`, "aria-hidden": "true" }), h("strong", {}, t(k)), h("span", {}, t(k + "_d"))))),
       h("h2", {}, t("choose_lang")),
       h("div", { class: "langs" }, langs.map(([code, name]) =>
         h("button", { class: store.lang === code ? "on" : "", onclick: () => setLang(code) }, name))),
@@ -205,8 +208,11 @@ function signupView() {
 // ── 3. 홈 (내 진료기록 · 내 가이드) ──────────────
 async function home() {
   if (!store.token) return (location.hash = "#/login");
-  const [records, guides, me] = await Promise.all([
+  // 알림·병원 요청은 '오늘' 카드용 — 실패해도 홈은 뜨게 빈 값으로
+  const [records, guides, me, reminders, contacts] = await Promise.all([
     api("GET", "/medical-records"), api("GET", "/guides"), getMe().catch(() => null),
+    api("GET", "/reminders").catch(() => []),
+    api("GET", "/hospital-contacts").then((r) => r.data.items).catch(() => []),
   ]);
   const recordList = records.length
     ? records.map((r) => h("div", { class: "item" },
@@ -216,20 +222,22 @@ async function home() {
         h("div", { class: "row" },
           h("button", { class: "btn secondary", onclick: () => makeGuide(r.id) }, t("make_guide")),
           h("a", { class: "btn secondary", href: `#/contact/${r.id}` }, t("contact_hospital")))))
-    : [h("p", { class: "muted" }, t("no_records"))];
+    : [h("div", { class: "empty" }, h("i", { class: "ic ic-record", "aria-hidden": "true" }),
+        h("strong", {}, t("empty_records_title")), h("p", { class: "muted" }, t("empty_records_body")))];  // 빈 상태: 글 한 줄 대신 그림+설명
   const guideList = guides.map((g) => h("div", { class: "item" },
     h("a", { href: `#/guide/${g.guide_id}` }, `#${g.guide_id} · ${g.created_at.slice(0, 10)}`), " ",
     h("span", { class: "badge" }, t(`status_${g.status}`))));
   render(
     h("h1", {}, t("home_title")),
-    // 메뉴는 타일 격자(.menu, style.css) — 첫 타일(기록 추가)만 짙은 색
+    todayCard(records, guides, reminders, contacts),  // [UX 묶음] 메뉴보다 '지금 상태'를 먼저
+    // 메뉴는 타일 격자(.menu, style.css) — 첫 타일(기록 추가)만 짙은 색. data-icon 은 style.css 의 선 아이콘
     h("nav", { class: "menu", "aria-label": "menu" },
-      h("a", { class: "btn", href: "#/record/new" }, t("add_record")),
-      h("a", { class: "btn secondary", href: "#/chat" }, t("chat_open")),
-      h("a", { class: "btn secondary", href: "#/hospitals" }, t("hosp_title")),
-      h("a", { class: "btn secondary", href: "#/contacts" }, t("hc_mine")),
-      h("a", { class: "btn secondary", href: "#/reminders" }, t("rm_title")),
-      me && me.is_admin ? h("a", { class: "btn secondary", href: "#/desk" }, t("hd_title")) : null),  // 병원 접수대 (관리자만)
+      h("a", { class: "btn", href: "#/record/new", "data-icon": "record" }, t("add_record")),
+      h("a", { class: "btn secondary", href: "#/chat", "data-icon": "chat" }, t("chat_open")),
+      h("a", { class: "btn secondary", href: "#/hospitals", "data-icon": "hospital" }, t("hosp_title")),
+      h("a", { class: "btn secondary", href: "#/contacts", "data-icon": "contacts" }, t("hc_mine")),
+      h("a", { class: "btn secondary", href: "#/reminders", "data-icon": "bell" }, t("rm_title")),
+      me && me.is_admin ? h("a", { class: "btn secondary", href: "#/desk", "data-icon": "desk" }, t("hd_title")) : null),  // 병원 접수대 (관리자만)
     h("div", { class: "card" }, h("h2", {}, t("my_records")), recordList),
     guides.length ? h("div", { class: "card" }, h("h2", {}, t("my_guides")), guideList) : null,
     // [배포 전 v2 통독 4] 서버에도 알려 refresh 쿠키를 지운다 (실패해도 이 탭에서는 로그아웃)
@@ -245,6 +253,33 @@ async function home() {
       catch (ex) { alert(ex.message); }
     } }, t("withdraw")),
   );
+}
+
+// '오늘' 카드 — 다음 복약 알림 · 진행 중인 병원 요청 · 새 가이드/병원이 보낸 기록. 줄마다 눌러서 바로 이동
+function todayCard(records, guides, reminders, contacts) {
+  const rows = [];
+  // 1) 다음 복약 알림: 오늘 시각 기준으로 가장 가까운 것 (매일 반복은 시각만 비교)
+  const meds = (reminders || []).filter((r) => r.reminder_type === "MEDICATION");
+  if (meds.length) {
+    const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
+    const minOf = (r) => { const d = new Date(r.schedule_time); return d.getHours() * 60 + d.getMinutes(); };
+    const next = [...meds].sort((x, y) => ((minOf(x) - nowMin + 1440) % 1440) - ((minOf(y) - nowMin + 1440) % 1440))[0];
+    rows.push(["bell", t("today_next_rm"), hhmmOf(next.schedule_time), "#/reminders"]);
+  } else rows.push(["bell", t("today_no_rm"), t("today_rm_set"), "#/reminders"]);
+  // 2) 진행 중인 병원 요청 (가장 최근 것)
+  const open = (contacts || []).filter((c) => ["requested", "in_progress"].includes(c.status))
+    .sort((x, y) => (y.created_at > x.created_at ? 1 : -1))[0];
+  if (open) rows.push(["hospital", `${t("today_req")} · ${open.hospital_name}`, t(`hc_status_${open.status}`), "#/contacts"]);
+  // 3) 병원이 보낸 기록 / 완료된 새 가이드 (둘 중 하나만, 기록이 우선)
+  const sent = (records || []).filter((r) => r.source === "HOSPITAL").length;
+  const done = (guides || []).filter((g) => g.status === "DONE").sort((x, y) => y.guide_id - x.guide_id)[0];
+  if (sent) rows.push(["record", t("today_hospital_rec", { n: sent }), "", "#/home"]);
+  else if (done) rows.push(["guide", t("today_guide_ready"), `#${done.guide_id}`, `#/guide/${done.guide_id}`]);
+  if (!records.length && rows.length === 1) rows.push(["record", t("today_all_good"), "", "#/record/new"]);
+  return h("section", { class: "card today", "aria-label": t("today_title") },
+    h("h2", {}, t("today_title")),
+    rows.map(([icon, label, value, href]) => h("a", { class: "trow", href },
+      h("i", { class: `ic ic-${icon}`, "aria-hidden": "true" }), h("span", { class: "tl" }, label), value ? h("b", {}, value) : null)));
 }
 
 async function makeGuide(recordId) {
@@ -655,9 +690,15 @@ function setLang(code) {
   route();
 }
 
+let demoOn = false;  // 서비스가 감수 전 안내문으로 데모 중인지 (GET /service-info)
+function syncBanner(hash) {  // 띠는 첫 화면(로그인 전)과 가이드 화면에만 — 모든 화면 위에 두면 첫인상만 깎는다
+  const show = demoOn && (hash === "#/" && !store.token || /^#\/guide\//.test(hash));
+  document.getElementById("demo-banner").hidden = !show;
+}
 async function route() {
   const hash = location.hash || "#/";
   if (chatAbort) { chatAbort.abort(); chatAbort = null; }  // 챗봇 화면을 떠나면 답 받기 중지
+  syncBanner(hash);
   try {
     // [#21 리뷰] async 화면은 await 로 돌려줘야 서버 오류(404 등)가 아래 catch 에 잡혀 화면에 보인다
     if (hash === "#/") return store.token ? await home() : onboarding();
@@ -687,5 +728,5 @@ setLang(store.lang);
 // 데모 운영(감수 전 안내문 사용) 이면 화면 맨 위에 띠를 띄운다 — 실패해도 화면은 그대로 동작
 fetch(API + "/service-info")
   .then((res) => (res.ok ? res.json() : null))
-  .then((info) => { if (info && info.demo_unreviewed_docs) document.getElementById("demo-banner").hidden = false; })
+  .then((info) => { demoOn = !!(info && info.demo_unreviewed_docs); syncBanner(location.hash || "#/"); })
   .catch(() => {});
