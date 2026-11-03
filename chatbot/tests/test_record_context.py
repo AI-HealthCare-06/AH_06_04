@@ -59,3 +59,24 @@ def test_my_record_regex_excludes_everyday_words():
         "처방받은 약 졸려요?",
     ]:
         assert _MY_RECORD.search(q), q
+
+
+async def test_small_talk_gets_a_natural_reply_without_llm(client, llm):
+    cid = await new_conv(client)
+    events = await ask(client, cid, "안녕하세요!")
+    assert done(events)["outcome"] == "chat_hello" and llm.calls == 0
+    events = await ask(client, cid, "고맙습니다")
+    assert done(events)["outcome"] == "chat_thanks" and llm.calls == 0
+
+
+async def test_small_talk_followed_by_a_question_still_searches(client, llm):
+    cid = await new_conv(client)
+    events = await ask(client, cid, "안녕하세요 레이저 받고 세안은 어떻게 해요?")
+    assert done(events)["outcome"] == "ok" and llm.calls == 1
+
+
+async def test_short_followup_reuses_previous_doc(client, llm):
+    cid = await new_conv(client)
+    await ask(client, cid, "레이저 토닝 받고 세안은 어떻게 해요?")
+    events = await ask(client, cid, "더 자세히 알려주세요")
+    assert done(events)["outcome"] == "ok" and llm.calls == 2

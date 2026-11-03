@@ -64,14 +64,43 @@ TEXT: dict[str, dict[str, str]] = {
         "zh-Hans": "您好，我是GlowPass生活管理助手。可以问我术后日常护理或用药时间安排。",
         "ja": "こんにちは。GlowPass生活ケアアシスタントです。施術後の過ごし方や服薬スケジュールについてお聞きください。",
     },
+    # 인사·감사·기능 질문 — 안내문을 찾을 필요가 없는 말에 '자료 없음' 으로 답하지 않게 (10/30 멘토링 피드백)
+    "chat_hello": {
+        "ko": "안녕하세요! 시술 후 관리나 드시는 약에 대해 궁금한 점을 편하게 물어보세요.",
+        "en": "Hi! Feel free to ask me about aftercare or the medicines you're taking.",
+        "zh-Hans": "您好！关于术后护理或正在服用的药物，有问题可以随时问我。",
+        "ja": "こんにちは！施術後のケアやお薬について、気になることを気軽に聞いてください。",
+    },
+    "chat_thanks": {
+        "ko": "도움이 되었다니 다행이에요. 더 궁금한 점이 생기면 언제든 물어보세요.",
+        "en": "Glad that helped. Ask me anytime if something else comes up.",
+        "zh-Hans": "很高兴能帮到您。如果还有其他问题，随时可以问我。",
+        "ja": "お役に立ててよかったです。ほかに気になることがあれば、いつでも聞いてください。",
+    },
+    "chat_ok": {
+        "ko": "네, 좋아요. 다른 궁금한 점이 있으면 말씀해 주세요.",
+        "en": "Sounds good. Let me know if you have any other questions.",
+        "zh-Hans": "好的。如果还有其他问题，请告诉我。",
+        "ja": "わかりました。ほかに気になることがあれば教えてください。",
+    },
+    "chat_help": {
+        "ko": "레이저·필러·보톡스 후 관리, 세안·화장·햇빛·운동 시기, 약을 깜빡했을 때 같은 복약 일정, 일부 약의 일반 정보를 안내해 드려요. "
+        "예를 들면 '레이저 받고 언제부터 화장해요?'처럼 물어보세요.",
+        "en": "I can help with aftercare for laser, filler and botox, when to wash, wear makeup or exercise, medicine schedules, "
+        "and general information on some medicines. For example: 'When can I wear makeup after laser?'",
+        "zh-Hans": "我可以介绍激光、玻尿酸、肉毒素的术后护理，洗脸、化妆、防晒、运动的时间，用药安排，以及部分药物的一般信息。"
+        "例如可以问：“激光后什么时候可以化妆？”",
+        "ja": "レーザー・フィラー・ボトックス後のケア、洗顔・メイク・日焼け・運動の時期、服薬スケジュール、一部のお薬の一般情報をご案内します。"
+        "たとえば「レーザーの後、いつからメイクできますか？」のように聞いてください。",
+    },
     "no_doc": {
-        "ko": "아직 이 질문에 맞는 안내문이 없어요. 시술 후 관리(레이저·필러·보톡스), 햇빛·세안·화장, 약 일정처럼 물어봐 주세요. "
-        "급하거나 걱정되면 시술받은 병원에 연락하세요.",
-        "en": "I don't have a care guide for this question yet. Try asking about aftercare (laser, filler, botox), "
-        "sun, washing, makeup or your medicine schedule. If it is urgent or you are worried, contact your clinic.",
-        "zh-Hans": "暂时没有与此问题对应的护理说明。可以询问术后护理（激光、玻尿酸、肉毒）、防晒、洗脸、化妆或用药时间。如情况紧急或担心，请联系就诊医院。",
-        "ja": "この質問に合うケア案内はまだありません。施術後のケア（レーザー・フィラー・ボトックス）、日焼け・洗顔・メイク、"
-        "服薬スケジュールについて聞いてみてください。急ぎや心配なときは施術したクリニックに連絡してください。",
+        "ko": "이 내용은 제가 가진 공식 자료에서 찾지 못해 정확히 말씀드리기 어려워요. 진료받은 병원이나 약사에게 확인해 보시고, 아래에서 병원을 찾거나 문의할 수 있어요. "
+        "시술 이름이나 약 이름을 넣어 다시 물어봐 주셔도 좋아요.",
+        "en": "I couldn't find this in my official sources, so I can't give you a reliable answer. Please check with your clinic or a pharmacist. "
+        "You can find or contact a clinic below, or ask again with the procedure or medicine name.",
+        "zh-Hans": "我在官方资料中没有找到这方面的内容，无法给出准确回答。请向就诊医院或药师确认，也可以在下方查找或联系医院。也欢迎加上项目名称或药名再问一次。",
+        "ja": "この内容は公式資料で見つからず、正確にお答えできません。受診した病院や薬剤師にご確認ください。下から病院を探したり問い合わせたりできます。"
+        "施術名や薬の名前を入れて、もう一度聞いていただいても大丈夫です。",
     },
 }
 

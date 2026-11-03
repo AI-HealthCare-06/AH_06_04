@@ -141,7 +141,8 @@ class DocStore:
             score = sum(1 for p in self._patterns[d.id] if p.search(q))
             if score > 0:
                 scored.append((score, d))
-        scored.sort(key=lambda x: (-x[0], x[1].id))
+        # 점수가 같으면 약 안내문 먼저 — 약 이름을 물었는데 일반 안내문에 밀려 빠지지 않게
+        scored.sort(key=lambda x: (-x[0], not x[1].id.startswith("med-"), x[1].id))
         return [d for _, d in scored[:limit]]
 
     def get(self, doc_id: str) -> Doc | None:
