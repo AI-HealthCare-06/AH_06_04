@@ -36,6 +36,11 @@ class Settings(BaseSettings):
     vector_min_score: float = 0.35  # 이 유사도 미만이면 '관련 없음' — scripts/eval_search.py 로 정한다
     keyword_bonus: float = 0.15  # hybrid 에서 낱말까지 맞은 안내문에 더하는 점수
 
+    # 식약처 공공데이터 (app/mfds.py) — 비어 있으면 쓰지 않는다 (공공데이터포털 '일반 인증키(Decoding)')
+    mfds_api_key: str = Field(default="", repr=False)
+    mfds_timeout_s: float = 3.0
+    mfds_cache_ttl_s: int = 86400
+
     # [리뷰 P1-4] 로그인 필수 — 로그인 서버와 같은 SECRET_KEY · 알고리즘 · 여유 시간
     login_secret_key: str = Field(default="", repr=False)
     jwt_algorithm: str = "HS256"
