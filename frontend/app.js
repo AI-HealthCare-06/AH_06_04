@@ -250,7 +250,9 @@ async function home() {
 
 async function makeGuide(recordId) {
   const data = await api("POST", "/guides", { record_id: recordId, language: store.lang });
-  location.hash = `#/guide/${data.guide_id}`;
+  // 서버가 같은 가이드를 돌려주면 주소가 안 바뀌어 hashchange 가 안 일어난다 → 그때는 직접 다시 그린다
+  const next = `#/guide/${data.guide_id}`;
+  if (location.hash === next) route(); else location.hash = next;
 }
 
 // ── 4. 진료기록 입력 (FR-01) ────────────────────
