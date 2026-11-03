@@ -9,6 +9,9 @@ import com.aidosas.glowpass.app.data.dto.ChatFeedbackRequest
 import com.aidosas.glowpass.app.data.dto.ChatHistory
 import com.aidosas.glowpass.app.data.dto.ChatLangs
 import com.aidosas.glowpass.app.data.dto.ChatUsage
+import com.aidosas.glowpass.app.data.dto.ConversationList
+import com.aidosas.glowpass.app.data.dto.HospitalSentRecord
+import com.aidosas.glowpass.app.data.dto.HospitalSentRecordRequest
 import com.aidosas.glowpass.app.data.dto.ContactList
 import com.aidosas.glowpass.app.data.dto.ContactStatusRequest
 import com.aidosas.glowpass.app.data.dto.ContentAsset
@@ -144,6 +147,9 @@ interface GlowPassApi {
     @PATCH("api/v1/hospital-contacts/{id}")
     suspend fun changeContact(@Path("id") id: Long, @Body body: ContactStatusRequest): Envelope<HospitalContact>
 
+    @POST("api/v1/hospital-contacts/{id}/records")
+    suspend fun sendRecordToPatient(@Path("id") id: Long, @Body body: HospitalSentRecordRequest): Envelope<HospitalSentRecord>
+
     // ── 알림 ──
     @GET("api/v1/reminders")
     suspend fun reminders(): List<Reminder>
@@ -170,6 +176,12 @@ interface GlowPassApi {
 
     @POST("api/v1/chat/conversations")
     suspend fun newConversation(@Body body: NewConversationRequest): Conversation
+
+    @GET("api/v1/chat/conversations")
+    suspend fun conversations(): ConversationList
+
+    @DELETE("api/v1/chat/conversations/{id}")
+    suspend fun deleteConversation(@Path("id") id: String): Response<Unit>
 
     @GET("api/v1/chat/conversations/{id}/messages")
     suspend fun chatMessages(@Path("id") id: String): ChatHistory

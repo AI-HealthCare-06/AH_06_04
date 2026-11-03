@@ -22,6 +22,10 @@
     <string name="guides_none" formatted="false">아직 만든 가이드가 없어요.</string>
     <string name="guide_context_title" formatted="false">가이드에 쓰이는 최근 기록 요약</string>
     <string name="ocr_camera" formatted="false">📷 사진 찍기</string>
+    <string name="ocr_pdf" formatted="false">📄 PDF 파일 고르기</string>
+    <string name="design_title" formatted="false">화면 디자인</string>
+    <string name="design_mocha" formatted="false">크림 · 모카 (기본)</string>
+    <string name="design_sky" formatted="false">스카이블루 · 민트</string>
     <string name="ocr_gallery" formatted="false">🖼 갤러리에서 고르기</string>
     <string name="val_required" formatted="false">필수 칸을 채워 주세요.</string>
     <string name="val_email" formatted="false">이메일 형식을 확인해 주세요.</string>

@@ -21,6 +21,10 @@
     <string name="guides_none" formatted="false">还没有指南。</string>
     <string name="guide_context_title" formatted="false">用于指南的近期记录摘要</string>
     <string name="ocr_camera" formatted="false">📷 拍照</string>
+    <string name="ocr_pdf" formatted="false">📄 选择PDF文件</string>
+    <string name="design_title" formatted="false">界面设计</string>
+    <string name="design_mocha" formatted="false">奶油 · 摩卡（默认）</string>
+    <string name="design_sky" formatted="false">天蓝 · 薄荷</string>
     <string name="ocr_gallery" formatted="false">🖼 从相册选择</string>
     <string name="val_required" formatted="false">请填写必填项。</string>
     <string name="val_email" formatted="false">请检查邮箱格式。</string>

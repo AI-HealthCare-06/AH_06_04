@@ -103,7 +103,21 @@ data class MedicalRecordCreateRequest(
     @SerialName("doctor_note") val doctorNote: String? = null,
     val items: List<PrescriptionItemRequest> = emptyList(),
     @SerialName("ocr_job_id") val ocrJobId: Long? = null,
+    // [10/26 멘토링 · 웹 #52] 목록에서 고른 병원이면 번호도 같이 (서버가 이름을 목록 값으로 맞춘다) · 직접 입력이면 null
+    @SerialName("hospital_id") val hospitalId: Long? = null,
 )
+
+// 병원 접수대(관리자) → 환자에게 시술 기록 보내기 (POST /hospital-contacts/{id}/records · 웹 #52)
+@Serializable
+data class HospitalSentRecordRequest(
+    @SerialName("visit_date") val visitDate: String,
+    @SerialName("procedure_name") val procedureName: String? = null,
+    @SerialName("doctor_note") val doctorNote: String? = null,
+    val items: List<PrescriptionItemRequest> = emptyList(),
+)
+
+@Serializable
+data class HospitalSentRecord(@SerialName("guide_id") val guideId: Long? = null)
 
 // PATCH — items 를 보내면 약 목록 전체가 바뀐다. 필수 칸(병원·날짜·items)은 null 을 보내지 않는다
 @Serializable
@@ -176,6 +190,7 @@ data class OcrDraft(
     @SerialName("visit_date") val visitDate: String? = null,
     @SerialName("procedure_name") val procedureName: String? = null,
     val items: List<PrescriptionItemRequest> = emptyList(),
+    @SerialName("uncertain_names") val uncertainNames: List<String> = emptyList(),  // 웹 #56: 확신 못 한 약 이름 → 칸을 강조
     val warnings: List<String> = emptyList(),
 )
 
@@ -303,6 +318,20 @@ data class ChatMessage(
     val lang: String? = null,
     val outcome: String? = null,
 )
+
+// [10/26 멘토링 · 웹 #51] 이전 대화 목록 (GET /api/v1/chat/conversations · 질문 없는 빈 대화는 서버가 뺀다)
+@Serializable
+data class ConversationSummary(
+    @SerialName("conversation_id") val conversationId: String,
+    val lang: String,
+    val preview: String = "",
+    @SerialName("message_count") val messageCount: Int = 0,
+    @SerialName("created_at") val createdAt: String = "",
+    @SerialName("last_message_at") val lastMessageAt: String? = null,
+)
+
+@Serializable
+data class ConversationList(val items: List<ConversationSummary> = emptyList())
 
 @Serializable
 data class ChatHistory(

@@ -1,7 +1,9 @@
 // ─────────────────────────────────────────────
 // [앱 v1 3] 진료기록 입력 · 수정 (FR-01) + 처방전 · 약봉투 사진 → 칸 자동 채우기 (FR-05)
-//   사진: 카메라(TakePicture) 또는 갤러리(PickVisualMedia) → 앱에서 줄여(긴 변 2000px · JPG) 5MB 아래로 → 올리고 1초마다 결과
+//   사진: 카메라(TakePicture) 또는 갤러리(PickVisualMedia) → 앱에서 줄여(긴 변 3000px · JPG) → 올리고 1초마다 결과
+//   PDF: 파일 고르기(OpenDocument) → 그대로 올린다 (서버가 앞 2쪽을 읽는다 · 웹 #63 · 한도 10MB)
 //   저장 전 사용자가 꼭 확인 (ocr_check). 새 기록은 저장 뒤 바로 AI 가이드를 만든다 (웹과 같다)
+//   [2번 코드 총정리] 병원은 목록에서 고른다(연락한 병원 먼저 · 없으면 직접 입력) · 약 칸마다 ✕ 삭제 · 확신 못 한 약 이름 강조
 // ─────────────────────────────────────────────
 package com.aidosas.glowpass.app.ui.records
 
@@ -18,9 +20,14 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.testTag
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -43,6 +50,7 @@ import com.aidosas.glowpass.app.data.dto.MedicalRecordUpdateRequest
 import com.aidosas.glowpass.app.data.dto.OcrJob
 import com.aidosas.glowpass.app.data.dto.PrescriptionItemRequest
 import com.aidosas.glowpass.app.ui.DateField
+import com.aidosas.glowpass.app.ui.Dropdown
 import com.aidosas.glowpass.app.ui.ErrorText
 import com.aidosas.glowpass.app.ui.Field
 import com.aidosas.glowpass.app.ui.LoadView
@@ -65,14 +73,18 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 import java.time.LocalDate
 
-private class DrugRow(name: String = "", dose: String = "", times: String = "", days: String = "") {
+private class DrugRow(name: String = "", dose: String = "", times: String = "", days: String = "", uncertain: Boolean = false) {
+    var uncertain by mutableStateOf(uncertain)  // 사진에서 일부 글자를 확신하지 못한 약 이름 (웹 #56) → 칸을 강조
     var name by mutableStateOf(name)
     var dose by mutableStateOf(dose)
     var times by mutableStateOf(times)
     var days by mutableStateOf(days)
 }
 
-private fun rowOf(name: String, dose: String?, times: Int?, days: Int?) = DrugRow(name, dose ?: "", times?.toString() ?: "", days?.toString() ?: "")
+private fun rowOf(name: String, dose: String?, times: Int?, days: Int?, uncertain: Boolean = false) =
+    DrugRow(name, dose ?: "", times?.toString() ?: "", days?.toString() ?: "", uncertain)
+
+private const val MANUAL = "manual"  // 병원 고르기: 목록에 없으면 직접 입력
 
 // [추가 점검 r5] 화면이 다시 만들어져도(회전 · 언어 바꿈 · 카메라 중 앱 종료) 적던 약 목록이 남게
 private val DrugRowsSaver = listSaver<SnapshotStateList<DrugRow>, String>(
@@ -109,7 +121,24 @@ private fun RecordForm(initial: MedicalRecord?) {
         (initial?.items?.map { rowOf(it.drugName, it.dose, it.timesPerDay, it.days) }?.takeIf { it.isNotEmpty() } ?: listOf(DrugRow()))
             .toMutableStateList()
     }
+    // [10/26 멘토링 · 웹 #52] 병원은 다시 타이핑하지 않고 고른다 — 새 기록만 (수정은 이름 칸 그대로 · PATCH 에 hospital_id 가 없다)
+    //   고른 값: 병원 번호(문자) · MANUAL · null(아직 안 고름)
+    var hospitalPick by rememberSaveable { mutableStateOf<String?>(null) }
+    val pickList = rememberLoader(recordId) {
+        if (recordId != null) null else {
+            val hospitals = runCatching { app.repo.hospitals(null, null, null).items }.getOrDefault(emptyList())
+            val contacted = runCatching { app.repo.contacts().map { it.hospitalId } }.getOrDefault(emptyList()).distinct()
+            hospitals to contacted
+        }
+    }
+    LaunchedEffect(pickList.data) {  // 내가 연락했던 병원이 있으면 맨 위 병원을 미리 골라 둔다 (웹과 같다)
+        val (hospitals, contacted) = pickList.data ?: return@LaunchedEffect
+        if (hospitalPick == null) contacted.firstOrNull { id -> hospitals.any { it.hospitalId == id } }?.let { id ->
+            hospitalPick = id.toString(); hospital = hospitals.first { it.hospitalId == id }.name
+        }
+    }
     var ocrJobId by rememberSaveable { mutableStateOf<Long?>(null) }
+    var ocrPreview by remember { mutableStateOf<androidx.compose.ui.graphics.ImageBitmap?>(null) }
     var ocrNote by remember { mutableStateOf<OcrJob?>(null) }
     var ocrBusy by remember { mutableStateOf(false) }
     var err by remember { mutableStateOf<String?>(null) }
@@ -120,21 +149,29 @@ private fun RecordForm(initial: MedicalRecord?) {
         ocrJobId = job.jobId
         if (d != null) {
             d.visitDate?.let { visitDate = it }
-            d.hospitalName?.let { hospital = it }
+            d.hospitalName?.let { name ->  // 사진에서 읽은 병원이 목록에 있으면 그 병원을 고르고, 없으면 직접 입력 칸에
+                val hit = pickList.data?.first?.firstOrNull { it.name == name || it.name.contains(name) || name.contains(it.name) }
+                if (recordId == null) hospitalPick = hit?.hospitalId?.toString() ?: MANUAL
+                hospital = hit?.name ?: name
+            }
             d.procedureName?.let { procedure = it }
             if (d.items.isNotEmpty()) {
                 drugs.clear()
-                d.items.forEach { drugs += rowOf(it.drugName, it.dose, it.timesPerDay, it.days) }
+                d.items.forEach { drugs += rowOf(it.drugName, it.dose, it.timesPerDay, it.days, it.drugName in d.uncertainNames) }
             }
         }
         ocrNote = job
     }
-    val runOcr: (Uri) -> Unit = { uri ->
-        err = null; ocrNote = null; ocrBusy = true
+    val runOcr: (Uri, Boolean) -> Unit = { uri, pdf ->
+        err = null; ocrNote = null; ocrBusy = true; ocrPreview = null
         scope.launch {
             try {
-                val bytes = withContext(Dispatchers.Default) { shrinkPhoto(ctx, uri) } ?: throw IllegalStateException()
-                val job = app.repo.ocr(bytes, "image/jpeg")
+                val bytes = withContext(Dispatchers.Default) { if (pdf) readPdf(ctx, uri) else shrinkPhoto(ctx, uri) } ?: throw IllegalStateException()
+                // 고치면서 비교할 수 있게 올린 사진을 화면에 둔다 (이 기기 안에서만 · 저장하지 않음 · 웹 #56)
+                if (!pdf) ocrPreview = withContext(Dispatchers.Default) {
+                    BitmapFactory.decodeByteArray(bytes, 0, bytes.size, BitmapFactory.Options().apply { inSampleSize = 4 })?.asImageBitmap()
+                }
+                val job = app.repo.ocr(bytes, if (pdf) "application/pdf" else "image/jpeg")
                 if (job.status != "DONE") err = ctx.str("ocr_failed") else fillFromOcr(job)
             } catch (e: IllegalStateException) { err = ctx.str("ocr_failed") }
             catch (e: Throwable) { err = ctx.errorText(e) }
@@ -143,9 +180,10 @@ private fun RecordForm(initial: MedicalRecord?) {
     }
     var photoUri by rememberSaveable { mutableStateOf<Uri?>(null) }  // 카메라를 쓰는 동안 앱이 꺼져도 사진을 잃지 않게
     val takePicture = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { ok ->
-        if (ok) photoUri?.let(runOcr)
+        if (ok) photoUri?.let { runOcr(it, false) }
     }
-    val pickImage = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri -> uri?.let(runOcr) }
+    val pickImage = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri -> uri?.let { runOcr(it, false) } }
+    val pickPdf = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri -> uri?.let { runOcr(it, true) } }
 
     // 사진 입력을 맨 위에: 찍으면 아래 칸이 채워지고, 사용자는 확인만 하면 된다 (새 기록만 — 서버가 ocr_job_id 를 새 기록에서만 받는다)
     if (recordId == null) Section {
@@ -161,26 +199,60 @@ private fun RecordForm(initial: MedicalRecord?) {
                 pickImage.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
             })
         }
+        SecondaryButton(tr(R.string.ocr_pdf), enabled = !ocrBusy, modifier = Modifier.testTag("ocr_pdf"), onClick = {
+            pickPdf.launch(arrayOf("application/pdf"))
+        })
         MutedText(tr(R.string.ocr_hint), small = true)
         if (ocrBusy) Notice(tr(R.string.ocr_reading))
+        ocrPreview?.let {
+            androidx.compose.foundation.Image(it, contentDescription = tr(R.string.ocr_photo_alt),
+                modifier = Modifier.fillMaxWidth().heightIn(max = 220.dp).testTag("ocr_photo"))
+        }
         ocrNote?.draft?.let { d ->
             Notice("") {
                 Text(tr(R.string.ocr_done), fontWeight = FontWeight.Bold)
                 Text(tr(R.string.ocr_check))
                 if ("items_not_read" in d.warnings) Text(tr(R.string.ocr_items_not_read))
+                if ("names_uncertain" in d.warnings) Text(tr(R.string.ocr_names_uncertain))
+                if ("hospital_not_printed" in d.warnings) Text(tr(R.string.ocr_hospital_not_printed))
                 if ("fake_result" in d.warnings) MutedText(tr(R.string.ocr_fake), small = true)
             }
         }
     }
 
     DateField(tr(R.string.visit_date), visitDate, { visitDate = it }, max = today)
-    Field(tr(R.string.hospital), hospital, { hospital = it }, maxLength = 100)
+    val picks = pickList.data
+    if (recordId == null && picks != null) {
+        val (hospitals, contacted) = picks
+        val byId = hospitals.associateBy { it.hospitalId }
+        val contactedLabel = tr(R.string.hosp_pick_contacted)
+        val options = contacted.mapNotNull { byId[it] }.map { it.hospitalId.toString() to "$contactedLabel · ${it.name}" } +
+            hospitals.filter { it.hospitalId !in contacted }.map { it.hospitalId.toString() to it.name } +
+            listOf(MANUAL to tr(R.string.hosp_pick_manual))
+        Dropdown(tr(R.string.hospital), options, hospitalPick, { v ->
+            hospitalPick = v
+            hospital = if (v == MANUAL) "" else byId[v.toLong()]?.name ?: ""
+        }, placeholder = tr(R.string.hosp_pick_placeholder), modifier = Modifier.testTag("hospital_pick"))
+        if (hospitalPick == MANUAL) Field(tr(R.string.hospital), hospital, { hospital = it }, maxLength = 100,
+            modifier = Modifier.testTag("hospital_manual"))
+    } else if (recordId != null) {
+        Field(tr(R.string.hospital), hospital, { hospital = it }, maxLength = 100)
+    }
     Field(tr(R.string.procedure), procedure, { procedure = it }, placeholder = tr(R.string.procedure_ph), maxLength = 100)
-    Field(tr(R.string.doctor_note), note, { note = it }, singleLine = false, minLines = 3, maxLength = 1000)
+    // 병원에서 말로·안내지로 받은 주의사항 → AI 가이드에 함께 쓰인다 (웹 #54 칸 이름 · 예시 글)
+    Field(tr(R.string.doctor_note), note, { note = it }, singleLine = false, minLines = 3, maxLength = 1000,
+        placeholder = tr(R.string.doctor_note_ph))
     Text(tr(R.string.drugs), fontWeight = FontWeight.Bold)
     drugs.forEachIndexed { i, d ->
         Section {
-            Field(tr(R.string.drug_name), d.name, { d.name = it }, maxLength = 100)
+            // 줄마다 오른쪽 위 '✕ 삭제' 로 뺄 수 있다 (잘못 늘린 칸 정리 · 웹 #53)
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                TextButton(onClick = { drugs.removeAt(i) }, modifier = Modifier.heightIn(min = 44.dp).testTag("drug_remove")) {
+                    Text("✕ ${tr(R.string.drug_remove)}", color = com.aidosas.glowpass.app.ui.Muted)
+                }
+            }
+            Field(tr(R.string.drug_name), d.name, { d.name = it; d.uncertain = false }, maxLength = 100)
+            if (d.uncertain) Notice(tr(R.string.ocr_name_uncertain), warn = true)
             Field(tr(R.string.dose), d.dose, { d.dose = it }, placeholder = tr(R.string.dose_ph), maxLength = 50)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Field(tr(R.string.times_per_day), d.times, { d.times = it.filter(Char::isDigit) }, keyboard = KeyboardType.Number,
@@ -188,13 +260,13 @@ private fun RecordForm(initial: MedicalRecord?) {
                 Field(tr(R.string.days), d.days, { d.days = it.filter(Char::isDigit) }, keyboard = KeyboardType.Number,
                     maxLength = 3, modifier = Modifier.weight(1f))
             }
-            if (drugs.size > 1) TextButton(onClick = { drugs.removeAt(i) }) { Text(tr(R.string.delete)) }
         }
     }
     if (drugs.size < 30) SecondaryButton(tr(R.string.add_drug), { drugs += DrugRow() })  // 서버 상한 30개
 
     PrimaryButton(if (recordId == null) tr(R.string.save) else tr(R.string.record_update), enabled = !busy && !ocrBusy, onClick = {
         val bad = when {
+            recordId == null && pickList.data != null && hospitalPick == null -> "hosp_pick_needed"
             hospital.isBlank() || visitDate.isBlank() -> "val_required"
             else -> Validators.visitDate(visitDate, today) ?: drugs.firstNotNullOfOrNull { Validators.drugNumbers(it.times, it.days) }
         }
@@ -212,7 +284,8 @@ private fun RecordForm(initial: MedicalRecord?) {
                     return@launch
                 }
                 val rec = app.repo.createRecord(MedicalRecordCreateRequest(hospital.trim(), visitDate.trim(),
-                    procedure.trim().ifBlank { null }, note.trim().ifBlank { null }, items, ocrJobId))
+                    procedure.trim().ifBlank { null }, note.trim().ifBlank { null }, items, ocrJobId,
+                    hospitalId = hospitalPick?.takeIf { it != MANUAL }?.toLongOrNull()))
                 // [리뷰 #12] 기록은 저장됐는데 가이드만 실패(한도 등)하면 같은 화면에 머물지 않게 → 중복 저장 방지
                 try {
                     val gid = app.repo.makeGuide(rec.id, app.lang)
@@ -227,7 +300,11 @@ private fun RecordForm(initial: MedicalRecord?) {
     ErrorText(err)
 }
 
-/** 사진을 긴 변 2000px 이하 JPG(품질 85)로 줄인다 — 서버 한도 5MB · 업로드 시간 줄이기 */
+/** PDF 는 그대로 보낸다 — 서버 한도 10MB 를 넘으면 보내지 않는다 (null → ocr_failed) */
+private fun readPdf(ctx: Context, uri: Uri): ByteArray? =
+    ctx.contentResolver.openInputStream(uri)?.use { it.readBytes() }?.takeIf { it.size in 5..10 * 1024 * 1024 }
+
+/** 사진을 긴 변 3000px 이하 JPG(품질 90)로 줄인다 — 웹 #63 과 같다 (작은 글씨 확대 인식 · 서버 한도 10MB) */
 private fun shrinkPhoto(ctx: Context, uri: Uri): ByteArray? {
     val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
     ctx.contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, bounds) }
@@ -249,8 +326,8 @@ private fun shrinkPhoto(ctx: Context, uri: Uri): ByteArray? {
             }
         }
     }.getOrNull() ?: 0f
-    val scale = minOf(1f, 2000f / maxOf(bmp.width, bmp.height))
+    val scale = minOf(1f, 3000f / maxOf(bmp.width, bmp.height))
     val m = Matrix().apply { postScale(scale, scale); postRotate(degrees) }
     val out = if (scale < 1f || degrees != 0f) Bitmap.createBitmap(bmp, 0, 0, bmp.width, bmp.height, m, true) else bmp
-    return ByteArrayOutputStream().use { s -> out.compress(Bitmap.CompressFormat.JPEG, 85, s); s.toByteArray() }
+    return ByteArrayOutputStream().use { s -> out.compress(Bitmap.CompressFormat.JPEG, 90, s); s.toByteArray() }
 }

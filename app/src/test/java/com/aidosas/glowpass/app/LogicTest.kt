@@ -184,3 +184,57 @@ class RecordPatchBodyTest {
         assertEquals("{\"name\":\"A\"}", me)
     }
 }
+
+// [2번 코드 총정리] 웹 #43~#63 에서 옮긴 계산 · 서버 모양
+class TotalReviewLogicTest {
+    @Test
+    fun birthDigits_getDashes() {
+        val d = { s: String -> com.aidosas.glowpass.app.ui.dashDate(s) }
+        assertEquals("1995-05-05", d("19950505"))
+        assertEquals("1995-05", d("199505"))
+        assertEquals("1995", d("1995"))
+        assertEquals("1995-05-05", d("1995-05-05"))  // 이미 '-' 가 있어도 그대로
+        assertEquals("1995-05-05", d("1995050599"))  // 8자리 넘게 쳐도 잘라낸다
+        assertEquals("", d("abc"))
+    }
+
+    @Test
+    fun languageOrder_isKoreanChineseJapaneseEnglish() {
+        assertEquals(listOf("ko", "zh", "ja", "en"), com.aidosas.glowpass.app.data.repository.LANGS.map { it.first })
+    }
+
+    @Test
+    fun twoDesigns_matchWebAndIssue() {
+        val mocha = com.aidosas.glowpass.app.ui.MochaPalette
+        val sky = com.aidosas.glowpass.app.ui.SkyPalette
+        fun hex(c: androidx.compose.ui.graphics.Color) = "%06X".format(c.value.toLong().ushr(32).toInt() and 0xFFFFFF)
+        assertEquals(listOf("76594B", "F5F0E8", "D6B77A"), listOf(hex(mocha.brand), hex(mocha.paper), hex(mocha.accent)))  // 웹 #60
+        assertEquals(listOf("2C7A9E", "F6FAFC", "6FC9A6", "6B4FA0"), listOf(hex(sky.brand), hex(sky.paper), hex(sky.accent), hex(sky.withdraw)))  // 이슈 #55
+        assertEquals(com.aidosas.glowpass.app.ui.Design.MOCHA, com.aidosas.glowpass.app.ui.paletteOf(com.aidosas.glowpass.app.ui.Design.MOCHA).design)
+    }
+
+    @Test
+    fun newRecordBody_sendsHospitalId_onlyWhenPicked() {
+        val enc = { b: com.aidosas.glowpass.app.data.dto.MedicalRecordCreateRequest ->
+            com.aidosas.glowpass.app.data.api.ApiJson.encodeToString(com.aidosas.glowpass.app.data.dto.MedicalRecordCreateRequest.serializer(), b)
+        }
+        val picked = enc(com.aidosas.glowpass.app.data.dto.MedicalRecordCreateRequest("글로우데모 피부과의원 3", "2026-11-03", hospitalId = 3))
+        assertTrue(picked, picked.contains("\"hospital_id\":3"))
+        val manual = enc(com.aidosas.glowpass.app.data.dto.MedicalRecordCreateRequest("직접 입력 병원", "2026-11-03"))
+        assertTrue(manual, !manual.contains("hospital_id"))
+    }
+
+    @Test
+    fun serverShapes_conversationsAndOcrUncertain_areRead() {
+        val j = com.aidosas.glowpass.app.data.api.ApiJson
+        val list = j.decodeFromString(com.aidosas.glowpass.app.data.dto.ConversationList.serializer(),
+            """{"items":[{"conversation_id":"c1","lang":"ko","preview":"레이저","message_count":3,"created_at":"2026-11-03T10:00:00+09:00","last_message_at":null}]}""")
+        assertEquals("c1", list.items[0].conversationId); assertEquals(3, list.items[0].messageCount)
+        val draft = j.decodeFromString(com.aidosas.glowpass.app.data.dto.OcrDraft.serializer(),
+            """{"hospital_name":null,"items":[{"drug_name":"세티리진"}],"uncertain_names":["세티리진"],"warnings":["names_uncertain","hospital_not_printed"]}""")
+        assertEquals(listOf("세티리진"), draft.uncertainNames)
+        val sent = j.decodeFromString(com.aidosas.glowpass.app.data.dto.Envelope.serializer(com.aidosas.glowpass.app.data.dto.HospitalSentRecord.serializer()),
+            """{"message":"ok","data":{"record_id":9,"guide_id":null}}""")
+        assertNull(sent.data.guideId)
+    }
+}

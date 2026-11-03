@@ -12,6 +12,7 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Typeface
+import androidx.compose.ui.graphics.toArgb
 import android.net.Uri
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
@@ -167,18 +168,20 @@ private fun GuideResult(g: Guide) {
         }
         // 면책 문구 (항상 표시)
         MutedText(g.disclaimer)
+        val palette = com.aidosas.glowpass.app.ui.LocalPalette.current
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             SpeakButton(g, Modifier.weight(1f))
             SecondaryButton(tr(R.string.card_save), modifier = Modifier.weight(1f), onClick = {
                 val unreviewed = app.demo || g.sources.any { it.reviewed == false }
-                shareCard(ctx, g, unreviewed)
+                shareCard(ctx, g, unreviewed, palette)
             })
         }
         // 가이드 평가: 서버 값은 대문자(UP/DOWN · WRONG_INFO …)
         FeedbackBar(g.myFeedback?.lowercase()) { rating, reason -> app.repo.guideFeedback(g.guideId, rating, reason) }
     }
     ErrorText(err)
-    PrimaryButton(tr(R.string.ask_ai), { app.go(Routes.CHAT) })
+    // 가이드에서 오면 새 대화로 (이전 대화와 섞이지 않게 · 웹 #51 #/chat?new=1)
+    PrimaryButton(tr(R.string.ask_ai), { app.repo.session.chatConversation = null; app.go(Routes.CHAT) })
     // 병원에 보여줄 한국어 문의 카드 (진료기록이 있는 가이드만)
     if (g.recordId != null) SecondaryButton(tr(R.string.contact_hospital), { app.go(Routes.card(g.recordId)) })
     AdminAssets(g.guideId)
@@ -248,22 +251,27 @@ private fun SpeakButton(g: Guide, modifier: Modifier) {
 }
 
 // ── 카드 이미지 — 인스타·위챗에 올리기 좋은 세로 카드 1장 (웹 cardButton 과 같은 배치) ──
-private fun shareCard(ctx: Context, g: Guide, unreviewed: Boolean) {
+//   색 · 제목 글꼴은 고른 화면 디자인(Palette)을 그대로 따른다 — 디자인을 바꾸면 카드도 같이 바뀐다 (웹 #47)
+private fun shareCard(ctx: Context, g: Guide, unreviewed: Boolean, p: com.aidosas.glowpass.app.ui.Palette) {
     val w = 1080; val h = 1350; val pad = 80f
     val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
     val c = Canvas(bmp)
-    c.drawColor(0xFFFFF7F8.toInt())
-    val pink = 0xFFE2557A.toInt(); val ink = 0xFF2A2230.toInt(); val muted = 0xFF7A6F80.toInt()
-    fun paint(size: Float, color: Int, bold: Boolean = false) = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
-        textSize = size; this.color = color; typeface = if (bold) Typeface.DEFAULT_BOLD else Typeface.DEFAULT
+    c.drawColor(p.paper.toArgb())
+    val brand = p.brand.toArgb(); val ink = p.ink.toArgb(); val muted = p.muted.toArgb()
+    // 제목: 스카이블루는 Jua · 크림·모카는 기기 명조
+    val display = if (p.design == com.aidosas.glowpass.app.ui.Design.SKY)
+        runCatching { androidx.core.content.res.ResourcesCompat.getFont(ctx, com.aidosas.glowpass.app.R.font.jua) }.getOrNull() ?: Typeface.DEFAULT_BOLD
+    else Typeface.create(Typeface.SERIF, Typeface.BOLD)
+    fun paint(size: Float, color: Int, bold: Boolean = false, face: Typeface? = null) = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
+        textSize = size; this.color = color; typeface = face ?: if (bold) Typeface.DEFAULT_BOLD else Typeface.DEFAULT
     }
-    c.drawText("GlowPass", pad, 130f, paint(56f, pink, true))
-    c.drawText(ctx.str("guide_title"), pad, 210f, paint(44f, ink, true))
+    c.drawText("GlowPass", pad, 130f, paint(56f, brand, face = display))
+    c.drawText(ctx.str("guide_title"), pad, 210f, paint(44f, ink, face = display))
     var y = 260f
     val maxBody = h - 260f
     fun section(title: String, body: String?) {
         if (body.isNullOrBlank() || y > maxBody) return
-        c.drawText(title, pad, y + 36f, paint(36f, pink, true)); y += 66f
+        c.drawText(title, pad, y + 36f, paint(36f, brand, true)); y += 66f
         val layout = StaticLayout.Builder.obtain(body, 0, body.length, paint(32f, ink), (w - pad * 2).toInt())
             .setAlignment(Layout.Alignment.ALIGN_NORMAL).setLineSpacing(10f, 1f)
             .setMaxLines(((maxBody - y) / 46f).toInt().coerceAtLeast(1)).setEllipsize(android.text.TextUtils.TruncateAt.END).build()
@@ -276,7 +284,7 @@ private fun shareCard(ctx: Context, g: Guide, unreviewed: Boolean) {
     var fy = h - 230f
     val src = g.sources.map { it.documentTitle }.filter { it.isNotBlank() }.take(3).joinToString(" · ")
     if (src.isNotBlank()) { c.drawText("${ctx.str("chat_sources")} $src".take(60), pad, fy, paint(26f, muted)); fy += 36f }
-    if (unreviewed) { c.drawText("※ ${ctx.str("unreviewed_badge")}", pad, fy, paint(26f, 0xFF7A4A00.toInt())); fy += 36f }
+    if (unreviewed) { c.drawText("※ ${ctx.str("unreviewed_badge")}", pad, fy, paint(26f, p.warnInk.toArgb())); fy += 36f }
     fy = maxOf(fy, h - 150f)
     val disc = StaticLayout.Builder.obtain(g.disclaimer, 0, g.disclaimer.length, paint(26f, muted), (w - pad * 2).toInt())
         .setMaxLines(4).setEllipsize(android.text.TextUtils.TruncateAt.END).build()

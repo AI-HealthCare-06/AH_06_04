@@ -10,12 +10,15 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.KeyboardType
 import com.aidosas.glowpass.app.BuildConfig
 import com.aidosas.glowpass.app.R
@@ -23,7 +26,8 @@ import com.aidosas.glowpass.app.data.Validators
 import com.aidosas.glowpass.app.data.dto.UserInfo
 import com.aidosas.glowpass.app.data.dto.UserUpdateRequest
 import com.aidosas.glowpass.app.data.repository.LANGS
-import com.aidosas.glowpass.app.ui.DangerButton
+import com.aidosas.glowpass.app.ui.DangerLink
+import com.aidosas.glowpass.app.ui.Design
 import com.aidosas.glowpass.app.ui.Dropdown
 import com.aidosas.glowpass.app.ui.ErrorText
 import com.aidosas.glowpass.app.ui.Field
@@ -113,8 +117,12 @@ private fun ProfileForm(me: UserInfo) {
     })
     if (ok != null) Notice(ok!!)
     ErrorText(err)
+    // 화면 디자인 (2번 코드 총정리) — 기본은 웹과 같은 크림·모카, 이슈 #55 의 스카이블루·민트도 고를 수 있다
+    val design by app.settings.design.collectAsState(initial = Design.MOCHA)
+    Dropdown(tr(R.string.design_title), listOf(Design.MOCHA.name to tr(R.string.design_mocha), Design.SKY.name to tr(R.string.design_sky)),
+        design.name, { v -> scope.launch { app.settings.setDesign(Design.valueOf(v)) } }, modifier = Modifier.testTag("design_pick"))
     SecondaryButton(tr(R.string.logout), { scope.launch { app.repo.logout(); app.home() } })
-    DangerButton(tr(R.string.withdraw), { confirm = true })
+    DangerLink(tr(R.string.withdraw), { confirm = true })
     if (confirm) AlertDialog(
         onDismissRequest = { confirm = false },
         text = { Text(tr(R.string.withdraw_confirm)) },

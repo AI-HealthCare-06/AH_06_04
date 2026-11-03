@@ -54,17 +54,19 @@ abstract class FlowBase {
 
     protected fun s(id: Int) = rule.activity.getString(id)
 
-    protected fun shot(name: String) {
+    // [2번 코드 총정리] 스크린숏은 증거 자료 — 가상 휴대폰이 느려 캡처가 시간 초과돼도 시험을 실패로 치지 않는다 (확인은 waitText · check 가 한다)
+    protected fun shot(name: String) = runCatching {
         rule.waitForIdle()
         val bmp = rule.onRoot().captureToImage().asAndroidBitmap()
         val dir = File(rule.activity.getExternalFilesDir(null), "shots").apply { mkdirs() }
         File(dir, "$name.png").outputStream().use { bmp.compress(Bitmap.CompressFormat.PNG, 100, it) }
-    }
+    }.onFailure { android.util.Log.w("GPTEST", "스크린숏 실패 $name: ${it.message}") }
 
-    protected fun waitText(text: String, ms: Long = 15_000, substring: Boolean = true) =
+    // 기다리는 시간 15 → 30초 (맥 메모리가 모자라 가상 휴대폰이 느릴 때 · 11/3 1회차에서 화면이 15초 넘게 걸림)
+    protected fun waitText(text: String, ms: Long = 30_000, substring: Boolean = true) =
         rule.waitUntil(ms) { rule.onAllNodesWithText(text, substring = substring).fetchSemanticsNodes().isNotEmpty() }
 
-    protected fun waitTag(tag: String, ms: Long = 15_000) =
+    protected fun waitTag(tag: String, ms: Long = 30_000) =
         rule.waitUntil(ms) { rule.onAllNodesWithTag(tag).fetchSemanticsNodes().isNotEmpty() }
 
     protected fun has(text: String, substring: Boolean = true) =
@@ -109,10 +111,24 @@ abstract class FlowBase {
         waitText(s(R.string.logout), 20_000)
     }
 
+    /** [2번 코드 총정리] 새 기록의 병원 고르기 — 목록에서 이름으로 고른다 (없으면 '직접 입력' 후 이름 치기) */
+    protected fun pickHospital(name: String) {
+        waitTag("hospital_pick")
+        rule.onNodeWithTag("hospital_pick").performScrollTo().performClick()
+        rule.waitForIdle()
+        val hit = rule.onAllNodesWithText(name, substring = true).fetchSemanticsNodes().isNotEmpty()
+        if (hit) rule.onAllNodesWithText(name, substring = true).onLast().performScrollTo().performClick()
+        else {
+            rule.onNodeWithText(s(R.string.hosp_pick_manual)).performScrollTo().performClick()
+            rule.onNodeWithTag("hospital_manual").performScrollTo().performTextInput(name)
+        }
+        rule.waitForIdle()
+    }
+
     /** 진료기록 하나 저장 → 가이드 결과까지 */
     protected fun addRecordAndGuide(hospital: String = "글로우데모 피부과의원 1") {
         card(R.string.add_record)
-        type(s(R.string.hospital), hospital)
+        pickHospital(hospital)
         type(s(R.string.procedure), "레이저 토닝")
         type(s(R.string.drug_name), "세티리진정")
         button(s(R.string.save)).performScrollTo().performClick()

@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -32,6 +33,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -69,6 +72,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -89,6 +93,7 @@ fun Screen(
     title: String,
     onBack: (() -> Unit)? = null,
     scroll: Boolean = true,
+    brand: Boolean = false,  // 제목 앞에 로고 (홈)
     actions: @Composable () -> Unit = {},
     content: @Composable ColumnScope.() -> Unit,
 ) {
@@ -96,7 +101,13 @@ fun Screen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(title, maxLines = 1, fontWeight = FontWeight.Bold) },
+                title = {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        if (brand) BrandMark()
+                        Text(title, maxLines = 1, fontWeight = FontWeight.Bold, color = LocalPalette.current.brandDark,
+                            fontFamily = if (brand) LocalPalette.current.display else null)
+                    }
+                },
                 navigationIcon = {
                     if (onBack != null) IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = tr(R.string.back))
@@ -132,7 +143,7 @@ fun Section(title: String? = null, modifier: Modifier = Modifier, content: @Comp
 
 @Composable
 fun Notice(text: String, warn: Boolean = false, modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit = {}) {
-    Column(modifier.fillMaxWidth().background(if (warn) WarnBg else PinkSoft, RoundedCornerShape(12.dp)).padding(12.dp),
+    Column(modifier.fillMaxWidth().background(if (warn) WarnBg else BrandSoft, RoundedCornerShape(12.dp)).padding(12.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp)) {
         if (text.isNotEmpty()) Text(text, color = if (warn) WarnInk else Ink, style = MaterialTheme.typography.bodyMedium)
         content()
@@ -151,8 +162,8 @@ fun MutedText(text: String, small: Boolean = false) {
 
 @Composable
 fun Tag(text: String, warn: Boolean = false) {
-    Text(text, fontSize = 12.sp, color = if (warn) WarnInk else Pink,
-        modifier = Modifier.background(if (warn) WarnBg else PinkSoft, RoundedCornerShape(8.dp)).padding(horizontal = 8.dp, vertical = 2.dp))
+    Text(text, fontSize = 12.sp, color = if (warn) WarnInk else Brand,
+        modifier = Modifier.background(if (warn) WarnBg else BrandSoft, RoundedCornerShape(8.dp)).padding(horizontal = 8.dp, vertical = 2.dp))
 }
 
 @Composable
@@ -171,21 +182,39 @@ fun DangerButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifie
         colors = ButtonDefaults.buttonColors(containerColor = Danger)) { Text(text) }
 }
 
+/** 되돌릴 수 없는 일(회원 탈퇴) — 큰 버튼과 섞이지 않게 작은 밑줄 글씨로, 위와 간격을 둔다 (웹 #48 · 누르는 영역 44dp) */
+@Composable
+fun DangerLink(text: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    Box(modifier.fillMaxWidth().padding(top = 20.dp), contentAlignment = Alignment.Center) {
+        TextButton(onClick, modifier = Modifier.heightIn(min = 44.dp).testTag("withdraw")) {
+            Text(text, color = LocalPalette.current.withdraw, fontSize = 13.sp, textDecoration = TextDecoration.Underline)
+        }
+    }
+}
+
 @Composable
 fun Field(
     label: String, value: String, onChange: (String) -> Unit, modifier: Modifier = Modifier,
     placeholder: String? = null, password: Boolean = false, keyboard: KeyboardType = KeyboardType.Text,
     singleLine: Boolean = true, minLines: Int = 1, maxLength: Int = 0, trailing: @Composable (() -> Unit)? = null,
 ) {
+    // 비밀번호 칸은 눈 아이콘으로 보기/숨기기 (웹 #49) — 기본은 가리고, 누를 때만 보인다 · 화면 읽기에는 pw_show/pw_hide
+    var reveal by remember { mutableStateOf(false) }
+    val eye: @Composable (() -> Unit)? = if (password) { {
+        val desc = tr(if (reveal) R.string.pw_hide else R.string.pw_show)
+        IconButton(onClick = { reveal = !reveal }, modifier = Modifier.testTag("pw_toggle")) {
+            Icon(if (reveal) Icons.Filled.VisibilityOff else Icons.Filled.Visibility, contentDescription = desc)
+        }
+    } } else trailing
     OutlinedTextField(
         value = value,
         onValueChange = { onChange(if (maxLength > 0) it.take(maxLength) else it) },
         label = { Text(label) },
         placeholder = placeholder?.let { { Text(it, color = Muted) } },
         singleLine = singleLine, minLines = minLines,
-        visualTransformation = if (password) PasswordVisualTransformation() else VisualTransformation.None,
+        visualTransformation = if (password && !reveal) PasswordVisualTransformation() else VisualTransformation.None,
         keyboardOptions = KeyboardOptions(keyboardType = if (password) KeyboardType.Password else keyboard),
-        trailingIcon = trailing,
+        trailingIcon = eye,
         modifier = modifier.fillMaxWidth(),
     )
 }
@@ -216,9 +245,10 @@ fun Dropdown(
 /** 날짜 칸 — 글자로 넣거나(YYYY-MM-DD) 달력에서 고른다 */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DateField(label: String, value: String, onChange: (String) -> Unit, max: LocalDate? = null) {
+fun DateField(label: String, value: String, onChange: (String) -> Unit, max: LocalDate? = null, placeholder: String = "YYYY-MM-DD") {
     var picking by remember { mutableStateOf(false) }
-    Field(label, value, onChange, placeholder = "YYYY-MM-DD", keyboard = KeyboardType.Number, maxLength = 10, trailing = {
+    // 숫자만 쳐도 '-' 가 들어간다 (웹 #49 생년월일 · 19950505 → 1995-05-05)
+    Field(label, value, { onChange(dashDate(it)) }, placeholder = placeholder, keyboard = KeyboardType.Number, maxLength = 10, trailing = {
         IconButton(onClick = { picking = true }) { Icon(Icons.Filled.DateRange, contentDescription = label) }
     })
     if (picking) {
@@ -238,6 +268,12 @@ fun DateField(label: String, value: String, onChange: (String) -> Unit, max: Loc
             dismissButton = { TextButton(onClick = { picking = false }) { Text(tr(R.string.cancel)) } },
         ) { DatePicker(state) }
     }
+}
+
+/** 날짜 칸에 친 글자 → YYYY-MM-DD (숫자만 남겨 4·2·2 로 나눈다) */
+fun dashDate(input: String): String {
+    val d = input.filter { it.isDigit() }.take(8)
+    return listOf(d.take(4), d.drop(4).take(2), d.drop(6)).filter { it.isNotEmpty() }.joinToString("-")
 }
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -331,7 +367,7 @@ fun EmergencyCard(alertId: Long? = null, onContactHospital: ((Long) -> Unit)? = 
     // [추가 점검 r4] 안내가 화면 밖(위쪽)에 생기면 보이는 곳으로 끌어온다 (웹 scrollIntoView 와 같다)
     val seen = remember { BringIntoViewRequester() }
     LaunchedEffect(Unit) { kotlinx.coroutines.delay(80); runCatching { seen.bringIntoView() } }
-    Column(Modifier.fillMaxWidth().bringIntoViewRequester(seen).background(Color_EmergencyBg, RoundedCornerShape(12.dp)).padding(12.dp).testTag("emergency"),
+    Column(Modifier.fillMaxWidth().bringIntoViewRequester(seen).background(DangerSoft, RoundedCornerShape(12.dp)).padding(12.dp).testTag("emergency"),
         verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(tr(R.string.emergency_title), color = Danger, fontWeight = FontWeight.Bold)
         Text(tr(R.string.emergency_body))
@@ -342,7 +378,7 @@ fun EmergencyCard(alertId: Long? = null, onContactHospital: ((Long) -> Unit)? = 
     }
 }
 
-private val Color_EmergencyBg = androidx.compose.ui.graphics.Color(0xFFFFEBEE)
+
 
 @Composable
 fun Gap(h: Int = 4) = Spacer(Modifier.height(h.dp))
@@ -362,3 +398,28 @@ fun ClickRow(text: String, sub: String? = null, onClick: () -> Unit, trailing: @
 /** 화면 코루틴은 늘 메인 스레드에서 이어 간다 — 서버 응답 뒤 화면 이동 · 토스트가 다른 스레드에서 불리지 않게 (10/27 화면 시험에서 발견) */
 @Composable
 fun rememberUiScope(): CoroutineScope = rememberCoroutineScope { kotlinx.coroutines.Dispatchers.Main.immediate }
+
+// ── 로고 · 챗봇 캐릭터 (디자인마다 다르다) ──
+//   크림·모카: GP 모노그램 (웹 #60) · 스카이블루·민트: 물방울 캐릭터 (이슈 #55 · 웹 #43)
+@Composable
+fun BrandMark(modifier: Modifier = Modifier) {
+    val sky = LocalPalette.current.design == Design.SKY
+    androidx.compose.foundation.Image(
+        androidx.compose.ui.res.painterResource(if (sky) R.drawable.gp_droplet else R.drawable.gp_mark),
+        contentDescription = null, modifier = modifier.height(28.dp).testTag("brand_mark"),
+    )
+}
+
+/** 챗봇 답 왼쪽 위 동그라미 (웹 #53 — 글만 있으면 누가 말하는지 덜 보여서) */
+@Composable
+fun BotAvatar(modifier: Modifier = Modifier) {
+    val p = LocalPalette.current
+    val sky = p.design == Design.SKY
+    Box(modifier.size(30.dp).background(if (sky) p.brandSoft else p.brand, androidx.compose.foundation.shape.CircleShape)
+        .testTag("bot_avatar"), contentAlignment = Alignment.Center) {
+        androidx.compose.foundation.Image(
+            androidx.compose.ui.res.painterResource(if (sky) R.drawable.gp_droplet else R.drawable.gp_mark_cream),
+            contentDescription = null, modifier = Modifier.size(if (sky) 24.dp else 18.dp),
+        )
+    }
+}

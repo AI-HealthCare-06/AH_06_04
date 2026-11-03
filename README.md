@@ -31,6 +31,27 @@
 
 > 참고: GitHub 화면 · PR 로는 두 메인을 합칠 수 없습니다. 누군가 일부러 자기 컴퓨터에서 `git merge --allow-unrelated-histories` 를 하고 올리는 것까지 막으려면 **안드로이드 메인(`android`) 브랜치 보호 규칙**이 필요하고, 이것은 레포 관리자 권한으로만 켤 수 있습니다.
 
+## 2번 코드 총정리 (2026-11-03) — 1번 코드 #43~#63 을 앱에 반영
+
+1번 코드(`main`)에서 #42 뒤에 머지된 변경 가운데 앱 화면에 해당하는 것을 모두 2번 코드로 옮겼다(이슈 #55 의 목록 전부 + 그 뒤 #56~#63). 서버만 바뀐 것은 앱이 같은 API 를 부르므로 따로 옮기지 않는다.
+
+| 1번 코드 PR | 2번 코드에 반영한 내용 |
+|---|---|
+| #43 · #60 디자인 | **두 가지 디자인**: 기본 = 웹과 같은 크림·모카·골드(명조 제목), 내 정보 → 「화면 디자인」에서 스카이블루·민트(제목 Jua · 이슈 #55)로 바꿀 수 있다. 로고도 디자인마다(GP 모노그램 / 물방울 캐릭터) |
+| #47 카드 이미지 | 「카드 이미지로 저장」 색 · 제목 글꼴이 고른 디자인을 따른다 |
+| #48 회원 탈퇴 | 큰 빨간 버튼 → 아래쪽 작은 밑줄 글씨(누르는 영역 44dp · 스카이블루에서는 보라 #6B4FA0) |
+| #49 로그인·가입 | 비밀번호 눈 아이콘(보기/숨기기) · 날짜 칸에 숫자만 쳐도 `-` 자동 · 동의를 체크하면 전문이 펼쳐짐 |
+| #50 언어 순서 | 한국어 → 中文 → 日本語 → English |
+| #51 · #52 멘토링 | 진료기록: 병원을 목록에서 고른다(연락한 병원 먼저 · 없으면 직접 입력 · `hospital_id`) · 병원 목록: 「요청 보냄 · 상태」 배지 + 「내 요청 보기」 · 기록 목록: 「병원에서 보냄」 배지 · 챗봇: 새 대화 · 이 대화 삭제 · 이전 대화 목록 · 병원 접수대(관리자): 연락처 가림 안내 + 환자에게 시술 기록 보내기 |
+| #53 사용성 | 약 칸마다 「✕ 삭제」 · 챗봇 답 왼쪽 위 캐릭터 · 답할 자료가 없거나 진단 질문이면 병원 찾기 · 내 요청 버튼 |
+| #54 · #56 · #63 기록 · 사진 | 칸 이름 「병원에서 받은 주의사항 (선택)」 + 예시 글 · 처방전 **PDF** 올리기(10MB · 앞 2쪽) · 사진은 긴 변 3000px · 최대 60초 기다림 · 올린 사진 미리보기 · 확신 못 한 약 이름 강조 · 병원 이름이 안 찍힌 처방전 안내 |
+| #57 출처 | 챗봇 답 아래 한 줄 「📚 출처: 영국 NHS · 식약처 (의료진 감수 전)」 |
+| #60 홈 | 번호 타일 메뉴(첫 타일만 한 줄 전체 · 짙은 색) · 새 오프닝 영상 |
+| #61 로그아웃 | 앱은 로그아웃 · 탈퇴 뒤 홈을 새로 그린다(웹과 같은 문제 없음 · 시험으로 확인) |
+| #58 · #62 자동 배포 | 서버 쪽 — 앱 코드 변경 없음 (11/3 AWS 배포 완료) |
+
+**시험 중 발견해 고친 앱 결함 1건**: 휴대폰 언어(영어)와 계정 언어(한국어)가 다르면 로그인해도 계정 언어로 바뀌지 않았다(홈으로 넘어가며 언어 저장 작업이 취소됨). 내 정보 저장 때 언어가 뒤늦게 바뀌어 화면이 다시 만들어지고 「저장했어요」 안내가 사라지는 일도 이 때문이었다 → 홈으로 보낸 뒤 바로 바꾸게 고침(`TotalReviewTest.t7`).
+
 Kotlin · Jetpack Compose 로 처음부터 만든 안드로이드 앱(WebView 아님)이다. 웹 화면(`main` 의 `frontend/`)의 기능을 모두 옮겼고, 서버는 기존 API 를 그대로 부른다.
 
 | 항목 | 내용 |
@@ -38,7 +59,7 @@ Kotlin · Jetpack Compose 로 처음부터 만든 안드로이드 앱(WebView �
 | 패키지 · 버전 | `com.aidosas.glowpass.app` · 0.1.0 (1) |
 | 안드로이드 | 8.0 이상 (minSdk 26) · targetSdk / compileSdk 36 |
 | 서버 | `aws` 빌드 = `https://app-glowpass.aidosas.com` · `local` 빌드 = `http://10.0.2.2:8088` (가상 휴대폰에서 본 맥) |
-| 기준 서버 코드 | `main` `8303665` (API 목록 · 칸 이름은 `app/src/main/java/.../data/api/GlowPassApi.kt` · `data/dto/Dtos.kt`) |
+| 기준 서버 코드 | `main` `2ef9e6e` (11/3 · #63 까지 · 처음 v1 은 `8303665`) (API 목록 · 칸 이름은 `app/src/main/java/.../data/api/GlowPassApi.kt` · `data/dto/Dtos.kt`) |
 | 언어 | 한국어(기본) · 영어 · 일본어 · 중국어 — 웹 `frontend/i18n.js` 에서 `scripts/i18n_to_strings.js` 로 만든다 |
 
 ## 빌드
@@ -58,7 +79,7 @@ source env.sh                     # 이 폴더에서. JDK 17 · Android SDK 경�
 |---|---|
 | 단위 (토큰 갱신 · 401 · 422 · SSE · 알람 · 입력 검사) | `./gradlew testAwsDebugUnitTest` |
 | 화면 (가상 휴대폰) | `./gradlew connectedAwsDebugAndroidTest` |
-| 로컬 서버 처음~끝 | `_시험서버/` 를 켜고(`cp test.env.example test.env` → `docker compose -p gpapp --env-file test.env up -d --build`) `local` 앱으로 `LocalFlowTest` · `ExtraFlowTest` (`app/src/androidTest/` 파일 맨 위에 돌리는 법) |
+| 로컬 서버 처음~끝 | `_시험서버/` 를 켜고(`cp test.env.example test.env` → `SERVER_DIR=<1번 코드 폴더> docker compose -p gpapp --env-file test.env up -d --build`) `local` 앱으로 `LocalFlowTest` · `ExtraFlowTest` · `TotalReviewTest` (`app/src/androidTest/` 파일 맨 위에 돌리는 법). 시험마다 `pm clear` 로 앱 데이터를 지우고 하나씩 돌린다 |
 | AWS (운영 · 가입 1회) | `AwsSmokeTest` — `-e aws_smoke true` 를 줄 때만 돈다 |
 
 시험 스크린숏은 `_시험/` (가짜 계정만).

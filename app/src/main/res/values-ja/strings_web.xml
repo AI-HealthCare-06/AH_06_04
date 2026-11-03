@@ -13,6 +13,9 @@
     <string name="email" formatted="false">メールアドレス</string>
     <string name="password" formatted="false">パスワード</string>
     <string name="password_hint" formatted="false">8文字以上・大文字・小文字・数字・記号を含む</string>
+    <string name="pw_show" formatted="false">パスワードを表示</string>
+    <string name="pw_hide" formatted="false">パスワードを隠す</string>
+    <string name="birth_hint" formatted="false">数字のみ・例: 19950505</string>
     <string name="name" formatted="false">お名前</string>
     <string name="gender" formatted="false">性別</string>
     <string name="female" formatted="false">女性</string>
@@ -34,7 +37,9 @@
     <string name="hospital" formatted="false">病院名</string>
     <string name="procedure" formatted="false">診療・施術内容</string>
     <string name="procedure_ph" formatted="false">例: ニキビ治療、レーザートーニング</string>
-    <string name="doctor_note" formatted="false">医師の説明メモ</string>
+    <string name="doctor_note" formatted="false">病院で受けた注意事項（任意）</string>
+    <string name="doctor_note_ph" formatted="false">例: 3日間サウナ・飲酒禁止、赤くなったら病院に連絡</string>
+    <string name="hd_note" formatted="false">注意事項・説明</string>
     <string name="drugs" formatted="false">処方薬</string>
     <string name="drug_name" formatted="false">薬の名前</string>
     <string name="dose" formatted="false">1回量</string>
@@ -42,8 +47,9 @@
     <string name="times_per_day" formatted="false">1日の回数</string>
     <string name="days" formatted="false">日数</string>
     <string name="add_drug" formatted="false">+ 薬を追加</string>
+    <string name="drug_remove" formatted="false">削除</string>
     <string name="save" formatted="false">保存してAIガイドを作る</string>
-    <string name="ocr_upload" formatted="false">処方箋・薬袋の写真で入力</string>
+    <string name="ocr_upload" formatted="false">処方箋・薬袋の写真/PDFで入力</string>
     <string name="analyzing" formatted="false">AI分析・ガイド作成</string>
     <string name="step_record" formatted="false">診療記録・処方情報の確認</string>
     <string name="step_rag" formatted="false">根拠資料の検索 (FR-02)</string>
@@ -82,6 +88,12 @@
     <string name="chat_new" formatted="false">新しい会話</string>
     <string name="chat_error" formatted="false">回答を受け取れませんでした。しばらくしてからもう一度お試しください。</string>
     <string name="chat_sources" formatted="false">根拠:</string>
+    <string name="chat_src_from" formatted="false">出典:</string>
+    <string name="chat_src_unreviewed" formatted="false">医療者の監修前</string>
+    <string name="pub_NHS" formatted="false">英国NHS</string>
+    <string name="pub_FDA" formatted="false">米国FDA</string>
+    <string name="pub_AAD" formatted="false">米国皮膚科学会</string>
+    <string name="pub_MFDS" formatted="false">韓国食品医薬品安全処</string>
     <string name="emergency_title" formatted="false">⚠ 緊急の可能性があります</string>
     <string name="emergency_body" formatted="false">その症状はすぐに診察が必要な場合があります。今すぐ119に電話するか、近くの救急外来へ行ってください。</string>
     <string name="call_119" formatted="false">119に電話する</string>
@@ -91,7 +103,11 @@
     <string name="ocr_reading" formatted="false">写真を読み取っています…</string>
     <string name="ocr_done" formatted="false">写真から読み取った内容で入力しました。</string>
     <string name="ocr_check" formatted="false">文字を読み間違えることがあります。処方箋と見比べて修正してから保存してください。</string>
-    <string name="ocr_items_not_read" formatted="false">お薬の一覧は読み取れませんでした。直接入力してください。</string>
+    <string name="ocr_name_uncertain" formatted="false">⚠ この薬名は一部の文字が不確かです。写真と見比べてください。</string>
+    <string name="ocr_names_uncertain" formatted="false">黄色で示した薬名は特にご確認ください。</string>
+    <string name="ocr_hospital_not_printed" formatted="false">病院名が見つかりませんでした。薬袋には薬局名だけのことが多いので、病院を直接選んでください。</string>
+    <string name="ocr_photo_alt" formatted="false">アップロードした写真</string>
+    <string name="ocr_items_not_read" formatted="false">お薬の一覧は読み取れませんでした。直接入力するか、薬の名前がはっきり見えるように撮り直してください。</string>
     <string name="ocr_fake" formatted="false">（デモ用の仮の読み取り結果）</string>
     <string name="ocr_failed" formatted="false">写真を読み取れませんでした。明るく鮮明に撮り直すか、直接入力してください。</string>
     <string name="ocr_badge" formatted="false">写真入力</string>
@@ -214,4 +230,26 @@
     <string name="terms_full" formatted="false">※ デモサービス・法務確認前の草案です。\n\n1. GlowPassは皮膚科施術後のケアを支援する情報サービスで、診断・処方・特定の薬の推奨は行いません。\n2. AIの案内は参考用です。症状が重い場合や緊急時はすぐに病院または119に連絡してください。\n3. 病院はご自身で一覧から選びます。GlowPassは病院の推薦や紹介手数料の受け取りを行いません。\n4. 他人の情報を入力したり、サービスを妨害したりすると利用を制限することがあります。\n5. いつでも「退会」でアカウントと記録を削除できます。</string>
     <string name="agree_needed" formatted="false">必須の同意2つにチェックしてください。</string>
     <string name="card_contact_note" formatted="false">ご登録の連絡先に病院から連絡します</string>
+    <string name="hosp_pick_placeholder" formatted="false">病院を選んでください</string>
+    <string name="hosp_pick_contacted" formatted="false">連絡した病院</string>
+    <string name="hosp_pick_manual" formatted="false">一覧にない — 直接入力</string>
+    <string name="hosp_pick_needed" formatted="false">病院を選んでください。</string>
+    <string name="hospital_sent_badge" formatted="false">病院から送信</string>
+    <string name="hd_record_open" formatted="false">施術記録を送る</string>
+    <string name="hd_record_title" formatted="false">患者に施術記録を送る</string>
+    <string name="hd_note_ph" formatted="false">注意事項・説明（患者の画面にそのまま表示）</string>
+    <string name="hd_drug_ph" formatted="false">薬の名前（任意）</string>
+    <string name="hd_record_send" formatted="false">患者に送る</string>
+    <string name="hd_record_sent" formatted="false">患者の診療記録に追加しました。</string>
+    <string name="hd_guide_started" formatted="false">AIガイドも作成中です。</string>
+    <string name="hd_record_hint" formatted="false">送ると患者が入力しなくても記録が作られ、患者の言語でAIガイドが自動作成されます。リクエストは「連絡済み」になります。</string>
+    <string name="hd_masked_hint" formatted="false">連絡先は「確認開始」を押したリクエストでのみ全体が表示されます。</string>
+    <string name="hc_sent_badge" formatted="false">リクエスト済み</string>
+    <string name="hc_view_mine" formatted="false">リクエストを見る</string>
+    <string name="chat_delete" formatted="false">この会話を削除</string>
+    <string name="chat_delete_confirm" formatted="false">この会話を削除しますか？元に戻せません。</string>
+    <string name="chat_history" formatted="false">以前の会話</string>
+    <string name="chat_history_none" formatted="false">以前の会話はありません。</string>
+    <string name="chat_msgs" formatted="false">メッセージ{n}件</string>
+    <string name="chat_history_note" formatted="false">会話は30日後に自動で削除されます。</string>
 </resources>
