@@ -239,13 +239,14 @@ async function home() {
     // [배포 전 v2 통독 4] 서버에도 알려 refresh 쿠키를 지운다 (실패해도 이 탭에서는 로그아웃)
     h("button", { class: "btn secondary", onclick: async () => {
       await api("POST", "/auth/logout").catch(() => null);
-      store.token = null; location.hash = "#/";
+      // 홈 주소가 이미 #/ 이면 hashchange 가 안 일어나 화면이 그대로다 → 그때는 직접 다시 그린다
+      store.token = null; if (location.hash === "#/") route(); else location.hash = "#/";
     } }, t("logout")),
     // [최종 점검 5회차] 회원 탈퇴 — 한 번 더 묻고, 지운 뒤 첫 화면으로
     //   되돌릴 수 없는 일이라 로그아웃과 같은 큰 버튼으로 두지 않는다 (작은 보라 글씨 · 간격을 두고 아래)
     h("button", { class: "link-danger", type: "button", onclick: async () => {
       if (!confirm(t("withdraw_confirm"))) return;
-      try { await api("DELETE", "/users/me"); await api("POST", "/auth/logout").catch(() => null); store.token = null; alert(t("withdraw_done")); location.hash = "#/"; }
+      try { await api("DELETE", "/users/me"); await api("POST", "/auth/logout").catch(() => null); store.token = null; alert(t("withdraw_done")); if (location.hash === "#/") route(); else location.hash = "#/"; }
       catch (ex) { alert(ex.message); }
     } }, t("withdraw")),
   );
@@ -365,9 +366,10 @@ async function recordForm() {
   else f.hospital_name.required = false;
   const drugBox = h("div");
   // 약 한 줄 추가 (OCR 결과가 있으면 그 값으로 채운다) · 줄마다 오른쪽 위 '삭제'로 뺄 수 있다 (잘못 늘린 칸 정리)
-  const addDrug = (v = {}) => drugBox.append(h("div", { class: "drug" },
+  const addDrug = (v = {}) => drugBox.append(h("div", { class: v.uncertain ? "drug drug-check" : "drug" },
     h("button", { class: "drug-remove", type: "button", onclick: (e) => e.currentTarget.closest(".drug").remove() }, `✕ ${t("drug_remove")}`),
     field("drug_name", h("input", { name: "drug_name", maxlength: 100, value: v.drug_name ?? null })),
+    v.uncertain ? h("p", { class: "drug-check-note" }, t("ocr_name_uncertain")) : null,
     h("div", { class: "row" },
       h("div", {}, field("dose", h("input", { name: "dose", maxlength: 50, placeholder: t("dose_ph"), value: v.dose ?? null }))),
       h("div", {}, field("times_per_day", h("input", { name: "times_per_day", type: "number", min: 1, max: 10, value: v.times_per_day ?? null }))),
@@ -377,8 +379,9 @@ async function recordForm() {
 
   // ── FR-05 처방전·약봉투 사진 → 칸 자동 채우기 (저장 전 사용자가 꼭 확인) ──
   let ocrJobId = null;
+  let ocrPreview = null;
   const ocrBox = h("div");
-  const fileInput = h("input", { type: "file", accept: "image/jpeg,image/png", capture: "environment", hidden: true,
+  const fileInput = h("input", { type: "file", accept: "image/jpeg,image/png,application/pdf", hidden: true,
     onchange: async () => {
       const file = fileInput.files[0];
       fileInput.value = "";
@@ -386,8 +389,11 @@ async function recordForm() {
       err.textContent = "";
       ocrBox.replaceChildren(h("p", { class: "notice" }, t("ocr_reading")));
       try {
+        const upload = await shrinkPhoto(file);
+        // 고치면서 비교할 수 있게 올린 사진을 화면에 둔다 (이 기기 안에서만, 저장하지 않음)
+        ocrPreview = file.type.startsWith("image/") ? h("img", { class: "ocr-photo", src: URL.createObjectURL(upload), alt: t("ocr_photo_alt") }) : null;
         const form = new FormData();
-        form.append("file", file);
+        form.append("file", upload);
         const res = await fetch(`${API}/ocr/prescriptions`, { method: "POST", body: form,
           headers: { Authorization: `Bearer ${store.token}` } });
         if (res.status === 401) { store.token = null; location.hash = "#/login"; return; }
@@ -399,7 +405,7 @@ async function recordForm() {
       } catch (ex) { ocrBox.replaceChildren(); err.textContent = ex.message; }
     } });
   const pollOcr = async (id) => {
-    for (let i = 0; i < 40; i++) {  // 최대 약 40초
+    for (let i = 0; i < 60; i++) {  // 최대 약 60초 (확대 조각까지 읽으면 더 걸린다)
       const job = await api("GET", `/ocr/prescriptions/${id}`);
       if (job.status !== "PENDING") return job;
       await new Promise((r) => setTimeout(r, 1000));
@@ -417,10 +423,12 @@ async function recordForm() {
       if (!hit) f.hospital_name.value = d.hospital_name;
     }
     if (d.procedure_name) f.procedure_name.value = d.procedure_name;
-    if (d.items.length) { drugBox.replaceChildren(); d.items.forEach((it) => addDrug(it)); }
-    ocrBox.replaceChildren(h("div", { class: "notice" },
+    if (d.items.length) { drugBox.replaceChildren(); d.items.forEach((it) => addDrug({ ...it, uncertain: d.uncertain_names.includes(it.drug_name) })); }
+    ocrBox.replaceChildren(ocrPreview ?? "", h("div", { class: "notice" },
       h("strong", {}, t("ocr_done")), h("div", {}, t("ocr_check")),
       d.warnings.includes("items_not_read") ? h("div", {}, t("ocr_items_not_read")) : null,
+      d.warnings.includes("names_uncertain") ? h("div", {}, t("ocr_names_uncertain")) : null,
+      d.warnings.includes("hospital_not_printed") ? h("div", {}, t("ocr_hospital_not_printed")) : null,
       d.warnings.includes("fake_result") ? h("div", { class: "muted" }, t("ocr_fake")) : null));
   };
   const form = h("form", { onsubmit: async (e) => {
@@ -450,6 +458,19 @@ async function recordForm() {
   render(h("a", { href: "#/records" }, t("back")), h("div", { class: "card" }, h("h1", {}, t("add_record")),
     h("button", { class: "btn secondary", type: "button", onclick: () => fileInput.click() }, "📷 " + t("ocr_upload")),
     h("p", { class: "muted small" }, t("ocr_hint")), fileInput, ocrBox, form));
+}
+
+// 휴대폰 사진은 용량 제한을 넘기 쉽다 → 긴 변 3000px JPEG 로 줄여서 보낸다 (PDF·작은 사진은 그대로, 실패해도 원본으로)
+async function shrinkPhoto(file) {
+  if (!file.type.startsWith("image/") || file.size < 2 * 1024 * 1024 || !window.createImageBitmap) return file;
+  try {
+    const bitmap = await createImageBitmap(file, { imageOrientation: "from-image" });
+    const scale = Math.min(1, 3000 / Math.max(bitmap.width, bitmap.height));
+    const canvas = h("canvas", { width: Math.round(bitmap.width * scale), height: Math.round(bitmap.height * scale) });
+    canvas.getContext("2d").drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.9));
+    return blob ? new File([blob], "photo.jpg", { type: "image/jpeg" }) : file;
+  } catch { return file; }
 }
 
 // ── 5. AI 가이드 (FR-02·03) — 만드는 중이면 진행 화면, 끝나면 결과 ──
@@ -687,6 +708,10 @@ async function ask(convId, message, lang, bubble, emergencyBox, context = [], tr
         box.textContent = d.text; started = true;
         box.className = `msg bot ${d.outcome}`;
         if (d.outcome === "emergency") showEmergency(emergencyBox);
+        // 답할 자료가 없거나 진단·처방 질문이면 병원으로 이어 준다 (막다른 길로 끝나지 않게)
+        if (["no_doc", "blocked"].includes(d.outcome)) box.after(h("div", { class: "chat-links" },
+          h("a", { class: "btn secondary", href: "#/hospitals" }, t("hosp_title")),
+          h("a", { class: "btn secondary", href: "#/contacts" }, t("hc_mine"))));
       }
       else if (event === "sources") sources = d.docs || [];
       else if (event === "notice") box.after(h("div", { class: "muted small" }, d.text));

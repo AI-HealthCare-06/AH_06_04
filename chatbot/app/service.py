@@ -25,7 +25,7 @@ from datetime import UTC, date, datetime, timedelta, timezone
 from tortoise.exceptions import IntegrityError
 from tortoise.expressions import F, Q
 
-from app import docs, i18n, retrieval, safety
+from app import docs, i18n, mfds, retrieval, safety
 from app.cache import answer_cache
 from app.config import settings
 from app.llm import LLMError
@@ -123,10 +123,38 @@ async def _fixed(conv: Conversation, key: str, lang: str, trigger: str | None = 
 # 이어지는 질문 표시 — 이런 말로 시작/포함하면 '앞 질문 이야기' 로 본다
 # (못 찾으면 무조건 앞 안내문을 쓰면 "주차는 어디에 해요?" 같은 엉뚱한 질문에도 앞 안내문으로 답하게 된다)
 _FOLLOW_UP = re.compile(
-    r"^(그럼|그러면|그건|그거|그때|그리고)|언제부터|얼마나|^(and|then|what about|how about|so)\b"
-    r"|^(それ|じゃあ|では)|いつから|^(那|那么|那麼)|什么时候",
+    r"^(그럼|그러면|그건|그거|그때|그리고|왜|다른 방법)|언제부터|얼마나|며칠|더 (자세히|알려)|자세히"
+    r"|^(and|then|what about|how about|so|why)\b|tell me more|more detail"
+    r"|^(それ|じゃあ|では|どうして|なぜ|もっと)|いつから|^(那|那么|那麼|为什么|為什麼)|什么时候|详细|詳細",
     re.IGNORECASE,
 )
+
+
+# 인사·감사·맞장구·기능 질문 — 문장 전체가 이 말일 때만 (뒤에 진짜 질문이 붙으면 평소처럼 안내문을 찾는다)
+_SMALL_TALK = {
+    "chat_hello": re.compile(
+        r"(안녕(하세요|하십니까)?|반가워요?|하이|hi|hello|hey|你好|您好|こんにちは|こんばんは|はじめまして)",
+        re.IGNORECASE,
+    ),
+    "chat_thanks": re.compile(
+        r"(정말 |너무 |많이 )?(고마워요?|고맙습니다|감사(해요|합니다)|도움이? ?(많이 )?(됐|되었)어요)"
+        r"|thanks?( you)?( so much| a lot)?|谢谢(你|您)?|謝謝(你|您)?|ありがとう(ございます)?",
+        re.IGNORECASE,
+    ),
+    "chat_ok": re.compile(
+        r"(네|넵|예|응|아하?|그렇군요)?,? ?(알겠(어요|습니다)|알았어요?|네|넵|그렇군요)|ok(ay)?|got it|i see|好的|知道了|わかりました|了解です?",
+        re.IGNORECASE,
+    ),
+    "chat_help": re.compile(
+        r"(넌|너는|당신은|여기서)? ?(뭘|무엇을|뭐|어떤 걸) ?(도와|할 수|물어).*|what can you (do|help).*|你能(做|帮).*|何ができます.*",
+        re.IGNORECASE,
+    ),
+}
+
+
+def small_talk_key(question: str) -> str | None:
+    text = question.strip().rstrip("?!.~ …。！？")
+    return next((key for key, pattern in _SMALL_TALK.items() if pattern.fullmatch(text)), None)
 
 
 # '내 약' 을 가리키는 질문 — 이럴 때만 진료기록의 약·시술 이름으로 안내문을 찾는다
@@ -158,6 +186,51 @@ def clean_context(items: list[str] | None) -> list[str]:
     return out[:10]
 
 
+# 약을 묻는 질문으로 보이는 말 — 시술·생활 질문마다 약 이름 뽑기(LLM)를 부르지 않게
+_MED_HINT = re.compile(
+    r"약|복용|먹|바르|캡슐|연고|크림|시럽|medicine|medication|pill|tablet|capsule|cream|ointment|\b[a-z]{5,}(in|ol|ine|fen)\b"
+    r"|药|藥|膏|薬|軟膏|カプセル",
+    re.IGNORECASE,
+)
+
+
+async def _with_mfds(llm, question: str, lang: str, found: list[docs.Doc], context: list[str] | None) -> list[docs.Doc]:
+    """안내문 폴더에 없는 약이면 식약처 자료를 앞에 둔다. 다른 약의 안내문은 근거에서 뺀다 (비슷한 이름으로 답하지 않게)"""
+    named = any(d.id.startswith("med-") for d in docs.store().search(question, len(docs.store().docs)))
+    unnamed_med = any(d.id.startswith("med-") for d in found)  # 뜻으로 찾은 비슷한 약 안내문 — 다른 약일 수 있다
+    if not mfds.enabled() or named or not (not found or unnamed_med or _MED_HINT.search(question)):
+        return found
+    names = await mfds.extract_names(llm, question, lang)
+    if not names and context and _MY_RECORD.search(question):
+        names = context
+    extra = await mfds.docs_for(names, question)
+    if not extra:
+        return found
+    rest = [d for d in found if not d.id.startswith("med-")]
+    return [*extra, *rest][: settings.docs_per_answer]
+
+
+# 특정 시술 후 안내문 — 질문에 시술 얘기가 있을 때만 근거로 쓴다
+_PROCEDURE_DOCS = ("laser-", "filler", "botox", "microneedling-", "rf-microneedling-", "procedure-")
+_SYMPTOM_WORD = re.compile(r"빨개|빨갛|붉")
+_PROCEDURE_TALK = re.compile(
+    r"시술|레이저|토닝|피코|필러|보톡스|보툴|미세침|니들|고주파|맞고|맞은|받고|받은"
+    r"|laser|toning|filler|botox|needling|procedure|treatment|injection"
+    r"|激光|雷射|玻尿酸|肉毒|术后|手术|施術|レーザー|フィラー|ボトックス",
+    re.IGNORECASE,
+)
+
+
+def drop_unasked_procedure_docs(question: str, found: list[docs.Doc]) -> list[docs.Doc]:
+    """시술 얘기가 없는데 시술 후 안내로 답하지 않게 (실제 AI 시험: '피부가 건조해요' → 레이저 후 보습제 금지).
+    시술 이름 낱말이 맞으면('ダーマペン') 시술 얘기로 본다. 증상 낱말('빨개')만 맞은 것은 시술 얘기가 아니다"""
+    if _PROCEDURE_TALK.search(question):
+        return found
+    without_symptoms = _SYMPTOM_WORD.sub(" ", question)
+    named = {d.id for d in docs.store().search(without_symptoms, len(docs.store().docs))}
+    return [d for d in found if d.id in named or not d.id.startswith(_PROCEDURE_DOCS)]
+
+
 async def _find_docs(
     conv: Conversation, question: str, first_turn: bool, context: list[str] | None = None, procedure: str | None = None
 ) -> list[docs.Doc]:
@@ -168,6 +241,9 @@ async def _find_docs(
         with_proc = await retrieval.search(f"{question} {procedure}", settings.docs_per_answer)
         if with_proc:
             found = [*with_proc, *(d for d in found if d not in with_proc)][: settings.docs_per_answer]
+    if not procedure:
+        # 시술 기록이 없을 때만 — 시술 얘기가 없는 증상 질문에 시술 후 안내가 끼지 않게
+        found = drop_unasked_procedure_docs(question, found)
     if context and _MY_RECORD.search(question):
         # '내 약' 질문 → 기록의 약 안내문을 앞에 두고, 질문으로 찾은 것은 뒤에 (같은 건 한 번만)
         mine = await retrieval.search(" ".join(context), settings.docs_per_answer)
@@ -178,7 +254,7 @@ async def _find_docs(
         await Message.filter(conversation=conv, role="assistant", outcome__in=["ok", "cached"]).order_by("-id").first()
     )
     ids = (prev.sources or []) if prev else []
-    return [d for d in (docs.store().get(i) for i in ids) if d]
+    return [d for d in (docs.store().get(i) or mfds.doc_by_id(i) for i in ids) if d]
 
 
 def _sources_event(found: list[docs.Doc], lang: str) -> Event:
@@ -221,13 +297,17 @@ async def run_turn(
     # 걸린 낱말은 위험 신호 기록(SafetyAlert)에 남긴다 — 질문 전체가 아니라 그 부분만
     emergency = safety.emergency_match(question)
     blocked = None if emergency else safety.medical_request_match(question)
-    key = "emergency" if emergency else "blocked" if blocked else None
+    key = "emergency" if emergency else "blocked" if blocked else small_talk_key(question)
     trigger = emergency or blocked
     # ④ 안내문 찾기 — 없으면 AI 를 부르지 않는다 (지어낼 틈 0 · 비용 0)
     context = clean_context(context)
     proc = (clean_context([procedure]) or [None])[0] if procedure else None
     day = days_since(procedure_date) if proc else None
-    found = [] if key else await _find_docs(conv, question, first_turn, context, proc)
+    found = (
+        []
+        if key
+        else await _with_mfds(llm, question, lang, await _find_docs(conv, question, first_turn, context, proc), context)
+    )
     if key or not found:
         async for ev in _fixed(conv, key or "no_doc", lang, trigger):
             yield ev

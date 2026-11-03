@@ -29,6 +29,7 @@ class OcrDraft(BaseModel):
     visit_date: date | None = None
     procedure_name: str | None = None
     items: list[OcrDraftItem] = Field(default_factory=list)
+    uncertain_names: list[str] = Field(default_factory=list)  # AI 가 일부 글자를 확신하지 못한 약 이름 → 화면이 강조
     warnings: list[str] = Field(default_factory=list)  # 사용자가 꼭 확인할 점 (코드 값: 화면이 번역)
 
 
@@ -81,6 +82,7 @@ _PLACEHOLDER_NAME = re.compile(r"^(약품|약|의약품|drug|medicine|medication
 def clean_draft(raw: dict[str, Any], warnings: list[str] | None = None) -> OcrDraft:
     """AI가 돌려준 JSON → 안전한 초안. 형식이 이상한 칸은 버리고 비워 둔다"""
     items: list[OcrDraftItem] = []
+    uncertain: list[str] = []
     raw_items = raw.get("items")
     for row in raw_items if isinstance(raw_items, list) else []:
         if not isinstance(row, dict):
@@ -88,6 +90,8 @@ def clean_draft(raw: dict[str, Any], warnings: list[str] | None = None) -> OcrDr
         name = _text(row.get("drug_name"), 100)
         if not name or _PLACEHOLDER_NAME.match(name):
             continue
+        if row.get("uncertain") is True:
+            uncertain.append(name)
         items.append(
             OcrDraftItem(
                 drug_name=name,
@@ -101,11 +105,16 @@ def clean_draft(raw: dict[str, Any], warnings: list[str] | None = None) -> OcrDr
     notes = list(warnings or [])
     if not items and "items_not_read" not in notes:  # 약을 하나도 못 읽었으면 화면이 '직접 입력·다시 찍기'를 안내
         notes.append("items_not_read")
+    if uncertain:
+        notes.append("names_uncertain")
+    if not _text(raw.get("hospital_name"), 100):  # 약봉투에는 약국 이름만 있는 경우가 많다
+        notes.append("hospital_not_printed")
     notes.append("check_before_save")  # 항상: 저장 전에 처방전과 한 번 더 비교
     return OcrDraft(
         hospital_name=_text(raw.get("hospital_name"), 100),
         visit_date=_past_date(raw.get("visit_date")),
         procedure_name=_text(raw.get("procedure_name"), 100),
         items=items,
+        uncertain_names=uncertain,
         warnings=notes,
     )

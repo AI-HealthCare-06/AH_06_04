@@ -264,3 +264,10 @@ main > p.muted { margin: -8px 0 16px; }
 details summary { list-style: none; cursor: pointer; }
 details summary::before { content: "▸ "; color: var(--gold-2); }
 details[open] summary::before { content: "▾ "; }
+
+/* OCR — 올린 사진 비교 · AI 가 확신하지 못한 약 이름 강조 */
+.ocr-photo { display: block; width: 100%; max-height: 320px; object-fit: contain; margin: 8px 0; border-radius: var(--r-s); background: var(--bg-2); }
+.drug-check { border-color: var(--gold-2); background: var(--caution); }
+.drug-check-note { margin: -4px 0 8px; font-size: 13px; color: var(--caution-ink); }
+.chat-links { display: flex; gap: 8px; margin: 4px 0 8px; }
+.chat-links .btn { flex: 1; margin: 0; font-size: 14px; }

@@ -73,18 +73,21 @@ class Config(BaseSettings):
     # openai = 팀 키로 사진을 직접 읽어 칸별로 정리 (gpt-4o-mini 비전)
     # clova  = 네이버 CLOVA OCR 로 글자 추출 → (OPENAI 키가 있으면) AI 로 칸 정리, 없으면 날짜·병원만
     OCR_MODE: str = "fake"
-    OCR_MAX_BYTES: int = 5 * 1024 * 1024  # 사진 1장 최대 5MB
+    OCR_MAX_BYTES: int = 10 * 1024 * 1024  # 사진·PDF 1개 최대 10MB (화면이 큰 사진은 줄여서 보낸다)
+    OCR_PDF_MAX_PAGES: int = 2  # PDF 는 앞 2쪽만 읽는다 (비용 상한)
+    OCR_ZOOM_TILES: bool = True  # 큰 사진은 전체 + 확대 조각을 함께 보낸다 (작은 글자 오독 줄이기)
     OCR_TIMEOUT_S: float = 30.0
     OCR_DAILY_LIMIT: int = 20  # 한 사용자 하루 OCR 횟수 (비용 보호)
     # [최종 점검 3회차] 서버 재시작 등으로 백그라운드 작업이 사라지면 PENDING 이 영원히 남는다 → 이 시간이 지나면 실패로
     OCR_PENDING_TIMEOUT_S: int = 120
-    OPENAI_VISION_MODEL: str = "gpt-4o-mini"
+    OPENAI_VISION_MODEL: str = "gpt-4o"  # 합성 약봉투 10종 비교: mini 23/42 → 4o 29/42 (약 이름 완전 일치)
     # 사진 방향 자동 맞추기 — 옆·거꾸로 찍은 처방전을 바로 세운 뒤 읽는다 (누운 사진이면 약 이름을 지어내는 일이 있었다)
     #   4방향 작은 사진 중 '글자가 바로 선 것'을 고르게 한다. 실측: gpt-4o 8/8 · gpt-4o-mini 6/8 정답 → 고르기만 gpt-4o (작은 사진 4장이라 비용 1원 미만)
     OCR_AUTO_ROTATE: bool = True
     OCR_ORIENT_MODEL: str = "gpt-4o"
     OCR_MAX_SIDE: int = 2048  # 보내기 전 긴 변을 이 크기로 줄인다 (글자는 읽히고 전송·처리는 가볍게)
-    OCR_LLM_MAX_TOKENS: int = 800  # [리뷰 #14] 약 30줄 JSON 여유
+    OCR_LLM_MAX_TOKENS: int = 1500  # [리뷰 #14] 약 30줄 + 불확실 표시까지 JSON 이 잘리지 않게
+    MFDS_API_KEY: str = ""  # .env 에만 (공개 레포) — 비우면 약 이름 허가 목록 대조를 건너뛴다
     CLOVA_OCR_SECRET_KEY: str = ""  # .env 에만 (공개 레포)
     CLOVA_OCR_INVOKE_URL: str = ""  # 콘솔의 General OCR 'APIGW Invoke URL' (이것도 비밀값)
 

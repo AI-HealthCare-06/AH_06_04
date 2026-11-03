@@ -8,6 +8,8 @@ from datetime import date, timedelta
 from unittest.mock import patch
 
 import httpx
+import pypdfium2
+import pytest
 from httpx import ASGITransport, AsyncClient
 from PIL import Image
 from starlette import status
@@ -16,7 +18,7 @@ from tortoise.contrib.test import TestCase
 from app.core import config
 from app.dtos.ocr import clean_draft
 from app.main import app
-from app.services import ocr_engine
+from app.services import drug_names, ocr_engine
 from app.tests.medical_record_apis.test_medical_record_apis import signup_and_login
 
 OCR = "/api/v1/ocr/prescriptions"
@@ -79,7 +81,7 @@ class TestOcrApis(TestCase):
         text = await self.client.post(OCR, files=upload(b"hello world", "a.png"), headers=headers)
         assert text.status_code == status.HTTP_415_UNSUPPORTED_MEDIA_TYPE  # 확장자가 아니라 내용으로 판단
         pdf = await self.client.post(OCR, files=upload(b"%PDF-1.7 ...", "a.pdf"), headers=headers)
-        assert pdf.status_code == status.HTTP_415_UNSUPPORTED_MEDIA_TYPE  # PDF 는 clova 모드에서만
+        assert pdf.status_code == status.HTTP_202_ACCEPTED  # PDF 도 받는다 (요구사항: 이미지/PDF 업로드)
         empty = await self.client.post(OCR, files=upload(b""), headers=headers)
         assert empty.status_code == status.HTTP_400_BAD_REQUEST
         with patch.object(config, "OCR_MAX_BYTES", 32):
@@ -250,3 +252,118 @@ async def test_openai_vision_reads_as_is_when_orientation_check_fails():
         draft = await ocr_engine.read(_jpeg(400, 200), "jpg")
     assert len(calls) == 2 and _sent_size(calls[1]["messages"][1]["content"][1]["image_url"]["url"]) == (400, 200)
     assert draft.items == [] and "items_not_read" in draft.warnings
+
+
+def _vision_handler(seen: dict, content: dict | None = None):
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen["body"] = json.loads(request.content)
+        answer = content or {"items": [{"drug_name": "록소프로펜정", "uncertain": True}]}
+        return httpx.Response(200, json={"choices": [{"message": {"content": json.dumps(answer)}}]})
+
+    return handler
+
+
+def _image_count(body: dict) -> int:
+    return sum(part["type"] == "image_url" for part in body["messages"][1]["content"])
+
+
+@pytest.mark.asyncio
+async def test_big_photo_is_sent_with_zoomed_tiles_but_small_photo_is_not():
+    # 작은 글자 오독 줄이기: 큰 사진만 전체 + 2×3 조각 (작은 사진은 비용을 늘리지 않는다)
+    def photo(size: tuple[int, int]) -> bytes:
+        buf = io.BytesIO()
+        Image.new("RGB", size, "white").save(buf, "JPEG")
+        return buf.getvalue()
+
+    seen: dict = {}
+    with (
+        patch.object(config, "OCR_MODE", "openai"),
+        patch.object(config, "OPENAI_API_KEY", "test-key"),
+        patch.object(config, "OCR_AUTO_ROTATE", False),
+        patch.object(ocr_engine.httpx, "AsyncClient", _mock_client(_vision_handler(seen))),
+    ):
+        await ocr_engine.read(photo((2400, 3200)), "jpg")
+        assert _image_count(seen["body"]) == 7
+        await ocr_engine.read(photo((800, 1000)), "jpg")
+        assert _image_count(seen["body"]) == 1
+
+
+@pytest.mark.asyncio
+async def test_pdf_is_read_as_page_images_and_rejects_broken_file():
+    pdf = pypdfium2.PdfDocument.new()
+    pdf.new_page(600, 800)
+    buf = io.BytesIO()
+    pdf.save(buf)
+    pdf.close()
+
+    seen: dict = {}
+    with (
+        patch.object(config, "OCR_MODE", "openai"),
+        patch.object(config, "OPENAI_API_KEY", "test-key"),
+        patch.object(ocr_engine.httpx, "AsyncClient", _mock_client(_vision_handler(seen))),
+    ):
+        assert "pdf" in ocr_engine.allowed_formats()
+        draft = await ocr_engine.read(buf.getvalue(), "pdf")
+        assert _image_count(seen["body"]) == 1 and draft.items[0].drug_name == "록소프로펜정"
+        with pytest.raises(ocr_engine.OcrEngineError):
+            await ocr_engine.read(b"%PDF-broken", "pdf")
+
+
+def test_uncertain_names_and_missing_hospital_are_flagged():
+    draft = clean_draft(
+        {
+            "items": [
+                {"drug_name": "록소프로펜정", "uncertain": True},
+                {"drug_name": "세티리진정", "uncertain": "maybe"},  # 형식이 이상하면 표시하지 않는다
+            ]
+        }
+    )
+    assert draft.uncertain_names == ["록소프로펜정"]  # 저장 양식(items)은 그대로 — 그대로 보내도 422 가 나지 않게
+    assert {"names_uncertain", "hospital_not_printed"} <= set(draft.warnings)
+    assert "hospital_not_printed" not in clean_draft({"hospital_name": "글로우의원", "items": []}).warnings
+
+
+def _mfds_client(names_by_query: dict[str, list[str]] | None):
+    def handler(request: httpx.Request) -> httpx.Response:
+        if names_by_query is None:
+            return httpx.Response(500)
+        query = request.url.params.get("item_name") or request.url.params.get("main_item_ingr")
+        rows = [{"ITEM_NAME": n} for n in names_by_query.get(query, [])]
+        return httpx.Response(200, json={"body": {"items": rows}})
+
+    return _mock_client(handler)
+
+
+@pytest.mark.asyncio
+async def test_names_are_checked_against_permit_list():
+    draft = clean_draft(
+        {
+            "hospital_name": "한빛의원",
+            "items": [
+                {"drug_name": "록소닌정 60mg"},
+                {"drug_name": "록소난정 60mg"},
+                {"drug_name": "트라넥삼산캡슐 250mg"},
+                {"drug_name": "없는약"},
+            ],
+        }
+    )
+    listed = {"록소닌정": ["동화록소닌정60밀리그램(록소프로펜나트륨수화물)"], "트라넥삼산": ["도란사민캡슐"]}
+    with (
+        patch.object(config, "MFDS_API_KEY", "test-key"),
+        patch.object(drug_names.httpx, "AsyncClient", _mfds_client(listed)),
+    ):
+        checked = await drug_names.check(draft)
+    assert checked.uncertain_names == ["록소난정 60mg", "없는약"]
+    assert checked.items[1].drug_name == "록소난정 60mg" and "names_uncertain" in checked.warnings
+
+
+@pytest.mark.asyncio
+async def test_name_check_is_skipped_without_key_or_on_failure():
+    draft = clean_draft({"items": [{"drug_name": "록소닌정"}]})
+    with patch.object(config, "MFDS_API_KEY", ""):
+        assert await drug_names.check(draft) == draft
+    with (
+        patch.object(config, "MFDS_API_KEY", "test-key"),
+        patch.object(drug_names.httpx, "AsyncClient", _mfds_client(None)),
+    ):
+        assert await drug_names.check(draft) == draft
