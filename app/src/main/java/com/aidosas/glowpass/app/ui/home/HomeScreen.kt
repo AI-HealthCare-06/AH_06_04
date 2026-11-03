@@ -1,6 +1,7 @@
 // ─────────────────────────────────────────────
 // [앱 v1 3] 홈 — 위쪽 소개 영상 + 언어 고르기 + 아래 모든 기능 바로가기 카드
 //   영상이 끝나기 전이라도 아래 카드는 바로 누를 수 있다. 로그인이 필요한 카드는 로그인 화면으로
+//   [2번 코드 총정리] 메뉴는 번호 타일 격자(웹 #60) — 첫 타일(기록 추가)만 한 줄 전체 · 짙은 색 · 제목 앞 로고
 // ─────────────────────────────────────────────
 package com.aidosas.glowpass.app.ui.home
 
@@ -42,8 +43,9 @@ import androidx.compose.ui.unit.dp
 import com.aidosas.glowpass.app.R
 import com.aidosas.glowpass.app.data.repository.LANGS
 import com.aidosas.glowpass.app.ui.LocalApp
+import com.aidosas.glowpass.app.ui.LocalPalette
 import com.aidosas.glowpass.app.ui.MutedText
-import com.aidosas.glowpass.app.ui.Pink
+import com.aidosas.glowpass.app.ui.Brand
 import com.aidosas.glowpass.app.ui.PrimaryButton
 import com.aidosas.glowpass.app.ui.Routes
 import com.aidosas.glowpass.app.ui.Screen
@@ -73,7 +75,7 @@ fun HomeScreen(ready: Boolean) {
         if (me.data?.isAdmin == true) add(Feature(tr(R.string.hd_title), Icons.Filled.Inbox, Routes.DESK))
     }
 
-    Screen(title = "GlowPass") {
+    Screen(title = "GlowPass", brand = true) {
         IntroVideo()
         Text(tr(R.string.tagline), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
         MutedText(tr(R.string.intro))
@@ -93,13 +95,13 @@ fun HomeScreen(ready: Boolean) {
 
         Text(tr(R.string.features), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
         // 카드 2줄씩 — 작은 휴대폰에서도 글자가 잘리지 않게 줄바꿈 허용
+        val open = { f: Feature -> if (f.needLogin && !app.loggedIn) app.toLogin() else app.go(f.route) }
         Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.testTag("features")) {
-            features.chunked(2).forEach { pair ->
+            FeatureCard(features.first(), 1, Modifier.fillMaxWidth(), first = true) { open(features.first()) }
+            features.drop(1).chunked(2).forEachIndexed { row, pair ->
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    pair.forEach { f ->
-                        FeatureCard(f, Modifier.weight(1f)) {
-                            if (f.needLogin && !app.loggedIn) app.toLogin() else app.go(f.route)
-                        }
+                    pair.forEachIndexed { i, f ->
+                        FeatureCard(f, 2 + row * 2 + i, Modifier.weight(1f)) { open(f) }
                     }
                     if (pair.size == 1) androidx.compose.foundation.layout.Spacer(Modifier.weight(1f))
                 }
@@ -112,15 +114,23 @@ fun HomeScreen(ready: Boolean) {
 }
 
 @Composable
-private fun FeatureCard(f: Feature, modifier: Modifier, onClick: () -> Unit) {
-    Card(modifier.heightIn(min = 96.dp).clickable(onClick = onClick).testTag("feature_card"),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(1.dp)) {
-        Column(Modifier.fillMaxWidth().padding(12.dp), horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Icon(f.icon, contentDescription = null, tint = Pink, modifier = Modifier.size(28.dp))
-            Text(f.label, textAlign = TextAlign.Center, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
+private fun FeatureCard(f: Feature, number: Int, modifier: Modifier, first: Boolean = false, onClick: () -> Unit) {
+    val p = LocalPalette.current
+    val fg = if (first) androidx.compose.ui.graphics.Color.White else p.ink
+    Card(modifier.heightIn(min = if (first) 100.dp else 92.dp).clickable(onClick = onClick).testTag("feature_card"),
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(containerColor = if (first) p.brand else p.card),
+        border = if (first) null else androidx.compose.foundation.BorderStroke(1.dp, p.line),
+        elevation = CardDefaults.cardElevation(if (first) 3.dp else 1.dp)) {
+        Column(Modifier.fillMaxWidth().padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                // 타일 번호 01 · 02 … (골드 · 민트) — 웹 .menu .btn::before
+                Text("%02d".format(number), color = p.accent, fontWeight = FontWeight.Bold, fontFamily = p.display,
+                    modifier = Modifier.weight(1f))
+                Icon(f.icon, contentDescription = null, tint = if (first) p.accent else Brand, modifier = Modifier.size(24.dp))
+            }
+            Text(f.label, color = fg, style = if (first) MaterialTheme.typography.titleMedium.copy(color = fg) else MaterialTheme.typography.bodyMedium,
+                fontWeight = if (first) FontWeight.Bold else FontWeight.SemiBold)
         }
     }
 }

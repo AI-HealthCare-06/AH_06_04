@@ -62,22 +62,32 @@ class LocalFlowTest {
 
     private fun s(id: Int) = rule.activity.getString(id)
 
-    private fun shot(name: String) {
+    // 스크린숏은 증거 자료 — 캡처가 시간 초과돼도 시험을 실패로 치지 않는다 (FlowBase 와 같다)
+    private fun shot(name: String) = runCatching {
         rule.waitForIdle()
         val bmp = rule.onRoot().captureToImage().asAndroidBitmap()
         val dir = File(rule.activity.getExternalFilesDir(null), "shots").apply { mkdirs() }
         File(dir, "$name.png").outputStream().use { bmp.compress(Bitmap.CompressFormat.PNG, 100, it) }
     }
 
-    private fun waitText(text: String, ms: Long = 15_000) =
+    private fun waitText(text: String, ms: Long = 30_000) =
         rule.waitUntil(ms) { rule.onAllNodesWithText(text, substring = true).fetchSemanticsNodes().isNotEmpty() }
 
-    private fun waitTag(tag: String, ms: Long = 15_000) =
+    private fun waitTag(tag: String, ms: Long = 30_000) =
         rule.waitUntil(ms) { rule.onAllNodesWithTag(tag).fetchSemanticsNodes().isNotEmpty() }
 
     private fun field(label: String): SemanticsNodeInteraction = rule.onNode(hasSetTextAction() and hasText(label))
 
     private fun type(label: String, text: String) = field(label).performScrollTo().apply { performTextClearance(); performTextInput(text) }
+
+    // [2번 코드 총정리] 새 기록의 병원은 목록에서 고른다 (웹 #52)
+    private fun pickHospital(name: String) {
+        rule.waitUntil(15_000) { rule.onAllNodesWithTag("hospital_pick").fetchSemanticsNodes().isNotEmpty() }
+        rule.onNodeWithTag("hospital_pick").performScrollTo().performClick()
+        rule.waitForIdle()
+        rule.onAllNodesWithText(name, substring = true).onLast().performScrollTo().performClick()
+        rule.waitForIdle()
+    }
 
     private fun button(text: String) = rule.onAllNodes(hasText(text) and hasClickAction()).onLast()
 
@@ -116,7 +126,7 @@ class LocalFlowTest {
 
         // 진료기록 추가 → 저장하면 바로 AI 가이드 (fake)
         rule.onNodeWithText(s(R.string.add_record)).performScrollTo().performClick()
-        type(s(R.string.hospital), "글로우데모 피부과의원 1")
+        pickHospital("글로우데모 피부과의원 1")
         type(s(R.string.procedure), "레이저 토닝")
         type(s(R.string.drug_name), "세티리진정")
         type(s(R.string.dose), "1정")

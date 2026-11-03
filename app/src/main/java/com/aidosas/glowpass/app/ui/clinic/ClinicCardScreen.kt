@@ -78,7 +78,7 @@ private fun CardBody(record: MedicalRecord, me: UserInfo?) {
             // 병원 직원이 읽을 한국어 (길게 눌러 고를 수도 있다)
             SelectionContainer {
                 Text(ko, fontFamily = FontFamily.Default, modifier = Modifier.fillMaxWidth()
-                    .background(androidx.compose.ui.graphics.Color(0xFFF6EEF0), RoundedCornerShape(8.dp)).padding(10.dp))
+                    .background(com.aidosas.glowpass.app.ui.BrandSoft, RoundedCornerShape(8.dp)).padding(10.dp))
             }
             PrimaryButton(copied ?: tr(R.string.card_copy), {
                 copied = runCatching {

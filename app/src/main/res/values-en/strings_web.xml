@@ -13,6 +13,9 @@
     <string name="email" formatted="false">Email</string>
     <string name="password" formatted="false">Password</string>
     <string name="password_hint" formatted="false">8+ characters with upper, lower, number and symbol</string>
+    <string name="pw_show" formatted="false">Show password</string>
+    <string name="pw_hide" formatted="false">Hide password</string>
+    <string name="birth_hint" formatted="false">Numbers only · e.g. 19950505</string>
     <string name="name" formatted="false">Name</string>
     <string name="gender" formatted="false">Gender</string>
     <string name="female" formatted="false">Female</string>
@@ -34,7 +37,9 @@
     <string name="hospital" formatted="false">Clinic name</string>
     <string name="procedure" formatted="false">Treatment / procedure</string>
     <string name="procedure_ph" formatted="false">e.g. acne care, laser toning</string>
-    <string name="doctor_note" formatted="false">Doctor\'s notes</string>
+    <string name="doctor_note" formatted="false">Aftercare instructions from the clinic (optional)</string>
+    <string name="doctor_note_ph" formatted="false">e.g. No sauna or alcohol for 3 days; call the clinic if it gets red</string>
+    <string name="hd_note" formatted="false">Instructions</string>
     <string name="drugs" formatted="false">Prescribed medicines</string>
     <string name="drug_name" formatted="false">Medicine name</string>
     <string name="dose" formatted="false">Dose</string>
@@ -42,8 +47,9 @@
     <string name="times_per_day" formatted="false">Times a day</string>
     <string name="days" formatted="false">Days</string>
     <string name="add_drug" formatted="false">+ Add medicine</string>
+    <string name="drug_remove" formatted="false">Remove</string>
     <string name="save" formatted="false">Save and create AI guide</string>
-    <string name="ocr_upload" formatted="false">Fill in from a prescription photo</string>
+    <string name="ocr_upload" formatted="false">Fill in from a prescription photo or PDF</string>
     <string name="analyzing" formatted="false">AI analysis · creating guide</string>
     <string name="step_record" formatted="false">Checking your records and prescriptions</string>
     <string name="step_rag" formatted="false">Searching trusted sources (FR-02)</string>
@@ -82,6 +88,12 @@
     <string name="chat_new" formatted="false">New conversation</string>
     <string name="chat_error" formatted="false">We couldn\'t get an answer. Please try again shortly.</string>
     <string name="chat_sources" formatted="false">Sources:</string>
+    <string name="chat_src_from" formatted="false">Source:</string>
+    <string name="chat_src_unreviewed" formatted="false">not yet reviewed by medical staff</string>
+    <string name="pub_NHS" formatted="false">UK NHS</string>
+    <string name="pub_FDA" formatted="false">US FDA</string>
+    <string name="pub_AAD" formatted="false">American Academy of Dermatology</string>
+    <string name="pub_MFDS" formatted="false">Korea MFDS</string>
     <string name="emergency_title" formatted="false">⚠ This may be an emergency</string>
     <string name="emergency_body" formatted="false">The symptoms you describe may need immediate care. Call 119 now or go to the nearest emergency room.</string>
     <string name="call_119" formatted="false">Call 119</string>
@@ -91,7 +103,11 @@
     <string name="ocr_reading" formatted="false">Reading the photo…</string>
     <string name="ocr_done" formatted="false">Filled in from the photo.</string>
     <string name="ocr_check" formatted="false">The text may be misread. Compare with your prescription and fix it before saving.</string>
-    <string name="ocr_items_not_read" formatted="false">We couldn\'t read the medicine list. Please enter it yourself.</string>
+    <string name="ocr_name_uncertain" formatted="false">⚠ Some letters in this medicine name are uncertain. Please compare it with the photo.</string>
+    <string name="ocr_names_uncertain" formatted="false">Please check the medicine names marked in yellow.</string>
+    <string name="ocr_hospital_not_printed" formatted="false">We couldn\'t find a hospital name. Medicine bags often show only the pharmacy, so please choose the hospital yourself.</string>
+    <string name="ocr_photo_alt" formatted="false">Uploaded photo</string>
+    <string name="ocr_items_not_read" formatted="false">We couldn\'t read the medicine list. Please enter it yourself, or retake the photo so the medicine names are clear.</string>
     <string name="ocr_fake" formatted="false">(Demo: simulated result)</string>
     <string name="ocr_failed" formatted="false">We couldn\'t read the photo. Retake it bright and sharp, or enter the details yourself.</string>
     <string name="ocr_badge" formatted="false">From photo</string>
@@ -214,4 +230,26 @@
     <string name="terms_full" formatted="false">※ Demo service · draft before legal review.\n\n1. GlowPass is an information service for aftercare following dermatology treatments. It does not diagnose, prescribe or recommend specific medicines.\n2. AI guidance is for reference only. If symptoms are severe or it is an emergency, contact a clinic or call 119 right away.\n3. You choose clinics yourself from the list. GlowPass does not recommend clinics or take referral fees.\n4. Entering someone else\'s information or disrupting the service may lead to restricted use.\n5. You can delete your account and records at any time with \'Delete account\'.</string>
     <string name="agree_needed" formatted="false">Please check both required agreements.</string>
     <string name="card_contact_note" formatted="false">The clinic will contact you using your registered contact details</string>
+    <string name="hosp_pick_placeholder" formatted="false">Choose a clinic</string>
+    <string name="hosp_pick_contacted" formatted="false">Contacted</string>
+    <string name="hosp_pick_manual" formatted="false">Not in the list — type it</string>
+    <string name="hosp_pick_needed" formatted="false">Please choose a clinic.</string>
+    <string name="hospital_sent_badge" formatted="false">Sent by clinic</string>
+    <string name="hd_record_open" formatted="false">Send treatment record</string>
+    <string name="hd_record_title" formatted="false">Send a treatment record to the patient</string>
+    <string name="hd_note_ph" formatted="false">Instructions (shown to the patient as is)</string>
+    <string name="hd_drug_ph" formatted="false">Medicine name (optional)</string>
+    <string name="hd_record_send" formatted="false">Send to patient</string>
+    <string name="hd_record_sent" formatted="false">Added to the patient\'s records.</string>
+    <string name="hd_guide_started" formatted="false">An AI guide is being created too.</string>
+    <string name="hd_record_hint" formatted="false">The patient gets the record without typing anything, and an AI guide is created in their language. The request becomes \'Contacted\'.</string>
+    <string name="hd_masked_hint" formatted="false">Full contact details show only for requests you have started checking.</string>
+    <string name="hc_sent_badge" formatted="false">Request sent</string>
+    <string name="hc_view_mine" formatted="false">View my request</string>
+    <string name="chat_delete" formatted="false">Delete this chat</string>
+    <string name="chat_delete_confirm" formatted="false">Delete this chat? This cannot be undone.</string>
+    <string name="chat_history" formatted="false">Previous chats</string>
+    <string name="chat_history_none" formatted="false">No previous chats.</string>
+    <string name="chat_msgs" formatted="false">{n} messages</string>
+    <string name="chat_history_note" formatted="false">Chats are deleted automatically after 30 days.</string>
 </resources>

@@ -78,7 +78,9 @@ fun LoginScreen() {
                     val me = runCatching { app.repo.me(force = true) }.getOrNull()
                     runCatching { app.repo.reminders() }  // 알람 다시 맞추기
                     app.home()
-                    if (me != null && me.preferredLanguage != app.lang) app.settings.setLang(me.preferredLanguage)
+                    // [2번 코드 총정리 · 시험에서 발견] 홈으로 넘어가면 이 화면(코루틴)이 닫혀 suspend 언어 저장이 취소됐다
+                    //   → 휴대폰 언어(영어) ≠ 계정 언어(한국어)일 때 계정 언어가 안 바뀌던 것. 홈으로 보낸 뒤 바로(동기) 바꾼다
+                    if (me != null && me.preferredLanguage != app.lang) app.settings.setLangNow(me.preferredLanguage)
                 } catch (e: Throwable) {
                     // [리뷰 #12] 비밀번호 틀림 / 입력 형식 / 서버 문제를 나눠 보여준다
                     val ex = e.toApiException()
@@ -128,7 +130,7 @@ fun SignupScreen() {
         Field(tr(R.string.name), name, { name = it }, maxLength = 50)
         Dropdown(tr(R.string.gender), listOf("FEMALE" to tr(R.string.female), "MALE" to tr(R.string.male)), gender,
             { gender = it }, placeholder = tr(R.string.select_placeholder), modifier = Modifier.testTag("signup_gender"))
-        DateField(tr(R.string.birth), birth, { birth = it }, max = LocalDate.now())
+        DateField(tr(R.string.birth), birth, { birth = it }, max = LocalDate.now(), placeholder = tr(R.string.birth_hint))
         Dropdown(tr(R.string.nationality),
             listOf("CN" to tr(R.string.nat_cn), "JP" to tr(R.string.nat_jp), "US" to tr(R.string.nat_us),
                 "KR" to tr(R.string.nat_kr), "" to tr(R.string.nat_other)),
@@ -139,10 +141,11 @@ fun SignupScreen() {
             "KAKAOTALK" to "KakaoTalk 카카오톡", "TELEGRAM" to "Telegram"), messenger, { messenger = it })
         Field(tr(R.string.messenger_id), messengerId, { messengerId = it }, placeholder = tr(R.string.messenger_id_hint), maxLength = 50)
 
-        AgreeRow(tr(R.string.agree_privacy), agreePrivacy, { agreePrivacy = it }, showPrivacy, { showPrivacy = !showPrivacy },
-            tr(R.string.privacy_full))
-        AgreeRow(tr(R.string.agree_terms), agreeTerms, { agreeTerms = it }, showTerms, { showTerms = !showTerms },
-            tr(R.string.terms_full))
+        // 체크하면 전문을 바로 아래에 펼친다 (웹 #49 · 무엇에 동의하는지 보고 넘어가게). 체크를 풀어도 펼친 채로 둔다
+        AgreeRow(tr(R.string.agree_privacy), agreePrivacy, { agreePrivacy = it; if (it) showPrivacy = true }, showPrivacy,
+            { showPrivacy = !showPrivacy }, tr(R.string.privacy_full))
+        AgreeRow(tr(R.string.agree_terms), agreeTerms, { agreeTerms = it; if (it) showTerms = true }, showTerms,
+            { showTerms = !showTerms }, tr(R.string.terms_full))
 
         PrimaryButton(tr(R.string.signup), enabled = agreePrivacy && agreeTerms && !busy, onClick = {
             val form = Validators.SignUpForm(email, pw, name, gender, birth, phone, messenger, messengerId, agreePrivacy, agreeTerms)

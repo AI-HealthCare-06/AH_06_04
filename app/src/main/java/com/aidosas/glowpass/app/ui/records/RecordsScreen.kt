@@ -70,6 +70,7 @@ fun RecordsScreen() {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         Text("${r.visitDate} · ${r.hospitalName}", fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
                         if (r.source == "OCR") Tag(tr(R.string.ocr_badge))
+                        if (r.source == "HOSPITAL") Tag(tr(R.string.hospital_sent_badge))  // [10/26 멘토링 · 웹 #52] 병원이 보낸 기록
                     }
                     val sub = listOfNotNull(r.procedureName, r.items.joinToString(", ") { it.drugName }.ifBlank { null }).joinToString(" / ")
                     if (sub.isNotBlank()) MutedText(sub)

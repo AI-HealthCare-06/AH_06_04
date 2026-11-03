@@ -21,6 +21,10 @@
     <string name="guides_none" formatted="false">まだガイドがありません。</string>
     <string name="guide_context_title" formatted="false">ガイドに使われる最近の記録の要約</string>
     <string name="ocr_camera" formatted="false">📷 写真を撮る</string>
+    <string name="ocr_pdf" formatted="false">📄 PDFファイルを選ぶ</string>
+    <string name="design_title" formatted="false">画面デザイン</string>
+    <string name="design_mocha" formatted="false">クリーム・モカ（標準）</string>
+    <string name="design_sky" formatted="false">スカイブルー・ミント</string>
     <string name="ocr_gallery" formatted="false">🖼 ギャラリーから選ぶ</string>
     <string name="val_required" formatted="false">必須項目を入力してください。</string>
     <string name="val_email" formatted="false">メールアドレスの形式を確認してください。</string>

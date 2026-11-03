@@ -47,7 +47,7 @@ class AppState(
     var demo by mutableStateOf(false)  // 감수 전 안내문으로 데모 운영 중 (GET /service-info)
     var loginMessage by mutableStateOf<String?>(null)
     var ready by mutableStateOf(repo.session.isLoggedIn)  // 앱을 켤 때 로그인 잇기(refresh)가 끝났는지
-    val lang: String get() = Settings.currentAppLang()
+    val lang: String get() = settings.langSync()
     val loggedIn: Boolean get() = repo.session.isLoggedIn
 
     // 화면 이동은 늘 메인 스레드에서 (서버 응답을 받은 스레드에서 부르면 Navigation 이 멈춘다)

@@ -102,12 +102,12 @@ class GlowPassRepository(private val client: ApiClient, private val onRemindersC
         apiCall { api.guideFeedback(id, GuideFeedbackRequest(rating.uppercase(), reason?.uppercase())) }
     suspend fun contentAssets(guideId: Long) = apiCall { api.contentAssets(guideId) }
 
-    // ── 처방전 사진 ── 올리고 → 1초마다 결과 확인 (최대 약 40초, 웹과 같다)
+    // ── 처방전 사진 · PDF ── 올리고 → 1초마다 결과 확인 (최대 약 60초, 웹 #63 과 같다)
     suspend fun ocr(bytes: ByteArray, mime: String): OcrJob {
-        val part = MultipartBody.Part.createFormData("file", if (mime == "image/png") "photo.png" else "photo.jpg",
-            bytes.toRequestBody(mime.toMediaType()))
+        val name = when (mime) { "image/png" -> "photo.png"; "application/pdf" -> "prescription.pdf"; else -> "photo.jpg" }
+        val part = MultipartBody.Part.createFormData("file", name, bytes.toRequestBody(mime.toMediaType()))
         val accepted = apiCall { api.uploadPrescription(part) }
-        repeat(40) {
+        repeat(60) {  // 웹 #63: 확대 조각까지 읽으면 더 걸린다 → 최대 약 60초
             val job = apiCall { api.ocrJob(accepted.jobId) }
             if (job.status != "PENDING") return job
             delay(1000)
@@ -124,6 +124,9 @@ class GlowPassRepository(private val client: ApiClient, private val onRemindersC
     suspend fun contact(id: Long) = apiCall { api.contact(id) }.data
     suspend fun requestContact(body: HospitalContactCreateRequest) = apiCall { api.createContact(body) }.data
     suspend fun changeContact(id: Long, status: String) = apiCall { api.changeContact(id, ContactStatusRequest(status)) }.data
+    /** 병원 접수대 → 환자에게 시술 기록 보내기 (서버가 환자 언어로 가이드도 만든다 · guideId 가 null 이면 가이드만 건너뜀) */
+    suspend fun sendRecordToPatient(contactId: Long, body: com.aidosas.glowpass.app.data.dto.HospitalSentRecordRequest) =
+        apiCall { api.sendRecordToPatient(contactId, body) }.data
 
     // ── 알림 ── 목록을 받을 때마다 휴대폰 알람을 다시 맞춘다 (onRemindersChanged)
     suspend fun reminders(): List<Reminder> = apiCall { api.reminders() }.also(onRemindersChanged)
@@ -141,6 +144,11 @@ class GlowPassRepository(private val client: ApiClient, private val onRemindersC
     // ── 챗봇 ──
     suspend fun chatLangs() = apiCall { api.chatLangs() }
     suspend fun newConversation(lang: String) = apiCall { api.newConversation(NewConversationRequest(lang)) }
+    suspend fun conversations() = apiCall { api.conversations() }.items
+    suspend fun deleteConversation(id: String) {
+        val res = apiCall { api.deleteConversation(id) }
+        if (!res.isSuccessful && res.code() != 404) throw ApiException(res.code(), null)  // 이미 지워졌어도 괜찮다
+    }
     suspend fun chatMessages(id: String) = apiCall { api.chatMessages(id) }
     suspend fun chatUsage() = apiCall { api.chatUsage() }
     suspend fun safetyAlerts() = apiCall { api.safetyAlerts() }.data.items

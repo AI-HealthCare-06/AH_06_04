@@ -49,6 +49,6 @@ fun Context.errorText(e: Throwable): String {
     // 원인 찾기용 (종류 · 상태코드만 — 요청 본문 · 토큰은 남기지 않는다)
     android.util.Log.w("GlowPass", "요청 실패 status=${ex.status} cause=${(ex.cause ?: e)::class.java.name}: ${(ex.cause ?: e).message?.take(200)}")
     if (ex.status == -2) return str("ocr_failed")
-    val (key, detail) = errorKeyOrDetail(ex, Settings.currentAppLang())
+    val (key, detail) = errorKeyOrDetail(ex, Settings.currentAppLang(this))
     return detail ?: str(key ?: "err_generic")
 }

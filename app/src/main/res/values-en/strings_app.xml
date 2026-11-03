@@ -21,6 +21,10 @@
     <string name="guides_none" formatted="false">No guides yet.</string>
     <string name="guide_context_title" formatted="false">Summary of recent records used for guides</string>
     <string name="ocr_camera" formatted="false">📷 Take a photo</string>
+    <string name="ocr_pdf" formatted="false">📄 Choose a PDF file</string>
+    <string name="design_title" formatted="false">Screen design</string>
+    <string name="design_mocha" formatted="false">Cream · Mocha (default)</string>
+    <string name="design_sky" formatted="false">Sky blue · Mint</string>
     <string name="ocr_gallery" formatted="false">🖼 Choose from gallery</string>
     <string name="val_required" formatted="false">Please fill in the required fields.</string>
     <string name="val_email" formatted="false">Please check the email format.</string>

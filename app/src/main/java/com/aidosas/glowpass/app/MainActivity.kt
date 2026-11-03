@@ -7,7 +7,10 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import com.aidosas.glowpass.app.ui.Design
 import com.aidosas.glowpass.app.ui.AppRoot
 import com.aidosas.glowpass.app.ui.GlowPassTheme
 
@@ -23,7 +26,9 @@ class MainActivity : AppCompatActivity() {
         intent?.removeExtra(EXTRA_ROUTE)
         val app = application as GlowPassApp
         setContent {
-            GlowPassTheme {
+            // 디자인(크림·모카 / 스카이블루·민트)을 바꾸면 바로 다시 그린다
+            val design by app.settings.design.collectAsState(initial = Design.MOCHA)
+            GlowPassTheme(design) {
                 AppRoot(app, pendingRoute.value) { pendingRoute.value = null }
             }
         }

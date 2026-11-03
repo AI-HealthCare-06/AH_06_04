@@ -3,6 +3,8 @@
 //   대화방: 이 로그인 동안 쓰던 게 있으면 이어서, 없거나 언어가 바뀌었으면 새로
 //   내 최근 진료기록의 약·시술 이름을 context 로 보낸다 ("이 약 먹고 …" 의 '이 약')
 //   응급 신호면 맨 위에 빨간 안내(119 먼저) → 위험 신호 번호로 '병원에 연락 요청' 까지
+//   [2번 코드 총정리] 대화 관리(새 대화 · 이 대화 삭제 · 이전 대화 목록 · 웹 #51) · 답 왼쪽 위 캐릭터(#53)
+//   · 출처는 기관 이름 한 줄(#57) · 답할 자료가 없거나 진단 질문이면 병원으로 이어 주는 버튼
 // ─────────────────────────────────────────────
 package com.aidosas.glowpass.app.ui.chat
 
@@ -24,6 +26,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -41,14 +44,16 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.aidosas.glowpass.app.R
 import com.aidosas.glowpass.app.data.repository.CHAT_LANG
+import com.aidosas.glowpass.app.ui.BotAvatar
 import com.aidosas.glowpass.app.ui.Danger
+import com.aidosas.glowpass.app.ui.LocalPalette
 import com.aidosas.glowpass.app.ui.Dropdown
 import com.aidosas.glowpass.app.ui.EmergencyCard
 import com.aidosas.glowpass.app.ui.ErrorText
 import com.aidosas.glowpass.app.ui.FeedbackBar
 import com.aidosas.glowpass.app.ui.LocalApp
 import com.aidosas.glowpass.app.ui.MutedText
-import com.aidosas.glowpass.app.ui.PinkSoft
+import com.aidosas.glowpass.app.ui.BrandSoft
 import com.aidosas.glowpass.app.ui.Routes
 import com.aidosas.glowpass.app.ui.Screen
 import com.aidosas.glowpass.app.ui.Tag
@@ -71,9 +76,12 @@ private class Bubble(val user: Boolean, text: String, outcome: String? = null) {
     var outcome by mutableStateOf(outcome)
     var messageId by mutableStateOf<Long?>(null)
     var notice by mutableStateOf<String?>(null)
-    var sources by mutableStateOf<List<Pair<String, Boolean?>>>(emptyList())
+    var sources by mutableStateOf<List<Src>>(emptyList())
     var error by mutableStateOf(false)
 }
+
+/** 답의 근거 안내문 — 제목 · 감수 여부 · 펴낸 기관(NHS · MFDS …) */
+private data class Src(val title: String, val reviewed: Boolean?, val publishers: List<String>)
 
 private fun JsonObject.str(k: String) = (this[k] as? kotlinx.serialization.json.JsonPrimitive)?.contentOrNull
 private fun JsonObject.long(k: String) = (this[k] as? kotlinx.serialization.json.JsonPrimitive)?.longOrNull
@@ -97,6 +105,9 @@ fun ChatScreen() {
     var usage by remember { mutableStateOf<String?>(null) }
     var showAlerts by remember { mutableStateOf(false) }
     var reset by remember { mutableStateOf(0) }
+    var askDelete by remember { mutableStateOf(false) }
+    var history by remember { mutableStateOf<List<com.aidosas.glowpass.app.data.dto.ConversationSummary>?>(null) }
+    var historyBusy by remember { mutableStateOf(false) }
     val list = rememberLazyListState()
     val keyboard = androidx.compose.ui.platform.LocalSoftwareKeyboardController.current
     val focus = androidx.compose.ui.platform.LocalFocusManager.current
@@ -106,14 +117,14 @@ fun ChatScreen() {
     }
 
     LaunchedEffect(lang, reset) {
-        bubbles.clear(); emergency = false; alertId = null; err = null
+        bubbles.clear(); emergency = false; alertId = null; err = null; history = null
         try {
             // 내 최근 진료기록의 약·시술 이름 (최대 10개)
             val latest = runCatching { app.repo.records(limit = 1) }.getOrNull()?.firstOrNull()
             context = latest?.let { (listOfNotNull(it.procedureName) + it.items.map { i -> i.drugName }).take(10) } ?: emptyList()
             val saved = app.repo.session.chatConversation
             var id: String? = null
-            if (saved != null && saved.second == lang && reset == 0) {
+            if (saved != null && saved.second == lang) {  // 새 대화를 누르면 saved 를 비운다 → 아래에서 새로 만든다
                 id = runCatching {
                     app.repo.chatMessages(saved.first).messages.forEach { m -> bubbles += Bubble(m.role == "user", m.content, m.outcome) }
                     saved.first
@@ -141,7 +152,7 @@ fun ChatScreen() {
         val box = Bubble(false, "…").also { bubbles += it }
         job = scope.launch {
             var started = false
-            var sources = emptyList<Pair<String, Boolean?>>()
+            var sources = emptyList<Src>()
             try {
                 app.repo.ask(id, q, lang, context).collect { ev ->
                     val d = ev.data
@@ -153,7 +164,8 @@ fun ChatScreen() {
                         }
                         "sources" -> sources = (d["docs"] as? JsonArray)?.mapNotNull { el ->
                             val o = el as? JsonObject ?: return@mapNotNull null
-                            (o.str("title") ?: return@mapNotNull null) to (o["reviewed"]?.jsonPrimitive?.booleanOrNull)
+                            Src(o.str("title") ?: return@mapNotNull null, o["reviewed"]?.jsonPrimitive?.booleanOrNull,
+                                (o["publishers"] as? JsonArray)?.mapNotNull { p -> p.jsonPrimitive.contentOrNull } ?: emptyList())
                         } ?: emptyList()
                         "notice" -> box.notice = d.str("text")
                         "done" -> {
@@ -187,13 +199,42 @@ fun ChatScreen() {
         if (emergency) androidx.compose.foundation.layout.Box(Modifier.heightIn(max = 260.dp).verticalScroll(rememberScrollState())) {
             EmergencyCard(alertId) { app.go(Routes.hospitals(alert = it)) }
         }
-        LazyColumn(state = list, modifier = Modifier.weight(1f).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        LazyColumn(state = list, modifier = Modifier.weight(1f).fillMaxWidth().testTag("chat_list"), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     MutedText(tr(R.string.chat_intro))
                     if (context.isNotEmpty()) FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         MutedText(tr(R.string.chat_context), small = true)
                         context.forEach { Tag(it) }
+                    }
+                    // 대화 관리 줄: 새 대화 · 이 대화 삭제 · 이전 대화 목록 (민감한 내용이라 사용자가 직접 지울 수 있어야 한다)
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedButton(onClick = { job?.cancel(); app.repo.session.chatConversation = null; reset++ },
+                            modifier = Modifier.testTag("chat_new")) { Text(tr(R.string.chat_new)) }
+                        OutlinedButton(onClick = { askDelete = true }, enabled = convId != null && job == null,
+                            modifier = Modifier.testTag("chat_delete")) { Text(tr(R.string.chat_delete)) }
+                        OutlinedButton(enabled = !historyBusy, modifier = Modifier.testTag("chat_history"), onClick = {
+                            historyBusy = true
+                            scope.launch {
+                                try { history = app.repo.conversations().filter { it.conversationId != convId } }
+                                catch (e: Throwable) { err = ctx.errorText(e) } finally { historyBusy = false }
+                            }
+                        }) { Text(tr(R.string.chat_history)) }
+                    }
+                    history?.let { list ->
+                        com.aidosas.glowpass.app.ui.Section(tr(R.string.chat_history)) {
+                            if (list.isEmpty()) MutedText(tr(R.string.chat_history_none))
+                            list.forEach { c ->
+                                com.aidosas.glowpass.app.ui.ClickRow(c.preview.ifBlank { "…" },
+                                    "${(c.lastMessageAt ?: c.createdAt).take(16).replace("T", " ")} · ${tr(R.string.chat_msgs, "n" to c.messageCount)}",
+                                    onClick = {  // 그 대화를 연다 (대화 언어로 맞춘다)
+                                        job?.cancel()
+                                        app.repo.session.chatConversation = c.conversationId to c.lang
+                                        if (lang != c.lang) lang = c.lang else reset++
+                                    })
+                            }
+                            MutedText(tr(R.string.chat_history_note), small = true)
+                        }
                     }
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         val opts = langs.data?.takeIf { it.isNotEmpty() }?.map { it.code to it.name }
@@ -207,7 +248,6 @@ fun ChatScreen() {
             items(bubbles) { b -> BubbleView(b, convId) }
             item {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    TextButton(onClick = { job?.cancel(); app.repo.session.chatConversation = null; reset++ }) { Text(tr(R.string.chat_new)) }
                     TextButton(onClick = { showAlerts = !showAlerts }) { Text(tr(R.string.chat_alerts)) }
                 }
                 if (showAlerts) Alerts()
@@ -220,6 +260,22 @@ fun ChatScreen() {
             else Button(onClick = send, enabled = convId != null && input.isNotBlank(), modifier = Modifier.testTag("chat_send")) { Text(tr(R.string.send)) }
         }
     }
+    if (askDelete) androidx.compose.material3.AlertDialog(
+        onDismissRequest = { askDelete = false },
+        text = { Text(tr(R.string.chat_delete_confirm)) },
+        confirmButton = {
+            TextButton(onClick = {
+                askDelete = false
+                val id = convId
+                scope.launch {
+                    if (id != null) runCatching { app.repo.deleteConversation(id) }  // 이미 지워졌어도 새 대화로
+                    app.repo.session.chatConversation = null
+                    reset++
+                }
+            }, modifier = Modifier.testTag("chat_delete_ok")) { Text(tr(R.string.chat_delete)) }
+        },
+        dismissButton = { TextButton(onClick = { askDelete = false }) { Text(tr(R.string.cancel)) } },
+    )
 }
 
 private fun tr_fill(ctx: android.content.Context, used: Int, limit: Int) =
@@ -230,22 +286,32 @@ private fun tr_fill(ctx: android.content.Context, used: Int, limit: Int) =
 private fun BubbleView(b: Bubble, convId: String?) {
     val app = LocalApp.current
     val bg = when {
-        b.user -> PinkSoft
-        b.error || b.outcome == "emergency" || b.outcome == "blocked" -> WarnBg
-        else -> androidx.compose.ui.graphics.Color.White
+        b.user -> BrandSoft
+        b.error || b.outcome == "emergency" || b.outcome == "blocked" || b.outcome == "no_doc" || b.outcome == "limit" -> WarnBg
+        else -> LocalPalette.current.card2
     }
     Column(Modifier.fillMaxWidth(), horizontalAlignment = if (b.user) Alignment.End else Alignment.Start) {
-        Column(Modifier.widthIn(max = 320.dp).background(bg, RoundedCornerShape(14.dp)).padding(10.dp).testTag(if (b.user) "msg_user" else "msg_bot"),
-            verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Text(b.text, color = if (b.error) Danger else androidx.compose.ui.graphics.Color.Unspecified)
-            if (b.sources.isNotEmpty()) FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                MutedText(tr(R.string.chat_sources), small = true)
-                b.sources.forEach { Tag(it.first) }
-                // 감수 전 안내문이 근거에 섞였으면 그 사실을 답 바로 아래에 밝힌다
-                if (b.sources.any { it.second == false }) Tag(tr(R.string.unreviewed_badge), warn = true)
+        Row(verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            if (!b.user) BotAvatar()  // 답 왼쪽 위 캐릭터 — 누가 말하는지 보이게 (웹 #53)
+            Column(Modifier.widthIn(max = 300.dp).background(bg, RoundedCornerShape(14.dp)).padding(10.dp).testTag(if (b.user) "msg_user" else "msg_bot"),
+                verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(b.text, color = if (b.error) Danger else androidx.compose.ui.graphics.Color.Unspecified)
+                if (b.sources.isNotEmpty()) {
+                    // 답 아래 한 줄: '📚 출처: 영국 NHS · 식약처 (의료진 감수 전)' — 긴 안내문 제목 대신 기관 이름 (웹 #57)
+                    val orgs = b.sources.flatMap { it.publishers }.distinct().map { trKey("pub_$it") }
+                    val names = orgs.ifEmpty { b.sources.map { it.title } }
+                    val unreviewed = b.sources.any { it.reviewed == false }  // 감수 전 안내문이 섞였으면 같은 줄에
+                    MutedText("📚 ${tr(R.string.chat_src_from)} ${names.joinToString(" · ")}" +
+                        if (unreviewed) " (${tr(R.string.chat_src_unreviewed)})" else "", small = true)
+                }
             }
         }
         b.notice?.let { MutedText(it, small = true) }
+        // 답할 자료가 없거나 진단·처방 질문이면 병원으로 이어 준다 (막다른 길로 끝나지 않게 · 웹 #53)
+        if (!b.user && (b.outcome == "no_doc" || b.outcome == "blocked")) Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            OutlinedButton(onClick = { app.go(Routes.hospitals()) }, modifier = Modifier.testTag("chat_link_hosp")) { Text(tr(R.string.hosp_title)) }
+            OutlinedButton(onClick = { app.go(Routes.CONTACTS) }) { Text(tr(R.string.hc_mine)) }
+        }
         val mid = b.messageId
         if (!b.user && mid != null && convId != null) FeedbackBar(null) { rating, reason -> app.repo.chatFeedback(convId, mid, rating, reason) }
     }
