@@ -37,6 +37,7 @@ async function hospitalsView(params = new URLSearchParams()) {
           const sent = openByHospital[x.hospital_id];
           return h("div", { class: "item" + (sent ? " requested" : "") },
             h("strong", {}, x.name), " ", sent ? h("span", { class: "badge hot" }, `${t("hc_sent_badge")} · ${t(`hc_status_${sent.status}`)}`) : null,
+            x.auto_reply ? h("span", { class: "badge" }, t("hosp_auto_badge")) : null,  // [11/4] 데모 '바로 답장' 병원
             h("div", { class: "muted" }, `${x.department} · ${x.address}`),
             h("div", {}, x.languages.map((l) => h("span", { class: "badge" }, LANG_NAME[l] || l)), " "),
             h("a", { class: "btn secondary", href: `tel:${x.phone}` }, `📞 ${x.phone}`),
@@ -116,7 +117,7 @@ async function contactsView() {
 function fmtWhen(iso) { const d = new Date(iso); return `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`; }
 
 // [11/3] 상담 메시지 묶음 — 환자 화면과 접수대가 같이 쓴다. mine = 내 쪽(patient 또는 hospital)
-function threadBox(contactId, mine, closed, onSent) {
+function threadBox(contactId, mine, closed, onSent, autoReply = false) {
   const log = h("div", { class: "chatlog thread" });
   const load = async () => {
     const { data } = await api("GET", `/hospital-contacts/${contactId}/messages`);
@@ -132,7 +133,15 @@ function threadBox(contactId, mine, closed, onSent) {
   const send = h("button", { class: "btn", type: "button", onclick: async () => {
     const body = input.value.trim(); if (!body) return;
     send.disabled = true;
-    try { await api("POST", `/hospital-contacts/${contactId}/messages`, { body }); input.value = ""; await load(); if (onSent) onSent(); }
+    try {
+      await api("POST", `/hospital-contacts/${contactId}/messages`, { body }); input.value = "";
+      if (autoReply && mine === "patient") {  // [11/4] 바로 답장 병원: 답은 이미 서버에 있지만, 사람이 치는 것처럼 잠깐 '입력 중…'
+        log.append(h("div", { class: "msg bot plain typing" }, h("span", { class: "who" }, t("cv_hospital")), t("cv_typing")));
+        log.scrollTop = log.scrollHeight;
+        await new Promise((r) => setTimeout(r, 1400));
+      }
+      await load(); if (onSent) onSent();
+    }
     catch (ex) { err.textContent = ex.message; }
     send.disabled = false;
   } }, mine === "patient" ? t("cv_send") : t("hd_reply"));
@@ -151,8 +160,28 @@ async function contactThreadView(id) {
     h("div", { class: "card today" }, h("h2", {}, t("cv_title")),
       h("div", { class: "trow" }, h("i", { class: "ic ic-hospital", "aria-hidden": "true" }), h("span", { class: "tl" }, t(`hc_status_${c.status}`)),
         h("b", {}, c.appointment_at ? fmtWhen(c.appointment_at) : t("cv_appt_none")))),
-    h("div", { class: "card" }, threadBox(c.contact_id, "patient", closed),
-      h("p", { class: "muted small" }, t("hc_no_contact_note"))));
+    c.auto_reply && !closed && !c.appointment_at && c.offered_slots.length ? slotPicker(c) : null,
+    h("div", { class: "card" }, threadBox(c.contact_id, "patient", closed, null, c.auto_reply),
+      h("p", { class: "muted small" }, t("hc_no_contact_note")),
+      c.auto_reply ? h("p", { class: "muted small" }, t("hc_auto_note")) : null));
+}
+
+// [11/4] 바로 답장 병원이 제시한 빈 시간 — 하나 고르면 바로 예약 확정 (실제 병원이면 접수대가 확정하는 자리)
+function slotPicker(c) {
+  const err = errorBox();
+  const chips = h("div", { class: "chips" }, c.offered_slots.map((iso) => h("button", { class: "chip", type: "button", onclick: async (e) => {
+    [...e.target.parentNode.children].forEach((b) => (b.disabled = true));
+    try { await api("POST", `/hospital-contacts/${c.contact_id}/appointment`, { appointment_at: iso }); contactThreadView(c.contact_id); }
+    catch (ex) { err.textContent = ex.message; [...e.target.parentNode.children].forEach((b) => (b.disabled = false)); }
+  } }, fmtSlot(iso))));
+  return h("div", { class: "card" }, h("h2", {}, t("cv_pick_slot")), h("p", { class: "muted small" }, t("cv_pick_slot_hint")), chips, err);
+}
+
+// 슬롯 표시: 요일 + 월/일 + 시:분 (기기 시간대)
+function fmtSlot(iso) {
+  const d = new Date(iso);
+  const day = t("cv_weekdays").split(",")[d.getDay()];
+  return `${d.getMonth() + 1}/${d.getDate()} (${day}) ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
 }
 
 // ── 병원 접수대 (#/desk) — 관리자 계정이 병원 역할을 대신해 요청 상태를 바꾼다 (데모) ──

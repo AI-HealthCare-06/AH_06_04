@@ -19,7 +19,7 @@ async def test_search_filters_and_shape():
     assert body["data"]["total"] == len(items) > 0
     for h in items:
         assert "강남구" in h["address"] and h["department"] == "피부과" and "zh" in h["languages"]
-        assert set(h) == {"hospital_id", "name", "department", "address", "phone", "languages"}
+        assert set(h) - {"auto_reply"} == {"hospital_id", "name", "department", "address", "phone", "languages"}
         assert "데모" in h["address"]  # 가짜 데이터임이 보인다
 
 

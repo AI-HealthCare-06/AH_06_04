@@ -41,6 +41,8 @@ class HospitalContactResponse(BaseModel):
     record_id: int | None
     safety_alert_id: int | None
     appointment_at: datetime | None = None  # [11/3] 병원이 잡아 준 예약 일시
+    auto_reply: bool = False  # [11/4] 데모 '바로 답장' 병원인지 (정해진 문구로 자동 답장 · 환자가 빈 시간을 골라 예약)
+    offered_slots: list[datetime] = []  # [11/4] 바로 답장 병원이 제시한 빈 시간 (예약 전·진행 중일 때만)
     created_at: datetime
     updated_at: datetime
 

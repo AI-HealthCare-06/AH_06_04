@@ -271,3 +271,6 @@ details[open] summary::before { content: "▾ "; }
 .drug-check-note { margin: -4px 0 8px; font-size: 13px; color: var(--caution-ink); }
 .chat-links { display: flex; gap: 8px; margin: 4px 0 8px; }
 .chat-links .btn { flex: 1; margin: 0; font-size: 14px; }
+
+/* [11/4] 바로 답장 병원 — '입력 중…' 말풍선 */
+.thread .msg.typing { opacity: .6; font-style: italic; }
