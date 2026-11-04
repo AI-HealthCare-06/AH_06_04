@@ -100,3 +100,28 @@
 {"id": "g110", "lang": "ko", "q": "레이저 후 생긴 색소침착은 얼마나 오래 가요?", "expect": "ok", "doc": "dark-spots-aad"}
 {"id": "g111", "lang": "zh-Hans", "q": "痘印多久能变淡？", "expect": "ok", "doc": "dark-spots-aad"}
 {"id": "g112", "lang": "ja", "q": "色素沈着はどのくらいで薄くなりますか？", "expect": "ok", "doc": "dark-spots-aad"}
+{"id": "g401", "lang": "ko", "q": "울쎄라 받고 붓기 얼마나 가요?", "expect": "ok", "doc": "hifu-lifting-aad"}
+{"id": "g402", "lang": "ko", "q": "써마지 후 효과는 언제부터 나와요?", "expect": "ok", "doc": "rf-tightening-aad"}
+{"id": "g403", "lang": "ko", "q": "실리프팅 실은 언제 녹아요?", "expect": "ok", "doc": "thread-lift-fda"}
+{"id": "g404", "lang": "ko", "q": "물광주사 맞고 멍이 들었어요", "expect": "ok", "doc": "skin-booster-ha-fda"}
+{"id": "g405", "lang": "ko", "q": "필러 녹이는 주사 맞으면 바로 없어져요?", "expect": "ok", "doc": "filler-dissolve-hyaluronidase-fda"}
+{"id": "g406", "lang": "ko", "q": "턱밑 지방분해주사 맞고 부었어요", "expect": "ok", "doc": "fat-dissolving-injection-fda"}
+{"id": "g407", "lang": "ko", "q": "겨드랑이 땀 보톡스 얼마나 가요?", "expect": "ok", "doc": "hyperhidrosis-botulinum-aad"}
+{"id": "g408", "lang": "ko", "q": "멍은 냉찜질이 좋아요 온찜질이 좋아요?", "expect": "ok", "doc": "bruise-care-nhs"}
+{"id": "g409", "lang": "ko", "q": "시술 후 담배 피워도 되나요?", "expect": "ok", "doc": "alcohol-smoking-healing-nhs"}
+{"id": "g410", "lang": "ko", "q": "시술 받고 비행기 타도 돼요?", "expect": "ok", "doc": "flying-after-procedure-nhs"}
+{"id": "g411", "lang": "ko", "q": "IPL 받은 뒤 주의사항", "expect": "ok", "doc": "ipl-photofacial-nhs"}
+{"id": "g412", "lang": "ko", "q": "문신 지우는 레이저 몇 번 받아요?", "expect": "ok", "doc": "tattoo-removal-laser-aad"}
+{"id": "g413", "lang": "ko", "q": "점 빼고 나서 관리 어떻게 해요?", "expect": "ok", "doc": "mole-removal-aad"}
+{"id": "g414", "lang": "ko", "q": "사마귀 냉동치료 후 물집이 생겼어요", "expect": "ok", "doc": "warts-cryotherapy-nhs"}
+{"id": "g415", "lang": "ko", "q": "켈로이드 흉터 관리법", "expect": "ok", "doc": "keloid-scar-care-aad"}
+{"id": "g416", "lang": "ko", "q": "스티바에이 바르고 얼굴이 벗겨져요", "expect": "ok", "doc": "med-tretinoin"}
+{"id": "g417", "lang": "ko", "q": "이부프로펜 먹고 술 마셔도 돼요?", "expect": "ok", "doc": "med-ibuprofen"}
+{"id": "g418", "lang": "zh-Hans", "q": "打了水光针可以洗脸吗", "expect": "ok", "doc": "skin-booster-ha-fda"}
+{"id": "g419", "lang": "zh-Hans", "q": "热玛吉之后多久见效", "expect": "ok", "doc": "rf-tightening-aad"}
+{"id": "g420", "lang": "zh-Hans", "q": "线雕后多久可以坐飞机", "expect": "ok", "doc": "flying-after-procedure-nhs"}
+{"id": "g421", "lang": "en", "q": "How long does HIFU lifting take to show results?", "expect": "ok", "doc": "hifu-lifting-aad"}
+{"id": "g422", "lang": "en", "q": "Can I smoke after my procedure?", "expect": "ok", "doc": "alcohol-smoking-healing-nhs"}
+{"id": "g423", "lang": "en", "q": "My skin feels hot and there is pus", "expect": "ok", "doc": "redness-heat-infection-nhs"}
+{"id": "g424", "lang": "ja", "q": "ハイフの後、腫れはどれくらい続きますか", "expect": "ok", "doc": "hifu-lifting-aad"}
+{"id": "g425", "lang": "ja", "q": "糸リフトの糸はいつ吸収されますか", "expect": "ok", "doc": "thread-lift-fda"}

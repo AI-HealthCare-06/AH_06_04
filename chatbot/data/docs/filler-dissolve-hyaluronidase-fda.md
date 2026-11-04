@@ -1,0 +1,22 @@
+---
+id: filler-dissolve-hyaluronidase-fda
+title_ko: 필러 녹이는 주사(히알루로니다제)와 되돌리기 (가능한 필러·한계·응급 신호)
+title_en: Dissolving or reversing filler (hyaluronidase): which fillers, limits, emergency signs
+title_ja: フィラーを溶かす注射（ヒアルロニダーゼ）と元に戻すこと（対象・限界・緊急サイン）
+title_zh-Hans: 溶解·逆转填充剂（透明质酸酶）：适用范围·局限·紧急信号
+keywords: 녹이, 녹여, 녹는, 녹일, 용해, 용해주사, 히알루로니다제, 히알라제, 되돌리, 되돌릴, 마음에 안, 후회, 혈관 막힘, 혈관이 막, hyaluronidase, hyalase, dissolve, dissolving, dissolved, reverse, reversal, reversible, undo, regret, vascular occlusion, occlusion, 溶解, 溶解酶, 玻尿酸酶, 透明质酸酶, 溶掉, 溶解针, 逆转, 后悔, 血管栓塞, 栓塞, 堵塞血管, ヒアルロニダーゼ, ヒアラーゼ, 溶かす, 溶解注射, 元に戻, 後悔, 血管閉塞, 塞栓
+source: U.S. Food and Drug Administration, Dermal Fillers (Soft Tissue Fillers), https://www.fda.gov/medical-devices/aesthetic-cosmetic-devices/dermal-fillers-soft-tissue-fillers (2026-11-04 확인); FDA, Executive Summary – General Issues Panel Meeting on Dermal Fillers (General and Plastic Surgery Devices Panel, 2025-08-13), https://www.fda.gov/media/188185/download (2026-11-04 확인); FDA, Dermal Filler Do's and Don'ts for Wrinkles, Lips and More, https://www.fda.gov/consumers/consumer-updates/dermal-filler-dos-and-donts-wrinkles-lips-and-more (2026-11-04 확인) · 요약·번역 GlowPass팀
+publisher: FDA
+reviewed: false
+---
+## ko
+미국 식품의약국(FDA)은 넣은 필러를 줄이거나 없애려면 추가 주사·수술 같은 별도 처치가 필요할 수 있고, 그 처치에도 나름의 위험이 있다고 안내합니다. FDA 자문위원회 자료에 따르면 히알루론산 필러를 녹이는 데는 히알루로니다제(히알루론산을 분해하는 효소) 주사가 임상에서 받아들여진 방법이지만, 이 용도는 FDA가 평가·승인한 적응증이 아니며(허가 외 사용) 용량과 주사 방법의 기준도 정립되어 있지 않다고 합니다. 녹이는 주사 뒤 보고된 반응으로는 부기·화끈거림·붉음, 볼륨이 너무 많이 빠짐, 효과 없음 등이 있습니다. 히알루로니다제는 히알루론산 필러에만 해당하고, 폴리락틱산(PLLA)·칼슘 하이드록시아파타이트·PMMA·실리콘 같은 재료에는 되돌리는 약이 없으며, 특히 영구 필러나 히알루론산이 아닌 재료는 제거가 어렵거나 불가능할 수 있다고 FDA는 설명합니다. 그래서 FDA는 필러를 넣기 전에 "나중에 뺄 수 있는지"를 미리 상담하는 것이 가장 좋다고 봅니다. 필러의 가장 심각한 위험은 주사가 혈관에 들어가는 것으로 피부 괴사·시야 이상(실명 포함)·뇌졸중을 일으킬 수 있고 영구적일 수 있으므로, 시술 뒤 피부가 하얗게·거멓게 변하거나 심한 통증, 눈이 안 보이거나 흐려지는 증상이 있으면 기다리지 말고 바로 119 또는 시술 병원으로 연락해야 합니다. 녹이는 시술을 할지, 어떤 제품으로 할지는 시술 병원의 안내가 먼저입니다.
+
+## en
+The U.S. Food and Drug Administration (FDA) explains that reducing or removing a filler may require further procedures such as injections or surgery, and that these carry their own risks. According to the FDA advisory panel material, hyaluronidase (an enzyme that breaks down hyaluronic acid) injection is a clinically accepted way to remove a hyaluronic acid filler, but this use has not been evaluated or approved by the FDA (it is off-label), and standard doses and injection techniques have not been established. Reactions reported after dissolving injections include swelling, burning, redness, too much loss of volume, and lack of effect. Hyaluronidase applies only to hyaluronic acid fillers; poly-L-lactic acid (PLLA), calcium hydroxylapatite, PMMA and silicone have no reversal agent, and the FDA says removal may be difficult or impossible, especially for permanent fillers or materials other than hyaluronic acid. For this reason the FDA believes the best time to discuss whether a filler can be removed later is before it is injected. The most serious filler risk is injection into a blood vessel, which can cause tissue death, vision problems including blindness, or stroke, and may be permanent, so if the skin turns white or dark, there is severe pain, or your vision becomes blurred or lost after treatment, do not wait: call 119 or your clinic at once. Whether to dissolve a filler, and with which product, is for your treating clinic to advise first.
+
+## ja
+米国食品医薬品局（FDA）は、入れたフィラーを減らしたり取り除いたりするには追加の注射や手術などの別の処置が必要になることがあり、その処置にもそれなりのリスクがあると案内しています。FDA諮問委員会の資料によると、ヒアルロン酸フィラーを溶かすにはヒアルロニダーゼ（ヒアルロン酸を分解する酵素）の注射が臨床で受け入れられている方法ですが、この用途はFDAが評価・承認した適応ではなく（適応外使用）、量や注射方法の基準も確立されていないとされています。溶かす注射の後に報告された反応には、腫れ・ひりひり感・赤み、ボリュームの過度な減少、効果がないことなどがあります。ヒアルロニダーゼはヒアルロン酸フィラーにだけ当てはまり、ポリ乳酸（PLLA）・カルシウムハイドロキシアパタイト・PMMA・シリコーンには元に戻す薬がなく、特に永久フィラーやヒアルロン酸以外の材料は除去が難しいか不可能な場合があるとFDAは説明しています。そのためFDAは、フィラーを入れる前に「後で取り除けるか」を相談しておくのが最も良いと考えています。フィラーの最も深刻なリスクは注射が血管に入ることで、皮膚の壊死・視覚の異常（失明を含む）・脳卒中を起こし、後遺症が残ることもあるため、施術後に皮膚が白くまたは黒っぽく変わる、強い痛みがある、目が見えない・かすむといった症状があれば、待たずにすぐ119か施術した病院に連絡してください。溶かす処置をするか、どの製品で行うかは、施術した病院の案内を優先してください。
+
+## zh-Hans
+美国食品药品监督管理局（FDA）说明，要减少或去除已注射的填充剂，可能需要再次注射、手术等额外处理，而这些处理本身也有风险。根据FDA咨询委员会的资料，用透明质酸酶（分解玻尿酸的酶）注射来溶解玻尿酸填充剂是临床上被接受的方法，但这一用途并未经过FDA评估和批准（属于说明书外使用），剂量和注射方法的标准也尚未确立。溶解注射后报告的反应包括肿胀、灼热感、发红、体积减少过多以及没有效果等。透明质酸酶只对玻尿酸填充剂有效；聚左旋乳酸（PLLA）、羟基磷灰石钙、PMMA和硅胶没有逆转药物，FDA指出尤其是永久性填充剂或非玻尿酸材料，去除可能很困难甚至不可能。因此FDA认为，最好在注射之前就先咨询“以后能否取出”。填充剂最严重的风险是注射进入血管，可能导致皮肤坏死、视觉异常（包括失明）或脑卒中，而且可能是永久性的；如果治疗后皮肤发白或发黑、剧烈疼痛、视力模糊或看不见，请不要等待，立即拨打119或联系治疗医院。是否做溶解处理、用哪种产品，请以治疗医院的建议为准。

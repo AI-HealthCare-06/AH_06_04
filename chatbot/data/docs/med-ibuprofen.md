@@ -1,0 +1,22 @@
+---
+id: med-ibuprofen
+title_ko: 이부프로펜 (부루펜 · 소염진통제, 시술 후 통증·위장) 안내
+title_en: Ibuprofen (NSAID painkiller) after a procedure
+title_ja: イブプロフェン（NSAIDs 鎮痛薬、施術後の痛み・胃）
+title_zh-Hans: 布洛芬（非甾体抗炎止痛药，治疗后疼痛·胃肠）
+keywords: 이부프로펜, 부루펜, 이지엔, 소염진통제, 소염제, 애드빌, 속쓰림, 위염, ibuprofen, NSAID, anti-inflammatory, Advil, Nurofen, Brufen, 布洛芬, 芬必得, 非甾体, 消炎止痛, 胃痛, イブプロフェン, 消炎鎮痛, 胃が痛い
+source: NHS, Ibuprofen for adults, https://www.nhs.uk/medicines/ibuprofen-for-adults/ (검토 2025-08-27 · 2026-11-04 확인) · 요약·번역 GlowPass팀
+publisher: NHS
+reviewed: false
+---
+## ko
+영국 NHS는 이부프로펜을 통증과 염증을 줄이는 비스테로이드 소염진통제(NSAID)로 설명하며, 두통, 근육·관절 통증, 부상 뒤 통증, 열 등에 쓴다고 안내합니다. 한국에서 부루펜·이지엔 같은 이름으로 팔리는 성분입니다. NHS는 이부프로펜이 파라세타몰(아세트아미노펜)보다 부작용이 더 많을 수 있어, 파라세타몰을 먹을 수 있는 사람이라면 그것을 먼저 시도해 보는 것이 좋다고 하고, 필요하면 두 가지를 함께 쓸 수도 있지만 각각 따로 먼저 써 보는 것이 합리적이라고 합니다. 일반적으로 물과 함께 통째로 삼키고, 음식과 함께 또는 먹은 뒤에 쓰는 것이 좋으며, 가장 적은 양을 가장 짧은 기간만 쓰고, 의사 조언 없이 10일 넘게 이어서 쓰지 말라고 합니다. 이부프로펜·아스피린·다른 NSAID에 알레르기가 있었거나, 위궤양이 있거나 있었던 사람, 천식·심장·간·신장 질환, 혈액 응고 문제, 뇌졸중 병력이 있는 사람에게는 맞지 않을 수 있고, 임신 중에는 의사·약사가 권하지 않는 한 피하라고 합니다. 흔한 부작용은 소화불량, 복통, 구역, 두통, 발진, 어지러움이며, 어지러우면 가라앉을 때까지 운전을 하지 말라고 합니다. 드물지만 위궤양이나 위 출혈이 생길 수 있어, 심한 복통, 피를 토함, 검은 타르 같은 변, 소변에 피가 섞임, 목이나 혀가 붓거나 숨이 어려운 증상이 있으면 바로 진료(한국에서는 119 또는 시술 병원)가 필요하다고 합니다. 와파린 같은 항응고제, 스테로이드, 일부 항우울제, 혈압약과는 잘 맞지 않을 수 있고, 아스피린·나프록센 같은 다른 NSAID와 함께 쓰면 위궤양 위험이 커진다고 합니다. 술을 많이 마시면 부작용 위험이 커지므로 피하는 것이 좋다고 합니다. 약은 처방한 의사·약사의 설명이 먼저입니다.
+
+## en
+The NHS describes ibuprofen as a non-steroidal anti-inflammatory drug (NSAID) that reduces pain and inflammation, used for headaches, muscle and joint pain, pain after an injury, fever and similar problems. It is the ingredient sold in Korea under names such as Brufen or EZN. The NHS notes that ibuprofen can cause more side effects than paracetamol, so it is a good idea to try paracetamol first if you can use it; the two can be combined if needed, but it is sensible to try each on its own first. Tablets and capsules are generally swallowed whole with water, ideally with or after food, using the smallest amount for the shortest time, and not for more than 10 days in a row without a doctor's advice. It may not be suitable for people who have had an allergic reaction to ibuprofen, aspirin or another NSAID, who have or have had a stomach ulcer, or who have asthma, heart, liver or kidney conditions, blood clotting problems or a previous stroke, and it is avoided in pregnancy unless a doctor or pharmacist advises it. Common side effects are indigestion, stomach ache, nausea, headaches, rash and dizziness; if you feel dizzy, do not drive until it passes. Rarely it can cause stomach ulcers or bleeding, so severe stomach pain, vomiting blood, black tar-like stools, blood in the urine, or swelling of the throat or tongue and difficulty breathing need urgent medical help (119 in Korea, or your clinic). It may not mix well with anticoagulants such as warfarin, steroids, some antidepressants and blood pressure medicines, and combining it with other NSAIDs such as aspirin or naproxen raises the risk of stomach ulcers. Drinking a lot of alcohol increases the risk of side effects, so it is best avoided. Your prescribing doctor's and pharmacist's instructions come first.
+
+## ja
+英国NHSは、イブプロフェンを痛みと炎症を抑える非ステロイド性抗炎症薬（NSAIDs）と説明し、頭痛、筋肉・関節の痛み、けがの後の痛み、発熱などに使うと案内しています。韓国でブルフェンやイージーエンなどの名前で売られている成分です。NHSは、イブプロフェンはパラセタモール（アセトアミノフェン）より副作用が多いことがあるため、パラセタモールが使える人はそれを先に試すのがよいとし、必要なら2つを併用することもできるが、まずそれぞれ単独で試すのが合理的だとしています。一般的に水と一緒にそのまま飲み込み、食事と一緒か食後に使うのがよく、できるだけ少ない量をできるだけ短い期間だけ使い、医師の助言なしに10日を超えて続けないようにとしています。イブプロフェン・アスピリン・他のNSAIDsにアレルギーがあった人、胃潰瘍がある・あった人、喘息、心臓・肝臓・腎臓の病気、血液が固まりにくい問題、脳卒中の既往がある人には合わないことがあり、妊娠中は医師・薬剤師が勧める場合を除いて避けるようにとしています。よくある副作用は消化不良、腹痛、吐き気、頭痛、発疹、めまいで、めまいがあるときは治まるまで運転しないようにとしています。まれに胃潰瘍や胃からの出血が起こることがあるため、強い腹痛、吐血、黒いタール状の便、血尿、のどや舌の腫れや息苦しさがあれば、すぐに受診（韓国では119または施術した病院）が必要だとしています。ワルファリンなどの抗凝固薬、ステロイド、一部の抗うつ薬、血圧の薬とは相性が悪いことがあり、アスピリンやナプロキセンなど他のNSAIDsと併用すると胃潰瘍のリスクが高まるとしています。お酒を多く飲むと副作用のリスクが高まるため控えるのがよいとしています。薬については処方した医師・薬剤師の説明が優先です。
+
+## zh-Hans
+英国NHS将布洛芬描述为减轻疼痛和炎症的非甾体抗炎药（NSAID），用于头痛、肌肉和关节疼痛、受伤后的疼痛、发热等。它就是在韩国以Brufen（부루펜）、EZN等名称销售的成分。NHS指出，布洛芬比对乙酰氨基酚（扑热息痛）更容易引起副作用，所以能用对乙酰氨基酚的人最好先试它；需要时两者可以合用，但先分别单独试用更合理。一般用水整片吞下，最好随餐或饭后使用，用最少的量、最短的时间，没有医生建议不要连续使用超过10天。曾对布洛芬、阿司匹林或其他NSAID过敏的人，现有或曾有胃溃疡的人，以及有哮喘、心脏、肝脏或肾脏疾病、凝血问题或中风病史的人可能不适合使用；怀孕期间除非医生或药师建议，否则应避免。常见副作用有消化不良、胃痛、恶心、头痛、皮疹和头晕；头晕时在缓解前不要开车。少数情况下可能引起胃溃疡或胃出血，所以如出现剧烈腹痛、呕血、黑色柏油样大便、血尿，或喉咙、舌头肿胀和呼吸困难，需要立即就医（在韩国拨打119或联系治疗医院）。它可能与华法林等抗凝药、类固醇、部分抗抑郁药和降压药相互影响；与阿司匹林、萘普生等其他NSAID合用会增加胃溃疡风险。大量饮酒会增加副作用风险，最好避免。用药请以开处方的医生和药师的说明为准。
