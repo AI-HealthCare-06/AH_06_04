@@ -59,10 +59,10 @@ TEXT: dict[str, dict[str, str]] = {
         "ja": "現在AIが回答できません。しばらくしてからもう一度お試しください。",
     },
     "greeting": {
-        "ko": "안녕하세요. GlowPass 생활관리 도우미입니다. 시술 후 생활 습관이나 복약 일정에 대해 물어보세요.",
-        "en": "Hello, I'm the GlowPass care assistant. Ask me about daily care after your treatment or your medicine schedule.",
-        "zh-Hans": "您好，我是GlowPass生活管理助手。可以问我术后日常护理或用药时间安排。",
-        "ja": "こんにちは。GlowPass生活ケアアシスタントです。施術後の過ごし方や服薬スケジュールについてお聞きください。",
+        "ko": "안녕하세요, 글로우봇이에요. 시술 후 생활 습관이나 약·연고 일정에 대해 물어보세요.",
+        "en": "Hi, I'm GlowBot. Ask me about daily care after your treatment or your medication schedule.",
+        "zh-Hans": "您好，我是GlowBot（格洛机器人）。可以问我术后日常护理或用药时间安排。",
+        "ja": "こんにちは、グロウボットです。施術後の過ごし方やお薬・塗り薬のスケジュールについてお聞きください。",
     },
     # 인사·감사·기능 질문 — 안내문을 찾을 필요가 없는 말에 '자료 없음' 으로 답하지 않게 (10/30 멘토링 피드백)
     "chat_hello": {

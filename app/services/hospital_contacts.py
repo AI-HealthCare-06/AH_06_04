@@ -8,12 +8,21 @@ from fastapi import HTTPException, status
 from app.core import config
 from app.core.utils.common import mask_email, mask_messenger_id, mask_phone_number
 from app.dtos.hospital_contacts import (
+    AppointmentRequest,
+    ContactMessageRequest,
+    ContactMessageResponse,
     HospitalContactAdminItem,
     HospitalContactCreateRequest,
     HospitalContactResponse,
 )
 from app.dtos.medical_records import HospitalSentRecordRequest, MedicalRecordResponse
-from app.models.hospital_contacts import ContactMethod, ContactStatus, HospitalContact
+from app.models.hospital_contacts import (
+    ContactMethod,
+    ContactStatus,
+    HospitalContact,
+    HospitalContactMessage,
+    MessageSender,
+)
 from app.models.medical_records import MedicalRecord
 from app.models.users import User
 from app.services import hospitals
@@ -34,6 +43,7 @@ def to_response(c: HospitalContact) -> HospitalContactResponse:
         memo=c.memo,
         record_id=c.record_id,
         safety_alert_id=c.safety_alert_id,
+        appointment_at=c.appointment_at,
         created_at=c.created_at,
         updated_at=c.updated_at,
     )
@@ -42,6 +52,8 @@ def to_response(c: HospitalContact) -> HospitalContactResponse:
 def requester_contact(user: User, method: ContactMethod, full: bool = False) -> str | None:
     """고른 연락 방법에 맞는 연락처 하나만 병원에 보여준다 (필요 이상의 개인정보는 안 넘김)
     full=False 면 가운데를 가린 값 — 병원이 '확인 시작' 을 눌러 맡은 요청만 전체 값을 본다 [10/26 멘토링]"""
+    if method == ContactMethod.APP:
+        return None  # [11/3] 앱 안 메시지 — 병원에 연락처를 넘기지 않는다
     if method == ContactMethod.PHONE:
         return user.phone_number if full else mask_phone_number(user.phone_number)
     if method == ContactMethod.MESSENGER:
@@ -130,6 +142,51 @@ class HospitalContactService:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="요청 취소만 할 수 있습니다.")
         contact.status = new_status
         await contact.save(update_fields=["status", "updated_at"])
+        return contact
+
+    # ── [11/3] 앱 안 상담 메시지 · 예약 ──────────────────────────
+    async def list_messages(self, user: User, contact_id: int) -> list[ContactMessageResponse]:
+        contact = await self.get(user, contact_id)  # 남의 요청은 404
+        rows = await HospitalContactMessage.filter(contact_id=contact.id).order_by("id").limit(200)
+        return [
+            ContactMessageResponse(message_id=m.id, sender=m.sender, body=m.body, created_at=m.created_at) for m in rows
+        ]
+
+    async def add_message(self, user: User, contact_id: int, data: ContactMessageRequest) -> ContactMessageResponse:
+        """환자(요청 당사자)는 patient 로, 관리자(병원 역할)는 hospital 로 보낸다.
+        병원이 처음 답하면 요청은 자동으로 '확인 중' 이 된다 (환자가 따로 상태를 볼 필요 없이)"""
+        contact = await self.get(user, contact_id)
+        if contact.status == ContactStatus.CANCELLED:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT, detail="취소된 요청에는 메시지를 보낼 수 없습니다."
+            )
+        sender = MessageSender.HOSPITAL if user.is_admin and contact.user_id != user.id else MessageSender.PATIENT
+        msg = await HospitalContactMessage.create(contact_id=contact.id, sender=sender, body=data.body.strip())
+        if sender == MessageSender.HOSPITAL and contact.status == ContactStatus.REQUESTED:
+            contact.status = ContactStatus.IN_PROGRESS
+            await contact.save(update_fields=["status", "updated_at"])
+        return ContactMessageResponse(message_id=msg.id, sender=msg.sender, body=msg.body, created_at=msg.created_at)
+
+    async def set_appointment(self, user: User, contact_id: int, data: AppointmentRequest) -> HospitalContact:
+        """병원(관리자)이 예약 일시를 잡는다 → 환자 카드에 예약이 표시되고, 메시지로도 남긴다"""
+        if not user.is_admin:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN, detail="예약 확정은 병원 접수대만 할 수 있습니다."
+            )
+        contact = await self.get(user, contact_id)
+        if contact.status == ContactStatus.CANCELLED:
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="취소된 요청입니다.")
+        # 시간대가 붙은 값을 서비스 시간대(KST)로 맞춰 넣는다 — update 경로는 create 와 달리 변환을 안 해 줘서 9시간 어긋났다
+        appt = (
+            data.appointment_at if data.appointment_at.tzinfo else data.appointment_at.replace(tzinfo=config.TIMEZONE)
+        )
+        contact.appointment_at = appt.astimezone(config.TIMEZONE)
+        if contact.status == ContactStatus.REQUESTED:
+            contact.status = ContactStatus.IN_PROGRESS
+        await contact.save(update_fields=["appointment_at", "status", "updated_at"])
+        when = contact.appointment_at.strftime("%Y-%m-%d %H:%M")  # 메시지에도 KST 로
+        body = f"[예약 확정] {when}" + (f" · {data.note.strip()}" if data.note and data.note.strip() else "")
+        await HospitalContactMessage.create(contact_id=contact.id, sender=MessageSender.HOSPITAL, body=body[:500])
         return contact
 
     async def send_record(

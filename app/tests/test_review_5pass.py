@@ -96,6 +96,13 @@ class TestReview5Pass(TestCase):
         assert rem.status_code == status.HTTP_201_CREATED
         res = await self.client.delete(f"/api/v1/reminders/{rem.json()['id']}", headers=headers)
         assert res.status_code == status.HTTP_204_NO_CONTENT and res.content == b""
+        # [11/3] 바르는 약(연고·크림) 알림도 된다 — 피부 시술 후엔 먹는 약보다 많다
+        top = await self.client.post(
+            "/api/v1/reminders",
+            json={"reminder_type": "TOPICAL", "schedule_time": "2026-10-27T21:00:00+09:00", "repeat_rule": "daily"},
+            headers=headers,
+        )
+        assert top.status_code == status.HTTP_201_CREATED and top.json()["reminder_type"] == "TOPICAL"
 
     # ── 6회차: AI 가 빈 값(null)을 주면 'None' 글자가 아니라 빈 안내 ──
     async def test_guide_llm_null_field_is_empty_not_none_text(self):

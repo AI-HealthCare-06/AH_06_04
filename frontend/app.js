@@ -110,6 +110,9 @@ function onboarding() {
       video,
       h("h1", {}, t("tagline")),
       h("p", { class: "muted" }, t("intro")),
+      // 무엇을 해 주는 앱인지 3단계로 (사전 상담 → 병원 연결 → 사후 관리)
+      h("div", { class: "steps3" }, [["chat", "land_step1"], ["hospital", "land_step2"], ["guide", "land_step3"]].map(([ic, k]) =>
+        h("div", {}, h("i", { class: `ic ic-${ic}`, "aria-hidden": "true" }), h("strong", {}, t(k)), h("span", {}, t(k + "_d"))))),
       h("h2", {}, t("choose_lang")),
       h("div", { class: "langs" }, langs.map(([code, name]) =>
         h("button", { class: store.lang === code ? "on" : "", onclick: () => setLang(code) }, name))),
@@ -205,32 +208,33 @@ function signupView() {
 // ── 3. 홈 (내 진료기록 · 내 가이드) ──────────────
 async function home() {
   if (!store.token) return (location.hash = "#/login");
-  const [records, guides, me] = await Promise.all([
+  // 알림·병원 요청은 '오늘' 카드용 — 실패해도 홈은 뜨게 빈 값으로
+  const [records, guides, me, reminders, contacts] = await Promise.all([
     api("GET", "/medical-records"), api("GET", "/guides"), getMe().catch(() => null),
+    api("GET", "/reminders").catch(() => []),
+    api("GET", "/hospital-contacts").then((r) => r.data.items).catch(() => []),
   ]);
+  // 홈에는 최근 기록 2건만 요약 — 자세한 건 '내 시술 기록'(#/records)
   const recordList = records.length
-    ? records.map((r) => h("div", { class: "item" },
-        h("strong", {}, `${r.visit_date} · ${r.hospital_name}`), r.source === "OCR" ? h("span", { class: "badge" }, t("ocr_badge")) : null,
-        r.source === "HOSPITAL" ? h("span", { class: "badge hot" }, t("hospital_sent_badge")) : null,  // [10/26 멘토링] 병원이 보낸 기록
-        h("div", { class: "muted" }, [r.procedure_name, r.items.map((i) => i.drug_name).join(", ")].filter(Boolean).join(" / ")),
-        h("div", { class: "row" },
-          h("button", { class: "btn secondary", onclick: () => makeGuide(r.id) }, t("make_guide")),
-          h("a", { class: "btn secondary", href: `#/contact/${r.id}` }, t("contact_hospital")))))
-    : [h("p", { class: "muted" }, t("no_records"))];
+    ? [...records.slice(0, 2).map((r) => recordRow(r, guides, true)),
+       records.length > 2 ? h("a", { class: "more", href: "#/records" }, `${t("rec_view_all")} (${records.length}) →`) : null]
+    : [h("div", { class: "empty" }, h("i", { class: "ic ic-record", "aria-hidden": "true" }),
+        h("strong", {}, t("rec_empty_title")), h("p", { class: "muted" }, t("rec_empty_body")))];  // 빈 상태: 글 한 줄 대신 그림+설명
   const guideList = guides.map((g) => h("div", { class: "item" },
     h("a", { href: `#/guide/${g.guide_id}` }, `#${g.guide_id} · ${g.created_at.slice(0, 10)}`), " ",
     h("span", { class: "badge" }, t(`status_${g.status}`))));
   render(
     h("h1", {}, t("home_title")),
-    // 메뉴는 타일 격자(.menu, style.css) — 첫 타일(기록 추가)만 짙은 색
+    todayCard(records, guides, reminders, contacts),  // [UX 묶음] 메뉴보다 '지금 상태'를 먼저
+    // 메뉴는 타일 격자(.menu, style.css) — 첫 타일(기록 추가)만 짙은 색. data-icon 은 style.css 의 선 아이콘
     h("nav", { class: "menu", "aria-label": "menu" },
-      h("a", { class: "btn", href: "#/record/new" }, t("add_record")),
-      h("a", { class: "btn secondary", href: "#/chat" }, t("chat_open")),
-      h("a", { class: "btn secondary", href: "#/hospitals" }, t("hosp_title")),
-      h("a", { class: "btn secondary", href: "#/contacts" }, t("hc_mine")),
-      h("a", { class: "btn secondary", href: "#/reminders" }, t("rm_title")),
-      me && me.is_admin ? h("a", { class: "btn secondary", href: "#/desk" }, t("hd_title")) : null),  // 병원 접수대 (관리자만)
-    h("div", { class: "card" }, h("h2", {}, t("my_records")), recordList),
+      h("a", { class: "btn", href: "#/records", "data-icon": "record" }, t("rec_title")),  // [11/3] 환자는 병원이 보낸 기록을 '확인'하는 게 메인
+      h("a", { class: "btn secondary", href: "#/chat", "data-icon": "chat" }, t("chat_open")),
+      h("a", { class: "btn secondary", href: "#/hospitals", "data-icon": "hospital" }, t("hosp_title")),
+      h("a", { class: "btn secondary", href: "#/contacts", "data-icon": "contacts" }, t("hc_mine")),
+      h("a", { class: "btn secondary", href: "#/reminders", "data-icon": "bell" }, t("rm_title")),
+      me && me.is_admin ? h("a", { class: "btn secondary", href: "#/desk", "data-icon": "desk" }, t("hd_title")) : null),  // 병원 접수대 (관리자만)
+    h("div", { class: "card" }, h("h2", {}, t("rec_recent")), recordList),
     guides.length ? h("div", { class: "card" }, h("h2", {}, t("my_guides")), guideList) : null,
     // [배포 전 v2 통독 4] 서버에도 알려 refresh 쿠키를 지운다 (실패해도 이 탭에서는 로그아웃)
     h("button", { class: "btn secondary", onclick: async () => {
@@ -246,6 +250,76 @@ async function home() {
       catch (ex) { alert(ex.message); }
     } }, t("withdraw")),
   );
+}
+
+// 기록 한 건 — 출처 배지(병원에서 보냄/직접/사진) · 시술명 · 처방약 · 병원 안내 · 가이드/문의/알림 버튼
+//   compact=true(홈)면 약 이름만 한 줄, 아니면 처방약 표와 병원 안내까지 다 보여준다
+function recordRow(r, guides, compact) {
+  const g = (guides || []).filter((x) => x.record_id === r.id).sort((x, y) => y.guide_id - x.guide_id)[0];  // 이 기록으로 만든 최신 가이드
+  const srcBadge = r.source === "HOSPITAL" ? h("span", { class: "badge hot" }, t("rec_sent_by"))
+    : r.source === "OCR" ? h("span", { class: "badge" }, t("rec_from_photo")) : h("span", { class: "badge" }, t("rec_manual"));
+  const guideBtn = !g ? h("button", { class: "btn secondary", onclick: () => makeGuide(r.id) }, t("make_guide"))
+    : g.status === "PENDING" ? h("a", { class: "btn secondary", href: `#/guide/${g.guide_id}` }, t("rec_guide_pending"))
+    : h("a", { class: "btn", href: `#/guide/${g.guide_id}` }, t("rec_view_guide"));
+  const items = r.items.length
+    ? (compact ? h("div", { class: "muted" }, r.items.map((i) => i.drug_name).join(", "))
+      : h("ul", { class: "rx" }, r.items.map((i) => h("li", {},
+          h("b", {}, i.drug_name), " ",
+          h("span", { class: "muted" }, [i.dose ? `${t("rec_dose")} ${i.dose}` : null, i.times_per_day ? t("rec_times", { n: i.times_per_day }) : null,
+            i.days ? t("rec_days", { n: i.days }) : null].filter(Boolean).join(" · "))))))
+    : h("div", { class: "muted" }, t("rec_no_items"));
+  return h("div", { class: "item rec" },
+    h("div", { class: "rec-head" }, h("strong", {}, r.hospital_name), srcBadge),
+    h("div", { class: "muted small" }, [r.visit_date, r.procedure_name].filter(Boolean).join(" · ")),
+    // h() 는 자식 배열을 한 단계만 펴므로 중첩 배열 대신 ...펼침으로 넣는다
+    ...(compact ? [items] : [h("p", { class: "lab" }, t("rec_items")), items,
+      ...(r.doctor_note ? [h("p", { class: "lab" }, t("rec_note")), h("div", { class: "notice" }, r.doctor_note)] : [])]),
+    compact
+      ? h("div", { class: "row" }, guideBtn, h("a", { class: "btn secondary", href: `#/contact/${r.id}` }, t("contact_hospital")))
+      : [guideBtn, h("div", { class: "row" },
+          h("a", { class: "btn secondary", href: `#/contact/${r.id}` }, t("contact_hospital")),
+          h("a", { class: "btn secondary", href: "#/reminders" }, t("rec_set_alarm")))]);
+}
+
+// 내 시술 기록 — 병원이 보낸 기록이 메인. 직접 입력은 맨 아래 작은 링크(병원이 안 보내 준 경우·OCR 시연용)
+async function recordsView() {
+  if (!store.token) return (location.hash = "#/login");
+  const [records, guides] = await Promise.all([api("GET", "/medical-records"), api("GET", "/guides")]);
+  const sorted = [...records].sort((x, y) => (y.visit_date > x.visit_date ? 1 : y.visit_date < x.visit_date ? -1 : y.id - x.id));
+  render(h("a", { href: "#/home" }, t("back")),
+    h("h1", {}, t("rec_title")), h("p", { class: "muted" }, t("rec_intro")),
+    h("div", { class: "card" }, sorted.length ? sorted.map((r) => recordRow(r, guides, false))
+      : h("div", { class: "empty" }, h("i", { class: "ic ic-record", "aria-hidden": "true" }),
+          h("strong", {}, t("rec_empty_title")), h("p", { class: "muted" }, t("rec_empty_body")))),
+    h("a", { class: "more center", href: "#/record/new" }, t("rec_manual_link")));
+}
+
+// '오늘' 카드 — 다음 복약 알림 · 진행 중인 병원 요청 · 새 가이드/병원이 보낸 기록. 줄마다 눌러서 바로 이동
+function todayCard(records, guides, reminders, contacts) {
+  const rows = [];
+  // 1) 다음 복약 알림: 오늘 시각 기준으로 가장 가까운 것 (매일 반복은 시각만 비교)
+  const meds = (reminders || []).filter((r) => r.reminder_type === "MEDICATION");
+  if (meds.length) {
+    const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
+    const minOf = (r) => { const d = new Date(r.schedule_time); return d.getHours() * 60 + d.getMinutes(); };
+    const next = [...meds].sort((x, y) => ((minOf(x) - nowMin + 1440) % 1440) - ((minOf(y) - nowMin + 1440) % 1440))[0];
+    rows.push(["bell", t("today_next_rm"), hhmmOf(next.schedule_time), "#/reminders"]);
+  } else rows.push(["bell", t("today_no_rm"), t("today_rm_set"), "#/reminders"]);
+  // 2) 진행 중인 병원 요청 (가장 최근 것)
+  const open = (contacts || []).filter((c) => ["requested", "in_progress"].includes(c.status))
+    .sort((x, y) => (y.created_at > x.created_at ? 1 : -1))[0];
+  if (open) rows.push(["hospital", `${t("today_req")} · ${open.hospital_name}`,
+    open.appointment_at ? fmtWhen(open.appointment_at) : t(`hc_status_${open.status}`), `#/contacts/${open.contact_id}`]);
+  // 3) 병원이 보낸 기록 / 완료된 새 가이드 (둘 중 하나만, 기록이 우선)
+  const sent = (records || []).filter((r) => r.source === "HOSPITAL").length;
+  const done = (guides || []).filter((g) => g.status === "DONE").sort((x, y) => y.guide_id - x.guide_id)[0];
+  if (sent) rows.push(["record", t("today_hospital_rec", { n: sent }), "", "#/records"]);
+  else if (done) rows.push(["guide", t("today_guide_ready"), `#${done.guide_id}`, `#/guide/${done.guide_id}`]);
+  if (!records.length && rows.length === 1) rows.push(["record", t("today_all_good"), "", "#/record/new"]);
+  return h("section", { class: "card today", "aria-label": t("today_title") },
+    h("h2", {}, t("today_title")),
+    rows.map(([icon, label, value, href]) => h("a", { class: "trow", href },
+      h("i", { class: `ic ic-${icon}`, "aria-hidden": "true" }), h("span", { class: "tl" }, label), value ? h("b", {}, value) : null)));
 }
 
 async function makeGuide(recordId) {
@@ -381,7 +455,7 @@ async function recordForm() {
   h("button", { class: "btn secondary", type: "button", onclick: addDrug }, t("add_drug")),
   h("button", { class: "btn", type: "submit" }, t("save")), err);
   // 사진 입력을 맨 위에: 찍으면 아래 칸이 채워지고, 사용자는 확인만 하면 된다
-  render(h("a", { href: "#/home" }, t("back")), h("div", { class: "card" }, h("h1", {}, t("add_record")),
+  render(h("a", { href: "#/records" }, t("back")), h("div", { class: "card" }, h("h1", {}, t("add_record")),
     h("button", { class: "btn secondary", type: "button", onclick: () => fileInput.click() }, "📷 " + t("ocr_upload")),
     h("p", { class: "muted small" }, t("ocr_hint")), fileInput, ocrBox, form));
 }
@@ -529,6 +603,9 @@ async function chatView(params = new URLSearchParams()) {
   // 내 최근 진료기록의 약·시술 이름 → "이 약 먹고 …" 질문에서 '이 약' 이 무엇인지 챗봇이 알 수 있게
   const latest = (await api("GET", "/medical-records?limit=1").catch(() => []))[0];
   const context = latest ? [latest.procedure_name, ...latest.items.map((i) => i.drug_name)].filter(Boolean).slice(0, 10) : [];
+  // [11/3] 시점 맞춤: 최근 시술 이름·날짜를 따로 보낸다 → 서버가 '시술 후 며칠째' 를 계산해 안내문의 기간과 비교해 답한다
+  const treat = latest && latest.procedure_name ? { procedure: latest.procedure_name, procedure_date: latest.visit_date } : {};
+  const dayN = treat.procedure_date ? Math.floor((Date.now() - new Date(treat.procedure_date + "T00:00:00+09:00")) / 86400000) : null;
   const bubble = (role, text) => { const b = h("div", { class: `msg ${role}` }, text); log.append(b); b.scrollIntoView({ block: "end" }); return b; };
 
   // 대화방: 이 탭에서 쓰던 게 있으면 이어서, 없거나 언어가 바뀌었으면 새로
@@ -553,7 +630,7 @@ async function chatView(params = new URLSearchParams()) {
     input.value = "";
     bubble("user", q);
     sendBtn.disabled = true;
-    try { await ask(conv.id, q, lang, bubble, emergencyBox, context); }
+    try { await ask(conv.id, q, lang, bubble, emergencyBox, context, treat); }
     catch (ex) { bubble("bot error", ex.message || t("chat_error")); }
     finally { sendBtn.disabled = false; input.focus(); }
   } }, input, sendBtn);
@@ -589,19 +666,20 @@ async function chatView(params = new URLSearchParams()) {
   render(h("a", { href: "#/home" }, t("back")),
     h("div", { class: "card" }, h("h1", {}, t("chat_title")), h("p", { class: "muted" }, t("chat_intro")),
       h("div", { class: "row" }, newBtn, delBtn, histBtn),
-      context.length ? h("p", { class: "muted small" }, t("chat_context"), " ", context.map((c) => h("span", { class: "badge" }, c))) : null,
+      context.length ? h("p", { class: "muted small" }, t("chat_context"), " ", context.map((c) => h("span", { class: "badge" }, c)),
+        dayN !== null && dayN >= 0 && dayN <= 365 ? h("span", { class: "badge hot" }, t("chat_day_n", { n: dayN })) : null) : null,
       emergencyBox, log, form),
     histBox);
   input.focus();
 }
 
 // 질문 하나 보내고 SSE 답을 끝까지 읽는다
-async function ask(convId, message, lang, bubble, emergencyBox, context = []) {
+async function ask(convId, message, lang, bubble, emergencyBox, context = [], treat = {}) {
   chatAbort = new AbortController();
   const res = await fetch(`${API}/chat/conversations/${convId}/stream`, {
     method: "POST", signal: chatAbort.signal,
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${store.token}` },
-    body: JSON.stringify({ message, lang, context }),
+    body: JSON.stringify({ message, lang, context, ...treat }),
   });
   if (res.status === 401) { store.token = null; location.hash = "#/login"; throw new Error(t("err_login")); }
   if (!res.ok || !res.body) throw new Error(t("chat_error"));
@@ -680,19 +758,28 @@ function setLang(code) {
   route();
 }
 
+let demoOn = false;  // 서비스가 감수 전 안내문으로 데모 중인지 (GET /service-info)
+function syncBanner(hash) {  // 띠는 첫 화면(로그인 전)과 가이드 화면에만 — 모든 화면 위에 두면 첫인상만 깎는다
+  const show = demoOn && (hash === "#/" && !store.token || /^#\/guide\//.test(hash));
+  document.getElementById("demo-banner").hidden = !show;
+}
 async function route() {
   const hash = location.hash || "#/";
   if (chatAbort) { chatAbort.abort(); chatAbort = null; }  // 챗봇 화면을 떠나면 답 받기 중지
+  syncBanner(hash);
   try {
     // [#21 리뷰] async 화면은 await 로 돌려줘야 서버 오류(404 등)가 아래 catch 에 잡혀 화면에 보인다
     if (hash === "#/") return store.token ? await home() : onboarding();
     if (hash === "#/login") return loginView();
     if (hash === "#/signup") return signupView();
     if (hash === "#/home") return await home();
+    if (hash === "#/records") return await recordsView();
     if (hash === "#/record/new") return await recordForm();
     if (hash.startsWith("#/chat")) return await chatView(new URLSearchParams(hash.split("?")[1] || ""));
     if (hash.startsWith("#/hospitals")) return await hospitalsView(new URLSearchParams(hash.split("?")[1] || ""));
     if (hash === "#/contacts") return await contactsView();
+    const ct = hash.match(/^#\/contacts\/(\d+)$/);
+    if (ct) return await contactThreadView(ct[1]);  // [11/3] 병원 상담 대화
     if (hash.startsWith("#/desk")) return await deskView(new URLSearchParams(hash.split("?")[1] || ""));
     if (hash === "#/reminders") return await remindersView();
     const m = hash.match(/^#\/guide\/(\d+)$/);
@@ -712,5 +799,5 @@ setLang(store.lang);
 // 데모 운영(감수 전 안내문 사용) 이면 화면 맨 위에 띠를 띄운다 — 실패해도 화면은 그대로 동작
 fetch(API + "/service-info")
   .then((res) => (res.ok ? res.json() : null))
-  .then((info) => { if (info && info.demo_unreviewed_docs) document.getElementById("demo-banner").hidden = false; })
+  .then((info) => { demoOn = !!(info && info.demo_unreviewed_docs); syncBanner(location.hash || "#/"); })
   .catch(() => {});

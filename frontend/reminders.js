@@ -22,7 +22,7 @@ function hhmmOf(iso) {
 async function remindersView() {
   if (!store.token) return (location.hash = "#/login");
   const items = await api("GET", "/reminders");
-  const type = h("select", {}, ["MEDICATION", "GUIDE_CHECK"].map((v) => h("option", { value: v }, t(`rm_${v}`))));
+  const type = h("select", {}, ["MEDICATION", "TOPICAL", "GUIDE_CHECK"].map((v) => h("option", { value: v }, t(`rm_${v}`))));
   const time = h("input", { type: "time", value: "09:00", required: true });
   const repeat = h("select", {}, ["daily", "none"].map((v) => h("option", { value: v }, t(`rm_repeat_${v}`))));
   const err = errorBox();

@@ -4,7 +4,7 @@ title_ko: 보톡스 맞은 뒤 생활 관리 (만지기·화장·운동·효과 
 title_en: Everyday care after Botox (touching, make-up, exercise, when it works)
 title_ja: ボトックス後の生活ケア（触れる・メイク・運動・効果の時期）
 title_zh-Hans: 打肉毒素后的生活护理（触碰·化妆·运动·见效时间）
-keywords: 운동, 헬스, exercise, gym, workout, 运动, 健身, 運動, ジム
+keywords: 보톡스, 보툴리눔, 운동, 헬스, botox, botulinum, exercise, gym, workout, 肉毒, 肉毒素, 运动, 健身, ボトックス, ボツリヌス, 運動, ジム
 source: Doncaster and Bassetlaw Teaching Hospitals NHS Foundation Trust, Botox Treatment (patient information), https://www.dbth.nhs.uk/botox-treatment/ (2026-10-30 확인) · 요약·번역 GlowPass팀
 publisher: NHS
 reviewed: false

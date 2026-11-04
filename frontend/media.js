@@ -76,7 +76,7 @@ function cardButton(g) {
     // 맨 아래: 출처 · (감수 전이면) 감수 전 표시 · 면책 문구 — 화면과 같은 기준 (카드는 밖으로 퍼지는 용도)
     ctx.fillStyle = MUTED; ctx.font = `26px ${BODY_FONT}`;
     const srcLine = (g.sources || []).map((s) => s.document_title).filter(Boolean).slice(0, 3).join(" · ");
-    const unreviewed = (g.sources || []).some((s) => s.reviewed === false) || !document.getElementById("demo-banner").hidden;
+    const unreviewed = (g.sources || []).some((s) => s.reviewed === false) || (typeof demoOn !== "undefined" && demoOn);  // 띠는 화면에 따라 숨기므로 값으로 본다
     let fy = H - 230;
     if (srcLine) { ctx.fillText(`${t("chat_sources")} ${srcLine}`.slice(0, 60), PAD, fy); fy += 36; }
     if (unreviewed) { ctx.fillStyle = CAUTION; ctx.fillText(`※ ${t("unreviewed_badge")}`, PAD, fy); ctx.fillStyle = MUTED; fy += 36; }

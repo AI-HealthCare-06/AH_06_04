@@ -67,6 +67,7 @@ class FakeLLM:
 
     async def stream(self, messages: list[dict], max_tokens: int, lang: str) -> AsyncIterator[str]:
         self.calls += 1
+        self.last_messages = messages  # 테스트: 실제로 무엇을 보냈는지 확인
         self.usage = Usage(input_tokens=sum(len(m["content"]) for m in messages) // 4)
         if self.fail:
             raise LLMError("fake failure")

@@ -8,7 +8,8 @@ if TYPE_CHECKING:  # 타입 검사(mypy)할 때만 불러온다
 
 
 class ReminderType(StrEnum):
-    MEDICATION = "MEDICATION"
+    MEDICATION = "MEDICATION"  # 먹는 약
+    TOPICAL = "TOPICAL"  # [11/3] 바르는 약 (연고·크림) — 피부 시술 후엔 이쪽이 더 많다
     GUIDE_CHECK = "GUIDE_CHECK"
 
 

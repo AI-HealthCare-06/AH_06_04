@@ -4,7 +4,7 @@ title_ko: 보톡스(보툴리눔 톡신)의 주의 신호 (FDA 환자 안내서)
 title_en: Botox warning signs (FDA Medication Guide)
 title_ja: ボトックスの注意サイン（FDA患者向けガイド）
 title_zh-Hans: 肉毒素（保妥适）的警示信号（FDA用药指南）
-keywords: 보톡스, 보툴리눔, 톡신, 사각턱, botox, botulinum, toxin, ボトックス, ボツリヌス, 肉毒, 肉毒素, 保妥适, 瘦脸针
+keywords: 보톡스, 보툴리눔, 톡신, 사각턱, 맞기 전, 알려야, 알레르기, 임신, 수유, 근육, botox, botulinum, toxin, before botox, tell your doctor, tell my doctor, allergy, pregnan, breastfeed, muscle, ボトックス, ボツリヌス, 打つ前, 伝え, アレルギー, 妊娠, 肉毒, 肉毒素, 保妥适, 瘦脸针, 注射前, 告诉医生, 过敏, 怀孕
 source: 미국 FDA 승인 BOTOX Medication Guide, https://rxabbvie.com/pdf/botox_medguide.pdf (개정 2024-10, 2026-10-23 내용 대조) · 이전판 https://www.fda.gov/media/77359/download (2016-01) · 요약·번역 GlowPass팀
 publisher: FDA
 reviewed: false
