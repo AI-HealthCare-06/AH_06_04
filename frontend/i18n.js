@@ -500,3 +500,13 @@ Object.assign(window.I18N.ko, { chat_day_n: "시술 후 {n}일째" });
 Object.assign(window.I18N.ja, { chat_day_n: "施術後{n}日目" });
 Object.assign(window.I18N.zh, { chat_day_n: "治疗后第{n}天" });
 Object.assign(window.I18N.en, { chat_day_n: "Day {n} after treatment" });
+
+// [11/4] 데모 '바로 답장' 병원 — 상담 요청하면 바로 답장이 오고, 제시된 빈 시간 중 골라 예약
+Object.assign(window.I18N.ko, { hosp_auto_badge: "⚡ 바로 답장", cv_pick_slot: "예약 시간 고르기", cv_pick_slot_hint: "병원이 제시한 빈 시간이에요. 하나를 고르면 바로 확정돼요.",
+  cv_typing: "입력 중…", cv_weekdays: "일,월,화,수,목,금,토", hc_auto_note: "※ 이 병원은 데모용 자동 응답이에요. 정해진 문구로만 답하고, 시술 적합 여부는 방문 상담에서 의료진이 판단해요." });
+Object.assign(window.I18N.ja, { hosp_auto_badge: "⚡ すぐ返信", cv_pick_slot: "予約時間を選ぶ", cv_pick_slot_hint: "病院が提示した空き時間です。ひとつ選ぶとすぐ確定します。",
+  cv_typing: "入力中…", cv_weekdays: "日,月,火,水,木,金,土", hc_auto_note: "※ この病院はデモ用の自動応答です。決まった文面でのみ返信し、施術が合うかは来院時に医療スタッフが判断します。" });
+Object.assign(window.I18N.zh, { hosp_auto_badge: "⚡ 即时回复", cv_pick_slot: "选择预约时间", cv_pick_slot_hint: "这是医院提供的空余时间，选择一个即可立即确定。",
+  cv_typing: "正在输入…", cv_weekdays: "日,一,二,三,四,五,六", hc_auto_note: "※ 本医院为演示用自动回复，仅以固定文字回复；是否适合治疗由到院咨询时的医护人员判断。" });
+Object.assign(window.I18N.en, { hosp_auto_badge: "⚡ Instant reply", cv_pick_slot: "Pick an appointment time", cv_pick_slot_hint: "These are the clinic’s open slots. Pick one and it is confirmed right away.",
+  cv_typing: "typing…", cv_weekdays: "Sun,Mon,Tue,Wed,Thu,Fri,Sat", hc_auto_note: "※ This clinic is a demo auto-reply: it answers with fixed messages only, and whether a treatment suits you is decided by the medical staff at your visit." });

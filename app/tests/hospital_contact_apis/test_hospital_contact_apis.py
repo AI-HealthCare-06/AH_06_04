@@ -264,3 +264,58 @@ class TestInAppConsultation(TestCase):
         assert (
             await self.client.post(f"{URL}/{cid}/messages", json={"body": "늦었지만"}, headers=patient)
         ).status_code == 409
+
+
+class TestAutoReplyHospital(TestCase):
+    """[11/4] 데모 '바로 답장' 병원 — 접수대 사람 없이 상담 요청 → 인사 답장 → 질문 답장 → 환자가 빈 시간 골라 예약 확정"""
+
+    async def asyncSetUp(self):
+        await super().asyncSetUp()
+        self.client = AsyncClient(transport=ASGITransport(app=app), base_url="http://test")
+
+    async def asyncTearDown(self):
+        await self.client.aclose()
+        await super().asyncTearDown()
+
+    async def test_auto_reply_flow(self):
+        patient = await signup_and_login(self.client, "ar_patient@example.com", "01050000041")
+        # 병원 1 = 바로 답장 병원 (hospitals_demo.json auto_reply) · 요청하자마자 인사 답장 + '확인 중' + 빈 시간 제시
+        res = await self.client.post(URL, json={"hospital_id": 1, "memo": "레이저 상담 받고 싶어요"}, headers=patient)
+        assert res.status_code == 201, res.text
+        c = res.json()["data"]
+        assert c["auto_reply"] is True and c["status"] == "in_progress" and len(c["offered_slots"]) == 4
+        cid = c["contact_id"]
+        msgs = (await self.client.get(f"{URL}/{cid}/messages", headers=patient)).json()["data"]["items"]
+        assert len(msgs) == 1 and msgs[0]["sender"] == "hospital" and "자동 응답" in msgs[0]["body"]
+        # 환자 질문 → 정해진 문구로 바로 답장 (비용 질문은 '방문 상담 때 확인' — 가격을 단정하지 않는다)
+        r1 = await self.client.post(f"{URL}/{cid}/messages", json={"body": "레이저 비용이 얼마예요?"}, headers=patient)
+        assert r1.status_code == 201
+        msgs = (await self.client.get(f"{URL}/{cid}/messages", headers=patient)).json()["data"]["items"]
+        assert [m["sender"] for m in msgs] == ["hospital", "patient", "hospital"] and "방문 상담" in msgs[-1]["body"]
+        # 환자가 제시된 시간 중 하나를 고르면 바로 확정 · 제시되지 않은 시간은 422
+        bad = {"appointment_at": "2030-01-01T09:00:00+09:00"}
+        assert (await self.client.post(f"{URL}/{cid}/appointment", json=bad, headers=patient)).status_code == 422
+        slot = c["offered_slots"][1]
+        r2 = await self.client.post(f"{URL}/{cid}/appointment", json={"appointment_at": slot}, headers=patient)
+        assert r2.status_code == 200, r2.text
+        d = r2.json()["data"]
+        assert d["appointment_at"] is not None and d["offered_slots"] == []  # 확정 뒤엔 더 제시하지 않는다
+        msgs = (await self.client.get(f"{URL}/{cid}/messages", headers=patient)).json()["data"]["items"]
+        assert msgs[-1]["body"].startswith("[예약 확정]") and "데모" in msgs[-1]["body"]
+
+    async def test_normal_hospital_is_unchanged(self):
+        # 병원 2 = 보통 병원: 답장 없음 · 'requested' 그대로 · 환자는 예약 확정 못 한다(403)
+        patient = await signup_and_login(self.client, "ar_patient2@example.com", "01050000042")
+        c = (await self.client.post(URL, json={"hospital_id": 2}, headers=patient)).json()["data"]
+        assert c["auto_reply"] is False and c["status"] == "requested" and c["offered_slots"] == []
+        cid = c["contact_id"]
+        await self.client.post(f"{URL}/{cid}/messages", json={"body": "안녕하세요"}, headers=patient)
+        msgs = (await self.client.get(f"{URL}/{cid}/messages", headers=patient)).json()["data"]["items"]
+        assert [m["sender"] for m in msgs] == ["patient"]
+        appt = {"appointment_at": "2030-01-05T11:00:00+09:00"}
+        assert (await self.client.post(f"{URL}/{cid}/appointment", json=appt, headers=patient)).status_code == 403
+        # 바로 답장 병원이라도 전화 요청(contact_method=phone)은 자동 답장이 없다
+        c2 = (await self.client.post(URL, json={"hospital_id": 1, "contact_method": "phone"}, headers=patient)).json()[
+            "data"
+        ]
+        assert c2["auto_reply"] is False and c2["status"] == "requested"

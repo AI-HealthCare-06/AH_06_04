@@ -25,7 +25,7 @@ from app.models.hospital_contacts import (
 )
 from app.models.medical_records import MedicalRecord
 from app.models.users import User
-from app.services import hospitals
+from app.services import contact_autoreply, hospitals
 from app.services.ai_budget import today_start
 from app.services.medical_records import MedicalRecordService
 
@@ -34,6 +34,8 @@ OPEN_STATUSES = (ContactStatus.REQUESTED, ContactStatus.IN_PROGRESS)
 
 
 def to_response(c: HospitalContact) -> HospitalContactResponse:
+    auto = contact_autoreply.enabled(hospitals.get(c.hospital_id)) and c.contact_method == ContactMethod.APP
+    slots = contact_autoreply.offered_slots() if auto and c.appointment_at is None and c.status in OPEN_STATUSES else []
     return HospitalContactResponse(
         contact_id=c.id,
         hospital_id=c.hospital_id,
@@ -44,6 +46,8 @@ def to_response(c: HospitalContact) -> HospitalContactResponse:
         record_id=c.record_id,
         safety_alert_id=c.safety_alert_id,
         appointment_at=c.appointment_at,
+        auto_reply=auto,
+        offered_slots=slots,
         created_at=c.created_at,
         updated_at=c.updated_at,
     )
@@ -98,7 +102,7 @@ class HospitalContactService:
                 status_code=status.HTTP_429_TOO_MANY_REQUESTS,
                 detail="오늘은 요청을 더 보낼 수 없어요. 내일 다시 시도해 주세요.",
             )
-        return await HospitalContact.create(
+        contact = await HospitalContact.create(
             user_id=user.id,
             hospital_id=data.hospital_id,
             hospital_name=str(hospital["name"]),
@@ -107,6 +111,16 @@ class HospitalContactService:
             record_id=data.record_id,
             safety_alert_id=data.safety_alert_id,
         )
+        # [11/4] 데모 '바로 답장' 병원: 접수대 사람 없이도 인사 답장이 바로 오고 요청은 '확인 중' 이 된다
+        if contact_autoreply.enabled(hospital) and data.contact_method == ContactMethod.APP:
+            await HospitalContactMessage.create(
+                contact_id=contact.id,
+                sender=MessageSender.HOSPITAL,
+                body=contact_autoreply.greeting(user.preferred_language, contact.hospital_name)[:500],
+            )
+            contact.status = ContactStatus.IN_PROGRESS
+            await contact.save(update_fields=["status", "updated_at"])
+        return contact
 
     async def get(self, user: User, contact_id: int) -> HospitalContact:
         contact = await HospitalContact.get_or_none(id=contact_id)
@@ -165,27 +179,51 @@ class HospitalContactService:
         if sender == MessageSender.HOSPITAL and contact.status == ContactStatus.REQUESTED:
             contact.status = ContactStatus.IN_PROGRESS
             await contact.save(update_fields=["status", "updated_at"])
+        # [11/4] 데모 '바로 답장' 병원: 환자 메시지엔 정해진 문구로 답한다 (AI 없음 · 의료 판단 없음)
+        if sender == MessageSender.PATIENT and self._auto(contact):
+            await HospitalContactMessage.create(
+                contact_id=contact.id,
+                sender=MessageSender.HOSPITAL,
+                body=contact_autoreply.reply_to(user.preferred_language, msg.body)[:500],
+            )
         return ContactMessageResponse(message_id=msg.id, sender=msg.sender, body=msg.body, created_at=msg.created_at)
 
+    @staticmethod
+    def _auto(contact: HospitalContact) -> bool:
+        return (
+            contact_autoreply.enabled(hospitals.get(contact.hospital_id))
+            and contact.contact_method == ContactMethod.APP
+        )
+
     async def set_appointment(self, user: User, contact_id: int, data: AppointmentRequest) -> HospitalContact:
-        """병원(관리자)이 예약 일시를 잡는다 → 환자 카드에 예약이 표시되고, 메시지로도 남긴다"""
-        if not user.is_admin:
+        """병원(관리자)이 예약 일시를 잡는다 → 환자 카드에 예약이 표시되고, 메시지로도 남긴다
+        [11/4] 데모 '바로 답장' 병원이면 환자 본인도 — 단, 병원이 제시한 빈 시간(offered_slots) 중에서만"""
+        contact = await self.get(user, contact_id)
+        patient_self = not user.is_admin and contact.user_id == user.id and self._auto(contact)
+        if not user.is_admin and not patient_self:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN, detail="예약 확정은 병원 접수대만 할 수 있습니다."
             )
-        contact = await self.get(user, contact_id)
         if contact.status == ContactStatus.CANCELLED:
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="취소된 요청입니다.")
         # 시간대가 붙은 값을 서비스 시간대(KST)로 맞춰 넣는다 — update 경로는 create 와 달리 변환을 안 해 줘서 9시간 어긋났다
         appt = (
             data.appointment_at if data.appointment_at.tzinfo else data.appointment_at.replace(tzinfo=config.TIMEZONE)
-        )
-        contact.appointment_at = appt.astimezone(config.TIMEZONE)
+        ).astimezone(config.TIMEZONE)
+        note = (data.note or "").strip()
+        if patient_self:
+            if appt not in contact_autoreply.offered_slots():
+                raise HTTPException(
+                    status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+                    detail="병원이 제시한 시간 중에서 골라 주세요.",
+                )
+            note = contact_autoreply.confirm_note(user.preferred_language)
+        contact.appointment_at = appt
         if contact.status == ContactStatus.REQUESTED:
             contact.status = ContactStatus.IN_PROGRESS
         await contact.save(update_fields=["appointment_at", "status", "updated_at"])
         when = contact.appointment_at.strftime("%Y-%m-%d %H:%M")  # 메시지에도 KST 로
-        body = f"[예약 확정] {when}" + (f" · {data.note.strip()}" if data.note and data.note.strip() else "")
+        body = f"[예약 확정] {when}" + (f" · {note}" if note else "")
         await HospitalContactMessage.create(contact_id=contact.id, sender=MessageSender.HOSPITAL, body=body[:500])
         return contact
 
