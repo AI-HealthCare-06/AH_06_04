@@ -94,13 +94,13 @@ TEXT: dict[str, dict[str, str]] = {
         "たとえば「レーザーの後、いつからメイクできますか？」のように聞いてください。",
     },
     "no_doc": {
-        "ko": "이 내용은 제가 가진 공식 자료에서 찾지 못해 정확히 말씀드리기 어려워요. 진료받은 병원이나 약사에게 확인해 보시고, 아래에서 병원을 찾거나 문의할 수 있어요. "
-        "시술 이름이나 약 이름을 넣어 다시 물어봐 주셔도 좋아요.",
-        "en": "I couldn't find this in my official sources, so I can't give you a reliable answer. Please check with your clinic or a pharmacist. "
-        "You can find or contact a clinic below, or ask again with the procedure or medicine name.",
-        "zh-Hans": "我在官方资料中没有找到这方面的内容，无法给出准确回答。请向就诊医院或药师确认，也可以在下方查找或联系医院。也欢迎加上项目名称或药名再问一次。",
-        "ja": "この内容は公式資料で見つからず、正確にお答えできません。受診した病院や薬剤師にご確認ください。下から病院を探したり問い合わせたりできます。"
-        "施術名や薬の名前を入れて、もう一度聞いていただいても大丈夫です。",
+        "ko": "이 질문에는 답변드리기 어려워요. 저는 시술 후 관리와 드시는 약에 대해 안내해 드리고 있어요. "
+        "더 궁금한 점은 진료받은 병원이나 약사에게 확인해 주세요. 아래에서 병원을 찾거나 문의할 수 있어요.",
+        "en": "I'm not able to answer this question. I can help with aftercare and the medicines you're taking. "
+        "For anything else, please check with your clinic or a pharmacist. You can find or contact a clinic below.",
+        "zh-Hans": "这个问题我暂时无法回答。我可以介绍术后护理和您正在使用的药物。其他问题请向就诊医院或药师确认，也可以在下方查找或联系医院。",
+        "ja": "このご質問にはお答えできません。施術後のケアやお薬についてご案内しています。"
+        "そのほかのことは、受診した病院や薬剤師にご確認ください。下から病院を探したり問い合わせたりできます。",
     },
 }
 
