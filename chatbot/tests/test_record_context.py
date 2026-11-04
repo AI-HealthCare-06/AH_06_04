@@ -1,7 +1,7 @@
 """FR-01 → 챗봇: '이 약' 질문은 내 진료기록의 약 이름으로 안내문을 찾는다."""
 
 from app.prompt import build_messages
-from app.service import clean_context
+from app.service import clean_context, small_talk_key
 from tests.conftest import ask, done, new_conv
 
 
@@ -80,3 +80,26 @@ async def test_short_followup_reuses_previous_doc(client, llm):
     await ask(client, cid, "레이저 토닝 받고 세안은 어떻게 해요?")
     events = await ask(client, cid, "더 자세히 알려주세요")
     assert done(events)["outcome"] == "ok" and llm.calls == 2
+
+
+def test_small_talk_handles_greeting_joined_with_question():
+    for question in (
+        "안녕? 너는 무엇을 할 수 있어?",
+        "안녕 너는 뭘 할 수 있어",
+        "넌 뭐 해줄 수 있어?",
+        "무슨 기능이 있어?",
+        "Hi, what can you do?",
+    ):
+        assert small_talk_key(question) == "chat_help", question
+    assert small_talk_key("안녕!") == "chat_hello" and small_talk_key("너 누구야?") == "chat_help"
+    assert small_talk_key("안녕하세요, 고마워요") == "chat_thanks"
+
+
+def test_real_questions_are_not_small_talk():
+    for question in (
+        "안녕하세요 레이저 받고 세안은 어떻게 해요?",
+        "안녕? 약 먹고 술 마셔도 돼?",
+        "뭐 먹으면 안 돼요?",
+        "네 알겠는데 필러는요?",
+    ):
+        assert small_talk_key(question) is None, question

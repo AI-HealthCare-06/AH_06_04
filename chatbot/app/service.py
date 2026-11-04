@@ -146,15 +146,31 @@ _SMALL_TALK = {
         re.IGNORECASE,
     ),
     "chat_help": re.compile(
-        r"(넌|너는|당신은|여기서)? ?(뭘|무엇을|뭐|어떤 걸) ?(도와|할 수|물어).*|what can you (do|help).*|你能(做|帮).*|何ができます.*",
+        r"((너는?|넌|니가|네가|당신은|여기서|이 앱은?|글로우봇은?) ?)?"
+        r"((뭘|무엇을|뭐|어떤 ?걸|무슨 ?일을?) ?(도와|할 ?수|해 ?줄|해 ?줘|물어|알려).*|(무슨|어떤) ?기능.*|(누구|뭐)(야|예요|에요|니|세요))"
+        r"|what can you (do|help).*|what do you do|who are you|你能(做|帮).*|你是谁|何ができます.*|あなたは誰.*",
         re.IGNORECASE,
     ),
 }
+_GREETING_FIRST = re.compile(
+    r"^(안녕(하세요|하십니까)?|반가워요?|hi|hello|hey|你好|您好|こんにちは)[\s,]+", re.IGNORECASE
+)
+
+
+def _small_talk_part(text: str) -> str | None:
+    return next((key for key, pattern in _SMALL_TALK.items() if pattern.fullmatch(text)), None)
 
 
 def small_talk_key(question: str) -> str | None:
-    text = question.strip().rstrip("?!.~ …。！？")
-    return next((key for key, pattern in _SMALL_TALK.items() if pattern.fullmatch(text)), None)
+    """문장 전체가 인사·감사·기능 질문일 때만. '안녕? 넌 뭘 할 수 있어?' 처럼 이어지면 마지막 말에 답한다.
+    한 조각이라도 진짜 질문이면 None ('안녕하세요 레이저 후 세안은요?' → 평소처럼 안내문을 찾는다)"""
+    parts = [
+        p.strip()
+        for p in re.split(r"[?!.,~…。！？，、\n]+", _GREETING_FIRST.sub("안녕, ", question.strip()))
+        if p.strip()
+    ]
+    keys = [_small_talk_part(part) for part in parts]
+    return keys[-1] if keys and all(keys) else None
 
 
 # '내 약' 을 가리키는 질문 — 이럴 때만 진료기록의 약·시술 이름으로 안내문을 찾는다
@@ -212,6 +228,7 @@ async def _with_mfds(llm, question: str, lang: str, found: list[docs.Doc], conte
 
 # 특정 시술 후 안내문 — 질문에 시술 얘기가 있을 때만 근거로 쓴다
 _PROCEDURE_DOCS = ("laser-", "filler", "botox", "microneedling-", "rf-microneedling-", "procedure-")
+_MEDICINE_WORD = re.compile(r"약|복용|medicine|medication|pill|藥|药|薬", re.IGNORECASE)
 _SYMPTOM_WORD = re.compile(r"빨개|빨갛|붉")
 _PROCEDURE_TALK = re.compile(
     r"시술|레이저|토닝|피코|필러|보톡스|보툴|미세침|니들|고주파|맞고|맞은|받고|받은"
@@ -231,12 +248,18 @@ def drop_unasked_procedure_docs(question: str, found: list[docs.Doc]) -> list[do
     return [d for d in found if d.id in named or not d.id.startswith(_PROCEDURE_DOCS)]
 
 
+def drop_alcohol_doc_without_medicine(question: str, found: list[docs.Doc]) -> list[docs.Doc]:
+    """'필러 맞고 술 마셔도 돼요?' 처럼 약 얘기가 없으면 약과 술 안내문을 근거로 쓰지 않는다"""
+    about_procedure = _PROCEDURE_TALK.search(question) and not _MEDICINE_WORD.search(question)
+    return [d for d in found if d.id != "alcohol-with-medicine"] if about_procedure else found
+
+
 async def _find_docs(
     conv: Conversation, question: str, first_turn: bool, context: list[str] | None = None, procedure: str | None = None
 ) -> list[docs.Doc]:
     """질문으로 찾기. ① '내 약' 질문이면 기록의 약 이름으로 찾은 안내문을 앞에 ② 못 찾았고 '이어지는 질문' 이면 앞 답의 안내문.
     [11/3] 최근 시술 이름이 있으면 질문에 붙여서 찾는다 — "화장 언제부터?" 가 일반 관리가 아니라 '레이저 후 관리' 를 찾게"""
-    found = await retrieval.search(question, settings.docs_per_answer)  # FR-02: SEARCH_MODE 에 따라 낱말·벡터·혼합
+    found = await retrieval.search(question, settings.docs_per_answer + 1)  # FR-02: SEARCH_MODE 에 따라 낱말·벡터·혼합
     if procedure:
         with_proc = await retrieval.search(f"{question} {procedure}", settings.docs_per_answer)
         if with_proc:
@@ -244,6 +267,9 @@ async def _find_docs(
     if not procedure:
         # 시술 기록이 없을 때만 — 시술 얘기가 없는 증상 질문에 시술 후 안내가 끼지 않게
         found = drop_unasked_procedure_docs(question, found)
+    found = drop_alcohol_doc_without_medicine(question, found)[
+        : settings.docs_per_answer
+    ]  # 뺀 자리를 다음 안내문이 채운다
     if context and _MY_RECORD.search(question):
         # '내 약' 질문 → 기록의 약 안내문을 앞에 두고, 질문으로 찾은 것은 뒤에 (같은 건 한 번만)
         mine = await retrieval.search(" ".join(context), settings.docs_per_answer)
