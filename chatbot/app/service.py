@@ -146,15 +146,31 @@ _SMALL_TALK = {
         re.IGNORECASE,
     ),
     "chat_help": re.compile(
-        r"(넌|너는|당신은|여기서)? ?(뭘|무엇을|뭐|어떤 걸) ?(도와|할 수|물어).*|what can you (do|help).*|你能(做|帮).*|何ができます.*",
+        r"((너는?|넌|니가|네가|당신은|여기서|이 앱은?|글로우봇은?) ?)?"
+        r"((뭘|무엇을|뭐|어떤 ?걸|무슨 ?일을?) ?(도와|할 ?수|해 ?줄|해 ?줘|물어|알려).*|(무슨|어떤) ?기능.*|(누구|뭐)(야|예요|에요|니|세요))"
+        r"|what can you (do|help).*|what do you do|who are you|你能(做|帮).*|你是谁|何ができます.*|あなたは誰.*",
         re.IGNORECASE,
     ),
 }
+_GREETING_FIRST = re.compile(
+    r"^(안녕(하세요|하십니까)?|반가워요?|hi|hello|hey|你好|您好|こんにちは)[\s,]+", re.IGNORECASE
+)
+
+
+def _small_talk_part(text: str) -> str | None:
+    return next((key for key, pattern in _SMALL_TALK.items() if pattern.fullmatch(text)), None)
 
 
 def small_talk_key(question: str) -> str | None:
-    text = question.strip().rstrip("?!.~ …。！？")
-    return next((key for key, pattern in _SMALL_TALK.items() if pattern.fullmatch(text)), None)
+    """문장 전체가 인사·감사·기능 질문일 때만. '안녕? 넌 뭘 할 수 있어?' 처럼 이어지면 마지막 말에 답한다.
+    한 조각이라도 진짜 질문이면 None ('안녕하세요 레이저 후 세안은요?' → 평소처럼 안내문을 찾는다)"""
+    parts = [
+        p.strip()
+        for p in re.split(r"[?!.,~…。！？，、\n]+", _GREETING_FIRST.sub("안녕, ", question.strip()))
+        if p.strip()
+    ]
+    keys = [_small_talk_part(part) for part in parts]
+    return keys[-1] if keys and all(keys) else None
 
 
 # '내 약' 을 가리키는 질문 — 이럴 때만 진료기록의 약·시술 이름으로 안내문을 찾는다
