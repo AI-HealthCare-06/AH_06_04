@@ -4,7 +4,7 @@ title_ko: 시술 후 음주·흡연 (술·담배가 상처 회복에 미치는 �
 title_en: Alcohol and smoking after a procedure (how they affect wound healing)
 title_ja: 施術後の飲酒・喫煙（お酒とタバコが傷の治りに与える影響）
 title_zh-Hans: 治疗后的饮酒·吸烟（酒和烟对伤口愈合的影响）
-keywords: 술, 술은, 술을, 음주, 맥주, 소주, 와인, 회식, 흡연, 담배, 금연, 니코틴, 전자담배, 니코틴패치, alcohol, beer, wine, smoke, smoking, smoker, cigarette, cigarettes, nicotine, vape, vaping, 喝酒, 饮酒, 啤酒, 红酒, 白酒, 抽烟, 吸烟, 戒烟, 香烟, 尼古丁, 电子烟, お酒, 飲酒, アルコール, ビール, 喫煙, タバコ, たばこ, 煙草, 禁煙, ニコチン, 電子タバコ
+keywords: 음주, 맥주, 소주, 와인, 회식, 흡연, 담배, 금연, 니코틴, 전자담배, 니코틴패치, beer, wine, smoke, smoking, smoker, cigarette, cigarettes, nicotine, vape, vaping, 啤酒, 红酒, 白酒, 抽烟, 吸烟, 戒烟, 香烟, 尼古丁, 电子烟, ビール, 喫煙, タバコ, たばこ, 煙草, 禁煙, ニコチン, 電子タバコ
 source: NHS (University Hospitals Birmingham NHS Foundation Trust), Stop before your op, https://www.uhb.nhs.uk/media/uvcgrm43/pi_nursing_stop-before-your-op.pdf · NHS (University Hospitals Coventry and Warwickshire NHS Trust), Risks of smoking before plastic surgery, https://www.uhcw.nhs.uk/download/clientfiles/files/Patient%20Information%20Leaflets/Trauma%20and%20Neuro%20services/Plastics/Risks%20of%20smoking%20before%20plastic%20surgery.pdf · NHS (The Royal Wolverhampton NHS Trust), General Wound Information, https://www.royalwolverhampton.nhs.uk/wp-content/uploads/2025/06/General_Wound_Information.pdf · NHS (Northern Care Alliance NHS Foundation Trust), Information for adults leaving hospital after surgery, https://www.northerncarealliance.nhs.uk/patient-information/patient-leaflets/anaesthetics-information-adults-leaving-hospital-after-surgery · NHS, Cosmetic surgery abroad, https://www.nhs.uk/conditions/cosmetic-procedures/cosmetic-surgery-abroad/ (2026-11-04 확인) · 요약·번역 GlowPass팀
 publisher: NHS
 reviewed: false
