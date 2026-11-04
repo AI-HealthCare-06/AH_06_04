@@ -1,0 +1,22 @@
+---
+id: melasma-pigment-laser-aad
+title_ko: 기미(멜라즈마)·잡티 치료 — 재발과 햇빛 관리가 핵심 (피코·토닝 포함)
+title_en: Melasma and dark patches: why it comes back and why sun protection matters (incl. pico/toning lasers)
+title_ja: 肝斑（しみ）治療 — 再発しやすく、日差し対策が鍵（ピコ・トーニング含む）
+title_zh-Hans: 黄褐斑（肝斑）治疗 — 容易复发，防晒是关键（含皮秒·净肤激光）
+keywords: 기미, 멜라즈마, 멜라스마, 잡티, 색소질환, 재발, 다시 생, 하이드로퀴논, 트레티노인, 톤업, melasma, dark patches, come back, recur, hydroquinone, tretinoin, tinted sunscreen, iron oxide, 黄褐斑, 肝斑, 雀斑, 色斑, 复发, 氢醌, 维A酸, 氧化铁, しみ, シミ, 肝斑, 再発, ハイドロキノン, トレチノイン, 酸化鉄
+source: American Academy of Dermatology Association, Melasma: Diagnosis and treatment, https://www.aad.org/public/diseases/a-z/melasma-treatment (2026-11-04 확인) · 요약·번역 GlowPass팀
+publisher: AAD
+reviewed: false
+---
+## ko
+미국피부과학회(AAD)는 기미(멜라즈마)를 몸에 해롭지는 않지만 끈질긴 색소 질환으로 설명하며, 치료 목표는 피부가 만드는 색소를 줄이고 피부 톤을 고르게 되돌리는 것입니다. 기미는 임신이나 약 같은 유발 요인이 끝나면 저절로 흐려지기도 하지만 몇 년, 때로는 평생 가기도 하고, 치료를 해도 쉽게 사라지지 않을 수 있다고 합니다. 햇빛은 피부가 색소를 더 만들게 해 있던 기미를 짙게 하고 새 반점을 만들기 때문에, 자외선 차단이 기미를 흐리게 하고 다시 생기는 것을 막는 데 도움이 된다고 안내합니다. 구체적으로는 넓은 모자, 그늘, SPF 30 이상의 광범위 차단제를 낮 동안 여러 번 덧바르는 것이고, 산화아연·이산화티타늄·산화철이 든 제품을 피부과 의사들이 자주 권하며 백탁이 싫으면 톤업(틴티드) 차단제도 방법이라고 합니다. 치료의 기본은 피부과에서 처방하는 바르는 약(하이드로퀴논, 트레티노인과 순한 스테로이드, 3중 복합 크림, 또는 아젤라산·코직산·비타민C 같은 순한 성분)과 자외선 차단이고, 피코·토닝 같은 레이저나 빛 치료, 화학 필링, 마이크로니들링, PRP는 필요할 때 추가하는 시술이며 몇몇 연구에서 약과 자외선 차단을 하는 환자가 레이저·빛 치료를 더하면 결과가 나아졌다고 합니다. 이런 시술은 피부과 전문의가 해야 하고, 치료 계획을 따르면 결과를 보기까지 보통 3~12개월이 걸리며 오래된 기미는 더 걸릴 수 있습니다. 화장은 약, 자외선 차단제, 커버 화장 순서로 바르라고 안내합니다. 치료 조합과 병원마다 안내가 다를 수 있으니 시술 병원의 안내가 먼저입니다.
+
+## en
+The American Academy of Dermatology (AAD) describes melasma as a pigment condition that cannot harm your body but can be stubborn; the goals of treatment are to reduce the pigment the skin produces and to even out skin tone. Melasma may fade on its own when a trigger such as pregnancy or a medication ends, but it can also last for years or even a lifetime, and even with treatment it may not clear easily. Sunlight causes the skin to make more pigment, which can darken existing melasma and cause new patches, so sun protection can help fade melasma and prevent it from returning. In practice this means a wide-brimmed hat, seeking shade, and reapplying a broad-spectrum sunscreen of SPF 30 or higher throughout the day; dermatologists often recommend sunscreens containing zinc oxide, titanium dioxide or iron oxide, and a tinted sunscreen is an option if a white cast bothers you. The foundation of treatment is a prescribed topical medication (hydroquinone, tretinoin with a mild corticosteroid, a triple-combination cream, or gentler options such as azelaic acid, kojic acid or vitamin C) plus sun protection; procedures such as laser and light treatments (including pico or toning lasers), chemical peels, microneedling and PRP are added when needed, and a few studies found that adding a laser or light treatment improved results for patients already using medication and sun protection. Only a board-certified dermatologist should perform these procedures, and when you follow the treatment plan it usually takes 3 to 12 months to see results, longer if you have had melasma for a long time. For make-up, the order is medication first, then sunscreen, then camouflage make-up. Treatment combinations differ by clinic, so your clinic's instructions come first.
+
+## ja
+米国皮膚科学会（AAD）は肝斑（メラズマ）を、体に害はないものの治りにくい色素の病気と説明し、治療の目標は肌が作る色素を減らし、肌の色を均一に戻すことだとしています。肝斑は妊娠や薬などの誘因が終わると自然に薄くなることもありますが、数年、時には一生続くこともあり、治療しても簡単には消えないことがあります。日差しは肌に色素をより多く作らせ、既にある肝斑を濃くし新しいしみを作るため、紫外線対策が肝斑を薄くし再発を防ぐのに役立つと案内しています。具体的にはつばの広い帽子、日陰、SPF30以上の広域日焼け止めを日中に何度も塗り直すことで、酸化亜鉛・酸化チタン・酸化鉄を含む製品を皮膚科医がよく勧め、白浮きが気になるならトーンアップ（色付き）日焼け止めも選択肢だとしています。治療の基本は皮膚科で処方される塗り薬（ハイドロキノン、トレチノインと弱いステロイド、三剤配合クリーム、またはアゼライン酸・コウジ酸・ビタミンCなど穏やかな成分）と紫外線対策で、ピコやトーニングなどのレーザー・光治療、ケミカルピーリング、マイクロニードリング、PRPは必要なときに追加する施術であり、薬と紫外線対策をしている患者にレーザー・光治療を加えると結果が良くなったという研究がいくつかあるとされています。これらの施術は皮膚科専門医が行うべきで、治療計画に従えば結果が見えるまで通常3〜12か月、長年の肝斑はそれ以上かかることがあります。メイクは薬、日焼け止め、カバーメイクの順に重ねるよう案内しています。治療の組み合わせや病院によって案内が異なるため、施術した病院の指示を優先してください。
+
+## zh-Hans
+美国皮肤病学会（AAD）将黄褐斑（肝斑）描述为一种对身体无害但很顽固的色素问题，治疗目标是减少皮肤产生的色素并让肤色恢复均匀。黄褐斑在怀孕或药物等诱因结束后可能自行变淡，但也可能持续数年甚至终生，即使治疗也不容易消退。阳光会让皮肤产生更多色素，使原有的斑变深并长出新斑，因此防晒有助于淡化黄褐斑并防止复发。具体做法是戴宽边帽、找阴凉处，并在白天多次补涂SPF30以上的广谱防晒霜；皮肤科医生常推荐含氧化锌、二氧化钛或氧化铁的产品，如果担心泛白，带颜色的润色防晒霜也是一种选择。治疗的基础是皮肤科医生开的外用药（氢醌，维A酸配合温和的激素，三联复方乳膏，或壬二酸、曲酸、维生素C等更温和的成分）加上防晒；皮秒、净肤等激光或光治疗、化学换肤、微针和PRP是需要时追加的项目，有几项研究发现，已经在用药并防晒的患者加上激光或光治疗后效果更好。这些项目应由皮肤科专科医生操作，按治疗计划进行通常需要3〜12个月才能看到效果，长期的黄褐斑可能需要更久。化妆的顺序是先涂药、再涂防晒霜、最后遮瑕化妆。治疗组合和医院不同，建议也可能不同，请以治疗医院的说明为准。
