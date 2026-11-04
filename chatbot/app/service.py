@@ -228,6 +228,7 @@ async def _with_mfds(llm, question: str, lang: str, found: list[docs.Doc], conte
 
 # 특정 시술 후 안내문 — 질문에 시술 얘기가 있을 때만 근거로 쓴다
 _PROCEDURE_DOCS = ("laser-", "filler", "botox", "microneedling-", "rf-microneedling-", "procedure-")
+_MEDICINE_WORD = re.compile(r"약|복용|medicine|medication|pill|藥|药|薬", re.IGNORECASE)
 _SYMPTOM_WORD = re.compile(r"빨개|빨갛|붉")
 _PROCEDURE_TALK = re.compile(
     r"시술|레이저|토닝|피코|필러|보톡스|보툴|미세침|니들|고주파|맞고|맞은|받고|받은"
@@ -247,12 +248,18 @@ def drop_unasked_procedure_docs(question: str, found: list[docs.Doc]) -> list[do
     return [d for d in found if d.id in named or not d.id.startswith(_PROCEDURE_DOCS)]
 
 
+def drop_alcohol_doc_without_medicine(question: str, found: list[docs.Doc]) -> list[docs.Doc]:
+    """'필러 맞고 술 마셔도 돼요?' 처럼 약 얘기가 없으면 약과 술 안내문을 근거로 쓰지 않는다"""
+    about_procedure = _PROCEDURE_TALK.search(question) and not _MEDICINE_WORD.search(question)
+    return [d for d in found if d.id != "alcohol-with-medicine"] if about_procedure else found
+
+
 async def _find_docs(
     conv: Conversation, question: str, first_turn: bool, context: list[str] | None = None, procedure: str | None = None
 ) -> list[docs.Doc]:
     """질문으로 찾기. ① '내 약' 질문이면 기록의 약 이름으로 찾은 안내문을 앞에 ② 못 찾았고 '이어지는 질문' 이면 앞 답의 안내문.
     [11/3] 최근 시술 이름이 있으면 질문에 붙여서 찾는다 — "화장 언제부터?" 가 일반 관리가 아니라 '레이저 후 관리' 를 찾게"""
-    found = await retrieval.search(question, settings.docs_per_answer)  # FR-02: SEARCH_MODE 에 따라 낱말·벡터·혼합
+    found = await retrieval.search(question, settings.docs_per_answer + 1)  # FR-02: SEARCH_MODE 에 따라 낱말·벡터·혼합
     if procedure:
         with_proc = await retrieval.search(f"{question} {procedure}", settings.docs_per_answer)
         if with_proc:
@@ -260,6 +267,9 @@ async def _find_docs(
     if not procedure:
         # 시술 기록이 없을 때만 — 시술 얘기가 없는 증상 질문에 시술 후 안내가 끼지 않게
         found = drop_unasked_procedure_docs(question, found)
+    found = drop_alcohol_doc_without_medicine(question, found)[
+        : settings.docs_per_answer
+    ]  # 뺀 자리를 다음 안내문이 채운다
     if context and _MY_RECORD.search(question):
         # '내 약' 질문 → 기록의 약 안내문을 앞에 두고, 질문으로 찾은 것은 뒤에 (같은 건 한 번만)
         mine = await retrieval.search(" ".join(context), settings.docs_per_answer)

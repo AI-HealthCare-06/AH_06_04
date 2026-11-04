@@ -136,3 +136,10 @@ async def test_procedure_doc_found_by_meaning_only_is_dropped(client, llm, monke
     monkeypatch.setattr(retrieval, "search", by_meaning)
     assert done(await ask(client, await new_conv(client), "얼굴이 화끈거려요"))["outcome"] == "no_doc"
     assert done(await ask(client, await new_conv(client), "시술한 곳이 화끈거려요"))["outcome"] == "ok"
+
+
+async def test_alcohol_with_medicine_is_answered_from_its_doc(client, llm):
+    events = await ask(client, await new_conv(client), "약 먹고 술 마셔도 돼요?")
+    assert "alcohol-with-medicine" in [d["id"] for e, data in events if e == "sources" for d in data["docs"]]
+    events = await ask(client, await new_conv(client), "필러 맞고 술 마셔도 돼요?")
+    assert "alcohol-with-medicine" not in [d["id"] for e, data in events if e == "sources" for d in data["docs"]]

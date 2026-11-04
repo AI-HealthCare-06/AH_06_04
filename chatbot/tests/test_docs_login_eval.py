@@ -288,6 +288,6 @@ async def test_v3_local_server_without_key(monkeypatch):
 
 def test_every_doc_names_its_publisher():
     # 챗봇 답 아래 '📚 출처: 영국 NHS · 식약처' 한 줄 — 안내문마다 기관 코드가 있어야 하고, 화면이 아는 코드만
-    known = {"NHS", "FDA", "AAD", "MFDS"}
+    known = {"NHS", "FDA", "AAD", "MFDS", "NIAAA"}
     for d in docs.store().docs:
         assert d.publishers and set(d.publishers) <= known, d.id
